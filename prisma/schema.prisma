@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  phoneNumber String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  services  Service[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Handphone {
+  id          String   @id @default(uuid())
+  brand       String
+  tipe        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  services    Service[]
+  kendalaHandphoneId String 
+  kendalaHanphone KendalaHandphone @relation(fields: [kendalaHandphoneId] , references: [id])
+}
+
+model KendalaHandphone {
+  id          String   @id @default(uuid())
+  topikMasalah String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  pergantianBarangId String @unique
+  pergantianBarang PergantianBarang @relation(fields: [pergantianBarangId] , references: [id])
+  handphone Handphone[]
+}
+
+model PergantianBarang {
+  id          String   @id @default(uuid())
+  namaBarang  String
+  harga       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  kendalaHanphone KendalaHandphone?
+}
+
+model Waktu {
+  id          String   @id @default(uuid())
+  namaShift       String
+  jamSelesai   String
+  jamMulai     String
+  isAvailable  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  services    Service[]
+}
+
+enum StatusService {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+model Service  {
+  id                String   @id @default(uuid())
+  statusService    StatusService @default(PENDING)
+  tempat         String
+  tanggalPesan   DateTime 
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  handphoneId   String
+  handphone     Handphone @relation(fields: [handphoneId], references: [id])
+  waktuId       String
+  waktu         Waktu    @relation(fields: [waktuId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
