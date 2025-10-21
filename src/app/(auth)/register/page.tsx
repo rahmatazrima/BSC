@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-900 via-blue-900 to-black">
+    <div>
       {/* Left side - Illustration */}
       <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 overflow-hidden">
         {/* Background Effects */}
