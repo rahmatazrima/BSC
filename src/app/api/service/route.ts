@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Cek apakah waktu exists dan available
+    // Cek apakah waktu exists
     const waktuExists = await prisma.waktu.findUnique({
       where: { id: waktuId }
     });
@@ -274,47 +274,103 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!waktuExists.isAvailable) {
+    // Cek apakah shift sudah terisi pada tanggal yang sama
+    // Set waktu ke awal dan akhir hari untuk query
+    const startOfDay = new Date(parsedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(parsedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingServiceOnSameShift = await prisma.service.findFirst({
+      where: {
+        waktuId: waktuId,
+        tanggalPesan: {
+          gte: startOfDay,
+          lte: endOfDay
+        },
+        statusService: {
+          not: 'CANCELLED' // Tidak hitung service yang dibatalkan
+        }
+      },
+      include: {
+        waktu: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (existingServiceOnSameShift) {
+      const formattedDate = parsedDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: 'Selected time slot is not available'
+          message: `Shift "${waktuExists.namaShift}" (${waktuExists.jamMulai} - ${waktuExists.jamSelesai}) sudah terisi untuk tanggal ${formattedDate}`,
+          details: {
+            existingService: {
+              id: existingServiceOnSameShift.id,
+              user: existingServiceOnSameShift.user.name,
+              shift: existingServiceOnSameShift.waktu.namaShift,
+              time: `${existingServiceOnSameShift.waktu.jamMulai} - ${existingServiceOnSameShift.waktu.jamSelesai}`
+            }
+          }
         },
         { status: 409 }
       );
     }
 
-    // Buat service baru
-    const newService = await prisma.service.create({
-      data: {
-        statusService,
-        tempat,
-        tanggalPesan: parsedDate,
-        userId,
-        handphoneId,
-        waktuId
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phoneNumber: true,
-            role: true
-          }
+    // Buat service baru dan update isAvailable shift menjadi false
+    const newService = await prisma.$transaction(async (tx) => {
+      // Buat service
+      const service = await tx.service.create({
+        data: {
+          statusService,
+          tempat,
+          tanggalPesan: parsedDate,
+          userId,
+          handphoneId,
+          waktuId
         },
-        handphone: {
-          include: {
-            kendalaHanphone: {
-              include: {
-                pergantianBarang: true
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phoneNumber: true,
+              role: true
+            }
+          },
+          handphone: {
+            include: {
+              kendalaHanphone: {
+                include: {
+                  pergantianBarang: true
+                }
               }
             }
-          }
-        },
-        waktu: true
-      }
+          },
+          waktu: true
+        }
+      });
+
+      // Set isAvailable shift menjadi false karena sudah terisi
+      await tx.waktu.update({
+        where: { id: waktuId },
+        data: { isAvailable: false }
+      });
+
+      return service;
     });
 
     return NextResponse.json(
@@ -437,7 +493,7 @@ export async function PUT(request: NextRequest) {
     }
     if (handphoneId) updateData.handphoneId = handphoneId;
     if (waktuId) {
-      // Cek availability jika mengubah waktu
+      // Cek waktu exists jika mengubah waktu
       const waktuExists = await prisma.waktu.findUnique({
         where: { id: waktuId }
       });
@@ -452,44 +508,126 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      if (!waktuExists.isAvailable) {
+      updateData.waktuId = waktuId;
+    }
+
+    // Cek apakah shift sudah terisi pada tanggal yang sama (jika mengubah waktu atau tanggal)
+    if (waktuId || tanggalPesan) {
+      const finalWaktuId = waktuId || existingService.waktuId;
+      const finalTanggalPesan = tanggalPesan ? new Date(tanggalPesan) : existingService.tanggalPesan;
+      
+      const startOfDay = new Date(finalTanggalPesan);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(finalTanggalPesan);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const existingServiceOnSameShift = await prisma.service.findFirst({
+        where: {
+          waktuId: finalWaktuId,
+          tanggalPesan: {
+            gte: startOfDay,
+            lte: endOfDay
+          },
+          id: { not: id }, // Exclude current service being updated
+          statusService: {
+            not: 'CANCELLED' // Tidak hitung service yang dibatalkan
+          }
+        },
+        include: {
+          waktu: true,
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      if (existingServiceOnSameShift) {
+        const waktuInfo = await prisma.waktu.findUnique({
+          where: { id: finalWaktuId }
+        });
+
+        const formattedDate = finalTanggalPesan.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
         return NextResponse.json(
           {
             error: 'Conflict',
-            message: 'Selected time slot is not available'
+            message: `Shift "${waktuInfo?.namaShift}" (${waktuInfo?.jamMulai} - ${waktuInfo?.jamSelesai}) sudah terisi untuk tanggal ${formattedDate}`,
+            details: {
+              existingService: {
+                id: existingServiceOnSameShift.id,
+                user: existingServiceOnSameShift.user.name,
+                shift: existingServiceOnSameShift.waktu.namaShift,
+                time: `${existingServiceOnSameShift.waktu.jamMulai} - ${existingServiceOnSameShift.waktu.jamSelesai}`
+              }
+            }
           },
           { status: 409 }
         );
       }
-
-      updateData.waktuId = waktuId;
     }
 
-    // Update service
-    const updatedService = await prisma.service.update({
-      where: { id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phoneNumber: true,
-            role: true
-          }
-        },
-        handphone: {
-          include: {
-            kendalaHanphone: {
-              include: {
-                pergantianBarang: true
+    // Update service dan handle perubahan isAvailable shift
+    const updatedService = await prisma.$transaction(async (tx) => {
+      // Update service
+      const service = await tx.service.update({
+        where: { id },
+        data: updateData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phoneNumber: true,
+              role: true
+            }
+          },
+          handphone: {
+            include: {
+              kendalaHanphone: {
+                include: {
+                  pergantianBarang: true
+                }
               }
             }
-          }
-        },
-        waktu: true
+          },
+          waktu: true
+        }
+      });
+
+      // Jika status diubah menjadi CANCELLED, kembalikan isAvailable shift ke true
+      if (statusService === 'CANCELLED' && existingService.statusService !== 'CANCELLED') {
+        await tx.waktu.update({
+          where: { id: existingService.waktuId },
+          data: { isAvailable: true }
+        });
       }
+
+      // Jika waktu/shift diubah
+      if (waktuId && waktuId !== existingService.waktuId) {
+        // Set shift lama menjadi available (true)
+        await tx.waktu.update({
+          where: { id: existingService.waktuId },
+          data: { isAvailable: true }
+        });
+
+        // Set shift baru menjadi not available (false)
+        await tx.waktu.update({
+          where: { id: waktuId },
+          data: { isAvailable: false }
+        });
+      }
+
+      return service;
     });
 
     return NextResponse.json({
@@ -578,9 +716,18 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Hapus service
-    await prisma.service.delete({
-      where: { id }
+    // Hapus service dan kembalikan isAvailable shift ke true
+    await prisma.$transaction(async (tx) => {
+      // Hapus service
+      await tx.service.delete({
+        where: { id }
+      });
+
+      // Kembalikan isAvailable shift ke true
+      await tx.waktu.update({
+        where: { id: existingService.waktuId },
+        data: { isAvailable: true }
+      });
     });
 
     return NextResponse.json({

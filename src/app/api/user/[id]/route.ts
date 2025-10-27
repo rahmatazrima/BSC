@@ -1,12 +1,53 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
 // GET - Mengambil user berdasarkan ID
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh akses detail user by ID
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can access user details'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
 
     const user = await prisma.user.findUnique({
@@ -43,10 +84,49 @@ export async function GET(
 
 // PUT - Update user berdasarkan ID
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh update user
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can update user'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
     const body = await request.json();
     const { email, name, password, phoneNumber, role } = body;
@@ -115,10 +195,49 @@ export async function PUT(
 
 // DELETE - Hapus user berdasarkan ID
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh delete user
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can delete user'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
 
     // Cek apakah user ada

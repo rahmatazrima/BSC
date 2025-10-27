@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from 'jsonwebtoken';
 
 // GET - Mengambil kendala handphone berdasarkan ID
 export async function GET(
@@ -7,6 +8,45 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh akses detail kendala handphone by ID
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can access kendala handphone details'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
 
     if (!id) {
@@ -114,6 +154,45 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh update kendala handphone
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can update kendala handphone'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
     const body = await request.json();
     const { 
@@ -251,6 +330,45 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh delete kendala handphone
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can delete kendala handphone'
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = params;
 
     if (!id) {

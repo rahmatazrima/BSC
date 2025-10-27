@@ -1,9 +1,53 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        // Verify JWT token untuk memastikan user terautentikasi
+        const token = request.cookies.get('auth-token');
+        
+        if (!token) {
+          return NextResponse.json(
+            { 
+              error: 'Unauthorized',
+              message: 'Authentication token is required'
+            },
+            { status: 401 }
+          );
+        }
+    
+        let currentUser: { userId: string; email: string; role: string };
+        
+        try {
+          const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+          currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+        } catch (error) {
+          return NextResponse.json(
+            { 
+              error: 'Unauthorized',
+              message: 'Invalid or expired token'
+            },
+            { status: 401 }
+          );
+        }
+    
+        // Cek apakah user exists
+        const userExists = await prisma.user.findUnique({
+          where: { id: currentUser.userId }
+        });
+    
+        if (!userExists) {
+          return NextResponse.json(
+            { 
+              error: 'Unauthorized',
+              message: 'User not found'
+            },
+            { status: 401 }
+          );
+        }
+
         const users = await prisma.user.findMany()
 
         return NextResponse.json({status: true, content: users}, { status: 200 });
@@ -21,6 +65,45 @@ export async function GET() {
 // POST - Membuat user baru
 export async function POST(request: NextRequest) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh membuat user
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can create user'
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { email, name, password, phoneNumber, role = 'USER' } = body;
 
@@ -123,6 +206,45 @@ export async function POST(request: NextRequest) {
 // PUT - Update user
 export async function PUT(request: NextRequest) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh update user
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can update user'
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { id, email, name, password, phoneNumber, role } = body;
 
@@ -236,6 +358,45 @@ export async function PUT(request: NextRequest) {
 // DELETE - Hapus user
 export async function DELETE(request: NextRequest) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh delete user
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can delete user'
+        },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
