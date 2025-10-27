@@ -1,18 +1,32 @@
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken'
+import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
+// POST - Login user
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Parse request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          error: 'Invalid request',
+          message: 'Invalid JSON body'
+        },
+        { status: 400 }
+      );
+    }
+
     const { email, password } = body;
 
     // Validasi input
     if (!email || !password) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation failed',
           message: 'Email and password are required',
           fields: {
@@ -28,7 +42,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation failed',
           message: 'Invalid email format'
         },
@@ -53,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { 
+        {
           error: 'Authentication failed',
           message: 'Invalid email or password'
         },
@@ -66,7 +80,7 @@ export async function POST(request: NextRequest) {
     
     if (!isPasswordValid) {
       return NextResponse.json(
-        { 
+        {
           error: 'Authentication failed',
           message: 'Invalid email or password'
         },
@@ -75,15 +89,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     const token = jwt.sign(
       { 
         userId: user.id,
         email: user.email,
-        role: user.role 
+        role: user.role,
+        name: user.name
       },
       jwtSecret,
-      { expiresIn: '7d' }
+      { expiresIn: '7d' } // Token berlaku 7 hari
     );
 
     // Set HTTP-only cookie
@@ -99,45 +114,56 @@ export async function POST(request: NextRequest) {
     // Response tanpa password
     const { password: _, ...userWithoutPassword } = user;
 
+    // Tentukan redirect URL berdasarkan role
+    const redirectUrl = user.role === 'ADMIN' 
+      ? '/admin/dashboard' 
+      : '/booking';
+
     return NextResponse.json({
       message: 'Login successful',
       data: {
         user: userWithoutPassword,
-        token: token // Optional: return token in response body juga
+        token: token, // Optional: untuk mobile/API client
+        redirectUrl: redirectUrl
       }
     });
 
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: 'Login failed. Please try again.'
+      {
+        error: "Internal server error",
+        message: "Failed to process login",
       },
       { status: 500 }
     );
   }
 }
 
-// GET - Check login status
+// GET - Check login status / Current user
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
+    const token = cookieStore.get('auth-token');
 
     if (!token) {
       return NextResponse.json(
-        { 
-          error: 'Authentication required',
-          message: 'No token provided'
+        {
+          error: 'Unauthorized',
+          message: 'No authentication token found'
         },
         { status: 401 }
       );
     }
 
-    // Verify JWT token
-    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    // Verify token
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    const decoded = jwt.verify(token.value, jwtSecret) as {
+      userId: string;
+      email: string;
+      role: string;
+      name: string;
+    };
 
     // Get current user data
     const user = await prisma.user.findUnique({
@@ -155,8 +181,8 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { 
-          error: 'Authentication failed',
+        {
+          error: 'Unauthorized',
           message: 'User not found'
         },
         { status: 401 }
@@ -164,18 +190,32 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: 'Authentication valid',
-      data: { user }
+      status: true,
+      data: {
+        user: user,
+        isAuthenticated: true
+      }
     });
 
   } catch (error) {
     console.error('Auth check error:', error);
+    
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { 
-        error: 'Authentication failed',
-        message: 'Invalid or expired token'
+      {
+        error: "Internal server error",
+        message: "Failed to check authentication",
       },
-      { status: 401 }
+      { status: 500 }
     );
   }
 }

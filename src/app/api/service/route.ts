@@ -1,9 +1,38 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from 'jsonwebtoken';
 
 // GET - Mengambil semua service atau service berdasarkan query
 export async function GET(request: NextRequest) {
   try {
+    // Verify JWT token untuk mendapatkan user info
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const userId = searchParams.get('userId');
@@ -47,6 +76,17 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      // Jika bukan admin, hanya bisa lihat data sendiri
+      if (currentUser.role !== 'ADMIN' && service.userId !== currentUser.userId) {
+        return NextResponse.json(
+          { 
+            error: 'Forbidden',
+            message: 'You are not authorized to view this service'
+          },
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json({
         status: true,
         content: service
@@ -55,7 +95,15 @@ export async function GET(request: NextRequest) {
 
     // Build where condition
     const where: any = {};
-    if (userId) where.userId = userId;
+    
+    // Jika USER (bukan ADMIN), hanya tampilkan data mereka sendiri
+    if (currentUser.role !== 'ADMIN') {
+      where.userId = currentUser.userId;
+    } else {
+      // Jika ADMIN dan ada filter userId dari query, gunakan filter tersebut
+      if (userId) where.userId = userId;
+    }
+    
     if (status) where.statusService = status;
     if (tempat) where.tempat = { contains: tempat, mode: 'insensitive' };
 
@@ -89,7 +137,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: true,
       content: services,
-      count: services.length
+      count: services.length,
+      // Info untuk debugging
+      requestedBy: {
+        userId: currentUser.userId,
+        role: currentUser.role
+      }
     });
 
   } catch (error) {
@@ -107,18 +160,45 @@ export async function GET(request: NextRequest) {
 // POST - Membuat service baru
 export async function POST(request: NextRequest) {
   try {
+    // Verify JWT token untuk mendapatkan user info
+    const token = request.cookies.get('auth-token');
+    
+    if (!token) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { 
       statusService = 'PENDING',
       tempat,
       tanggalPesan,
-      userId,
       handphoneId,
       waktuId
     } = body;
 
-    // Validasi input required
-    if (!tempat || !tanggalPesan || !userId || !handphoneId || !waktuId) {
+    // Validasi input required (userId tidak perlu dari body, ambil dari token)
+    if (!tempat || !tanggalPesan || !handphoneId || !waktuId) {
       return NextResponse.json(
         {
           error: 'Validation failed',
@@ -126,7 +206,6 @@ export async function POST(request: NextRequest) {
           fields: {
             tempat: !tempat ? 'Tempat is required' : null,
             tanggalPesan: !tanggalPesan ? 'Tanggal pesan is required' : null,
-            userId: !userId ? 'User ID is required' : null,
             handphoneId: !handphoneId ? 'Handphone ID is required' : null,
             waktuId: !waktuId ? 'Waktu ID is required' : null,
           }
@@ -147,7 +226,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Cek apakah user exists
+    // Gunakan userId dari JWT token
+    const userId = currentUser.userId;
+
+    // Cek apakah user exists (seharusnya selalu ada karena dari token valid)
     const userExists = await prisma.user.findUnique({
       where: { id: userId }
     });
@@ -238,7 +320,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'Service created successfully',
-        data: newService
+        data: newService,
+        // Info untuk debugging
+        createdBy: {
+          userId: currentUser.userId,
+          email: currentUser.email,
+          role: currentUser.role
+        }
       },
       { status: 201 }
     );
@@ -258,6 +346,43 @@ export async function POST(request: NextRequest) {
 // PUT - Update service
 export async function PUT(request: NextRequest) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh melakukan update
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can update services'
+        },
+        { status: 403 }
+      );
+    }
     const body = await request.json();
     const { 
       id,
@@ -387,6 +512,44 @@ export async function PUT(request: NextRequest) {
 // DELETE - Hapus service
 export async function DELETE(request: NextRequest) {
   try {
+    // Verify JWT token untuk memastikan user adalah ADMIN
+    const token = request.cookies.get('auth-token');
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+          message: 'Authentication token is required'
+        },
+        { status: 401 }
+      );
+    }
+
+    let currentUser: { userId: string; email: string; role: string };
+    try {
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      currentUser = jwt.verify(token.value, jwtSecret) as { userId: string; email: string; role: string };
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Hanya ADMIN yang boleh menghapus service
+    if (currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        {
+          error: 'Forbidden',
+          message: 'Only admin can delete services'
+        },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

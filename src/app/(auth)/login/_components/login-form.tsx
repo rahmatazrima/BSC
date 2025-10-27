@@ -12,6 +12,10 @@ export default function LoginForm() {
 
   const form = useForm<TLoginRequest>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = form.handleSubmit(async (value) => {
@@ -174,7 +178,7 @@ export default function LoginForm() {
               <p className="text-gray-400">
                 Don't have an account?{" "}
                 <Link
-                  href="/auth/register"
+                  href="/register"
                   className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
                 >
                   Sign Up
