@@ -11,7 +11,7 @@ export default function Footer() {
       </div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center space-x-3 mb-6">
@@ -20,7 +20,6 @@ export default function Footer() {
                 alt="Bukhari Service Center"
                 width={48}
                 height={48}
-                className="rounded-full"
               />
               <span className="font-bold text-xl text-white">
                 Bukhari Service Center
@@ -32,7 +31,7 @@ export default function Footer() {
             </p>
             
             {/* Social Links */}
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <a 
                 href="#" 
                 className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-blue-600 transition-all duration-300"
@@ -51,7 +50,7 @@ export default function Footer() {
               >
                 <span className="text-sm">📧</span>
               </a>
-            </div>
+            </div> */}
           </div>
 
           {/* Quick Links */}
@@ -70,11 +69,6 @@ export default function Footer() {
               <li>
                 <Link href="/booking" className="text-gray-300 hover:text-white hover:pl-2 transition-all duration-300">
                   Book Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="text-gray-300 hover:text-white hover:pl-2 transition-all duration-300">
-                  Admin Dashboard
                 </Link>
               </li>
               <li>
@@ -134,15 +128,15 @@ export default function Footer() {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-gray-300">Senin - Jumat</span>
-                <span className="text-white font-medium">09:00 - 18:00</span>
+                <span className="text-gray-300">Senin - Kamis</span>
+                <span className="text-white font-medium">08:00 - 18:00</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-gray-300">Sabtu</span>
-                <span className="text-white font-medium">10:00 - 16:00</span>
+                <span className="text-gray-300">Sabtu - Minggu</span>
+                <span className="text-white font-medium">08:00 - 18:00</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-300">Minggu</span>
+                <span className="text-gray-300">Jumat</span>
                 <span className="text-red-400 font-medium">Tutup</span>
               </div>
             </div>

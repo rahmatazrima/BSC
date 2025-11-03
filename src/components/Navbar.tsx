@@ -20,18 +20,6 @@ export default function Navbar() {
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link href="/booking" className="text-gray-300 hover:text-white transition-colors font-medium text-xs sm:text-sm">
-          Book
-        </Link>
-        <Link href="/history" className="text-gray-300 hover:text-white transition-colors font-medium text-xs sm:text-sm">
-          History
-        </Link>
-        <Link href="/tracking" className="text-gray-300 hover:text-white transition-colors font-medium text-xs sm:text-sm">
-          Track
-        </Link>
-        <Link href="/admin" className="text-gray-300 hover:text-white transition-colors font-medium text-xs sm:text-sm">
-          Admin
-        </Link>
         <Link href="/login" className="text-gray-300 hover:text-white transition-colors font-medium text-xs sm:text-sm">
           Login
         </Link>
