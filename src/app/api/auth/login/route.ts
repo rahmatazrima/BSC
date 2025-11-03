@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     } catch (parseError) {
       return NextResponse.json(
         {
-          error: "Invalid request",
-          message: "Invalid JSON body",
+          error: 'Invalid request',
+          message: 'Invalid JSON body'
         },
         { status: 400 }
       );
@@ -27,12 +27,12 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         {
-          error: "Validation failed",
-          message: "Email and password are required",
+          error: 'Validation failed',
+          message: 'Email and password are required',
           fields: {
-            email: !email ? "Email is required" : null,
-            password: !password ? "Password is required" : null,
-          },
+            email: !email ? 'Email is required' : null,
+            password: !password ? 'Password is required' : null,
+          }
         },
         { status: 400 }
       );
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         {
-          error: "Validation failed",
-          message: "Invalid email format",
+          error: 'Validation failed',
+          message: 'Invalid email format'
         },
         { status: 400 }
       );
@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
-      },
+      }
     });
 
     if (!user) {
       return NextResponse.json(
         {
-          error: "Authentication failed",
-          message: "Invalid email or password",
+          error: 'Authentication failed',
+          message: 'Invalid email or password'
         },
         { status: 401 }
       );
@@ -77,66 +77,59 @@ export async function POST(request: NextRequest) {
 
     // Verifikasi password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
+    
     if (!isPasswordValid) {
       return NextResponse.json(
         {
-          error: "Authentication failed",
-          message: "Invalid email or password",
+          error: 'Authentication failed',
+          message: 'Invalid email or password'
         },
         { status: 401 }
       );
     }
 
     // Generate JWT token
-    const jwtSecret =
-      process.env.JWT_SECRET || "your-secret-key-change-in-production";
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     const token = jwt.sign(
-      {
+      { 
         userId: user.id,
         email: user.email,
         role: user.role,
-        name: user.name,
+        name: user.name
       },
       jwtSecret,
-      { expiresIn: "7d" } // Token berlaku 7 hari
+      { expiresIn: '7d' } // Token berlaku 7 hari
     );
 
-    // ✅ Buat response JSON
-    const redirectUrl = user.role === "ADMIN" ? "/admin" : "/booking";
+    // Set HTTP-only cookie
+    const cookieStore = await cookies();
+    cookieStore.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/'
+    });
 
+    // Response tanpa password
     const { password: _, ...userWithoutPassword } = user;
 
-    const response = NextResponse.json({
-      message: "Login successful",
-      data: {
-        user: userWithoutPassword,
-        redirectUrl,
-      },
-    });
-
-    // ✅ Set cookie HttpOnly via response
-    response.cookies.set("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // ubah dari strict → lax agar cookie terkirim di same-origin
-      maxAge: 7 * 24 * 60 * 60, // 7 hari
-      path: "/",
-    });
-
-    // ✅ Return response
-    return response;
+    // Tentukan redirect URL berdasarkan role
+    const redirectUrl = user.role === 'ADMIN' 
+      ? '/admin/dashboard' 
+      : '/booking';
 
     return NextResponse.json({
-      message: "Login successful",
+      message: 'Login successful',
       data: {
         user: userWithoutPassword,
         token: token, // Optional: untuk mobile/API client
-        redirectUrl: redirectUrl,
-      },
+        redirectUrl: redirectUrl
+      }
     });
+
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     return NextResponse.json(
       {
         error: "Internal server error",
@@ -151,21 +144,20 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("auth-token");
+    const token = cookieStore.get('auth-token');
 
     if (!token) {
       return NextResponse.json(
         {
-          error: "Unauthorized",
-          message: "No authentication token found",
+          error: 'Unauthorized',
+          message: 'No authentication token found'
         },
         { status: 401 }
       );
     }
 
     // Verify token
-    const jwtSecret =
-      process.env.JWT_SECRET || "your-secret-key-change-in-production";
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     const decoded = jwt.verify(token.value, jwtSecret) as {
       userId: string;
       email: string;
@@ -184,14 +176,14 @@ export async function GET(request: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
-      },
+      }
     });
 
     if (!user) {
       return NextResponse.json(
         {
-          error: "Unauthorized",
-          message: "User not found",
+          error: 'Unauthorized',
+          message: 'User not found'
         },
         { status: 401 }
       );
@@ -201,17 +193,18 @@ export async function GET(request: NextRequest) {
       status: true,
       data: {
         user: user,
-        isAuthenticated: true,
-      },
+        isAuthenticated: true
+      }
     });
-  } catch (error) {
-    console.error("Auth check error:", error);
 
+  } catch (error) {
+    console.error('Auth check error:', error);
+    
     if (error instanceof jwt.JsonWebTokenError) {
       return NextResponse.json(
         {
-          error: "Unauthorized",
-          message: "Invalid or expired token",
+          error: 'Unauthorized',
+          message: 'Invalid or expired token'
         },
         { status: 401 }
       );

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { schema, TLoginRequest } from "./data/type";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +8,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<TLoginRequest>({
@@ -30,17 +28,11 @@ export default function LoginForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(value),
-        credentials: "include",
       });
-      const data = await response.json();
 
-      if (!response.ok) {
-        alert(data.message || "Login failed");
-        return;
+      if (response.ok) {
+        typeof window !== "undefined" && window.location.replace("/admin");
       }
-
-      if (data.data.user.role === "ADMIN") router.replace("/admin");
-      else router.push("/booking");
     } catch (error) {
       console.error("Login error:", error);
     } finally {
