@@ -31,7 +31,10 @@ export default function LoginForm() {
       });
 
       if (response.ok) {
-        typeof window !== "undefined" && window.location.replace("/admin");
+        const data = await response.json();
+        // Gunakan redirectUrl dari API response
+        const redirectUrl = data.data?.redirectUrl || "/booking";
+        typeof window !== "undefined" && window.location.replace(redirectUrl);
       }
     } catch (error) {
       console.error("Login error:", error);

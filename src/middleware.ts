@@ -6,11 +6,9 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')
   const { pathname } = request.nextUrl
 
-  // Public routes
+  // Public routes - Exact match only
   const publicRoutes = ['/login', '/register', '/']
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname === route || (route !== '/' && pathname.startsWith(route))
-  )
+  const isPublicRoute = publicRoutes.includes(pathname)
 
   // Protected routes untuk user biasa
   const userRoutes = ['/booking', '/profile', '/history']
@@ -36,7 +34,7 @@ export async function middleware(request: NextRequest) {
         role: string
       }
 
-      // ADMIN mencoba akses user route → redirect ke admin dashboard
+      // ADMIN mencoba akses user route → redirect ke admin
       if (decoded.role === 'ADMIN' && isUserRoute) {
         return NextResponse.redirect(new URL('/admin', request.url))
       }
