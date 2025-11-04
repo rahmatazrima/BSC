@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
+export const runtime ='nodejs'
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')
