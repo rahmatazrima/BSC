@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import NavbarCustomer from '@/components/NavbarCustomer';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -101,29 +102,7 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3">
-            <Image
-              src="/logo.png"
-              alt="Bukhari Service Center"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <div>
-              <h1 className="font-bold text-xl text-white">Riwayat Pemesanan</h1>
-              <p className="text-sm text-gray-300">Bukhari Service Center</p>
-            </div>
-          </Link>
-          <Link
-            href="/"
-            className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
-          >
-            Kembali ke Beranda
-          </Link>
-        </div>
-      </div>
+      <NavbarCustomer />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Filter */}

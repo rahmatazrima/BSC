@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import NavbarCustomer from '@/components/NavbarCustomer';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -72,23 +73,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3">
-            <Image
-              src="/logo.png"
-              alt="Bukhari Service Center"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <span className="font-bold text-xl text-white">Bukhari Service Center</span>
-          </Link>
-          <div className="text-white">
-            <span className="text-sm text-gray-300">Langkah {currentStep} dari 5</span>
-          </div>
-        </div>
-      </div>
+      <NavbarCustomer />
 
       {/* Progress Bar */}
       <div className="max-w-4xl mx-auto px-6 py-8">
