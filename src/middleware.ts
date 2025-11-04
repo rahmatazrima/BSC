@@ -2,42 +2,58 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')
   const { pathname } = request.nextUrl
 
-  // Public routes yang tidak perlu auth
+  // Public routes
   const publicRoutes = ['/login', '/register', '/']
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || (route !== '/' && pathname.startsWith(route))
+  )
 
-  // Jika tidak ada token dan bukan public route, redirect ke login
+  // Protected routes untuk user biasa
+  const userRoutes = ['/booking', '/profile', '/history']
+  const isUserRoute = userRoutes.some(route => pathname.startsWith(route))
+
+  // Admin routes
+  const adminRoutes = ['/admin']
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
+
+  // Jika tidak ada token dan bukan public route
   if (!token && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Jika ada token, verify dan check role
+  // Jika ada token
   if (token) {
     try {
       const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+      
       const decoded = jwt.verify(token.value, jwtSecret) as {
         userId: string
         email: string
         role: string
       }
 
-      // Proteksi route admin
-      if (pathname.startsWith('/admin') && decoded.role !== 'ADMIN') {
+      // ADMIN mencoba akses user route → redirect ke admin dashboard
+      if (decoded.role === 'ADMIN' && isUserRoute) {
+        return NextResponse.redirect(new URL('/admin', request.url))
+      }
+
+      // USER mencoba akses admin route → redirect ke booking
+      if (decoded.role !== 'ADMIN' && isAdminRoute) {
         return NextResponse.redirect(new URL('/booking', request.url))
       }
 
-      // Jika sudah login dan mencoba akses halaman login/register
-      if (isPublicRoute && pathname !== '/') {
-        const redirectUrl = decoded.role === 'ADMIN' ? '/admin/dashboard' : '/booking'
+      // Sudah login, akses login/register page → redirect sesuai role
+      if (pathname === '/login' || pathname === '/register') {
+        const redirectUrl = decoded.role === 'ADMIN' ? '/admin' : '/booking'
         return NextResponse.redirect(new URL(redirectUrl, request.url))
       }
 
     } catch (error) {
-      // Token invalid, hapus cookie dan redirect ke login
+      // Token invalid
       const response = NextResponse.redirect(new URL('/login', request.url))
       response.cookies.delete('auth-token')
       return response
