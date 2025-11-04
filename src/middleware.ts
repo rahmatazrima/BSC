@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import jwt from 'jsonwebtoken'
-export const runtime ='nodejs'
+import { jwtVerify } from 'jose'
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')
@@ -12,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(pathname)
 
   // Protected routes untuk user biasa
-  const userRoutes = ['/booking', '/profile', '/history']
+  const userRoutes = ['/booking', '/profile', '/history', '/tracking']
   const isUserRoute = userRoutes.some(route => pathname.startsWith(route))
 
   // Admin routes
@@ -28,8 +27,11 @@ export async function middleware(request: NextRequest) {
   if (token) {
     try {
       const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+      const secret = new TextEncoder().encode(jwtSecret)
       
-      const decoded = jwt.verify(token.value, jwtSecret) as {
+      const { payload } = await jwtVerify(token.value, secret)
+      
+      const decoded = payload as {
         userId: string
         email: string
         role: string
