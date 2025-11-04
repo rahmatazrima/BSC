@@ -171,7 +171,7 @@ export default function RegisterForm() {
                 htmlFor="name"
                 className="text-sm font-medium text-gray-300"
               >
-                Full Name <span className="text-red-400">*</span>
+                Full Name 
               </label>
               <input
                 id="name"
@@ -183,7 +183,7 @@ export default function RegisterForm() {
                 disabled={loading}
                 className={`rounded-lg border ${
                   errors.name ? "border-red-500/50" : "border-white/10"
-                } bg-white/5 px-4 py-3 text-white placeholder-gray-500 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
+                } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.name && (
                 <p className="text-xs text-red-400">{errors.name}</p>
@@ -196,7 +196,7 @@ export default function RegisterForm() {
                 htmlFor="email"
                 className="text-sm font-medium text-gray-300"
               >
-                Email <span className="text-red-400">*</span>
+                Email 
               </label>
               <input
                 id="email"
@@ -208,7 +208,7 @@ export default function RegisterForm() {
                 disabled={loading}
                 className={`rounded-lg border ${
                   errors.email ? "border-red-500/50" : "border-white/10"
-                } bg-white/5 px-4 py-3 text-white placeholder-gray-500 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
+                } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.email && (
                 <p className="text-xs text-red-400">{errors.email}</p>
@@ -221,7 +221,7 @@ export default function RegisterForm() {
                 htmlFor="phoneNumber"
                 className="text-sm font-medium text-gray-300"
               >
-                Phone Number <span className="text-red-400">*</span>
+                Phone Number 
               </label>
               <input
                 id="phoneNumber"
@@ -233,7 +233,7 @@ export default function RegisterForm() {
                 disabled={loading}
                 className={`rounded-lg border ${
                   errors.phoneNumber ? "border-red-500/50" : "border-white/10"
-                } bg-white/5 px-4 py-3 text-white placeholder-gray-500 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
+                } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.phoneNumber && (
                 <p className="text-xs text-red-400">{errors.phoneNumber}</p>
@@ -249,7 +249,7 @@ export default function RegisterForm() {
                 htmlFor="password"
                 className="text-sm font-medium text-gray-300"
               >
-                Password <span className="text-red-400">*</span>
+                Password 
               </label>
               <input
                 id="password"
@@ -261,7 +261,7 @@ export default function RegisterForm() {
                 disabled={loading}
                 className={`rounded-lg border ${
                   errors.password ? "border-red-500/50" : "border-white/10"
-                } bg-white/5 px-4 py-3 text-white placeholder-gray-500 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
+                } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.password && (
                 <p className="text-xs text-red-400">{errors.password}</p>
@@ -275,7 +275,7 @@ export default function RegisterForm() {
                 htmlFor="confirmPassword"
                 className="text-sm font-medium text-gray-300"
               >
-                Confirm Password <span className="text-red-400">*</span>
+                Confirm Password 
               </label>
               <input
                 id="confirmPassword"
@@ -289,7 +289,7 @@ export default function RegisterForm() {
                   errors.confirmPassword
                     ? "border-red-500/50"
                     : "border-white/10"
-                } bg-white/5 px-4 py-3 text-white placeholder-gray-500 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
+                } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.confirmPassword && (
                 <p className="text-xs text-red-400">{errors.confirmPassword}</p>

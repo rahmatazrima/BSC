@@ -82,7 +82,7 @@ export default function LoginForm() {
                 name="email"
                 control={form.control}
                 render={({ field, fieldState: { error } }) => (
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <label className="text-gray-300 text-sm font-medium">
                       Email
                     </label>
@@ -109,7 +109,7 @@ export default function LoginForm() {
                 name="password"
                 control={form.control}
                 render={({ field, fieldState: { error } }) => (
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <label className="text-gray-300 text-sm font-medium">
                       Password
                     </label>
