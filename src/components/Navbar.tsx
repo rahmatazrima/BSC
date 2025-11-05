@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function Navbar() {
   return (
-    <nav className="w-full flex items-center justify-between px-6 lg:px-12 py-4 bg-black/90 backdrop-blur-md shadow-xl border-b border-gray-800">
+    <nav className="w-full flex items-center justify-between px-6 lg:px-12 py-4 bg-black/90 backdrop-blur-md shadow-xl border-b border-gray-800 sticky top-0 z-50">
       <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
         <Image
           src="/logoo.png"

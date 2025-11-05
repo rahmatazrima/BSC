@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Tentukan redirect URL berdasarkan role
     const redirectUrl = user.role === 'ADMIN' 
       ? '/admin' 
-      : '/booking';
+      : '/';
 
     return NextResponse.json({
       message: 'Login successful',
