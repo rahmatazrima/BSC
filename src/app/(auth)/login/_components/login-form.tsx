@@ -9,6 +9,7 @@ import Link from "next/link";
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const form = useForm<TLoginRequest>({
     resolver: zodResolver(schema),
@@ -21,6 +22,7 @@ export default function LoginForm() {
   const onSubmit = form.handleSubmit(async (value) => {
     try {
       setIsLoading(true);
+      setError(""); // Clear previous errors
 
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -30,15 +32,29 @@ export default function LoginForm() {
         body: JSON.stringify(value),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        // Gunakan redirectUrl dari API response
-        const redirectUrl = data.data?.redirectUrl || "/booking";
-        typeof window !== "undefined" && window.location.replace(redirectUrl);
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle different error statuses
+        if (response.status === 401) {
+          setError("Email atau kata sandi salah. Silakan coba lagi.");
+        } else if (response.status === 400) {
+          setError(data.message || "Data yang dimasukkan tidak valid.");
+        } else if (response.status === 500) {
+          setError("Terjadi kesalahan server. Silakan coba lagi nanti.");
+        } else {
+          setError(data.message || "Login gagal. Silakan coba lagi.");
+        }
+        setIsLoading(false);
+        return;
       }
+
+      // Success - redirect
+      const redirectUrl = data.data?.redirectUrl || "/";
+      typeof window !== "undefined" && window.location.replace(redirectUrl);
     } catch (error) {
       console.error("Login error:", error);
-    } finally {
+      setError("Kesalahan jaringan. Periksa koneksi internet Anda.");
       setIsLoading(false);
     }
   });
@@ -69,6 +85,37 @@ export default function LoginForm() {
           </h1>
           <p className="text-gray-400 mt-2">Masuk ke akun Anda</p>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 animate-shake">
+            <div className="flex items-start gap-3">
+              <svg
+                className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-400">{error}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setError("")}
+                className="text-red-400 hover:text-red-300 transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Glass morphism form */}
         <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl">

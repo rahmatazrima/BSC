@@ -81,15 +81,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Cek apakah email sudah terdaftar
-    const existingUser = await prisma.user.findUnique({
+    const existingEmail = await prisma.user.findUnique({
       where: { email }
     });
 
-    if (existingUser) {
+    if (existingEmail) {
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: 'Email already registered'
+          message: 'Email sudah terdaftar'
+        },
+        { status: 409 }
+      );
+    }
+
+    // Cek apakah nomor telepon sudah terdaftar
+    const existingPhone = await prisma.user.findFirst({
+      where: { phoneNumber }
+    });
+
+    if (existingPhone) {
+      return NextResponse.json(
+        {
+          error: 'Conflict',
+          message: 'Nomor telepon sudah terdaftar'
         },
         { status: 409 }
       );
@@ -145,7 +160,7 @@ export async function POST(request: NextRequest) {
     // Tentukan redirect URL berdasarkan role
     const redirectUrl = newUser.role === 'ADMIN' 
       ? '/admin' 
-      : '/booking';
+      : '/';
 
     return NextResponse.json(
       {

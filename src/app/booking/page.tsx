@@ -109,7 +109,7 @@ export default function BookingPage() {
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gray-600 text-white rounded-lg sm:rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-sm sm:text-base"
+              className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 text-sm sm:text-base"
             >
               Kembali
             </button>

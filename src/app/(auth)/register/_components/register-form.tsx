@@ -100,7 +100,22 @@ export default function RegisterForm() {
       const json = await res.json();
 
       if (!res.ok) {
-        setError(json.message || "Pendaftaran gagal");
+        // Handle different error statuses
+        if (res.status === 400) {
+          // Bad request - validation error atau email sudah terdaftar
+          if (json.message?.toLowerCase().includes('email')) {
+            setError("Email sudah terdaftar. Silakan gunakan email lain atau login.");
+          } else {
+            setError(json.message || "Data yang dimasukkan tidak valid.");
+          }
+        } else if (res.status === 409) {
+          // Conflict - duplicate entry
+          setError("Email atau nomor telepon sudah terdaftar.");
+        } else if (res.status === 500) {
+          setError("Terjadi kesalahan server. Silakan coba lagi nanti.");
+        } else {
+          setError(json.message || "Pendaftaran gagal. Silakan coba lagi.");
+        }
         setLoading(false);
         return;
       }
@@ -142,10 +157,10 @@ export default function RegisterForm() {
 
         {/* Error Alert */}
         {error && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-            <div className="flex items-center gap-2">
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 animate-shake">
+            <div className="flex items-start gap-3">
               <svg
-                className="h-5 w-5 text-red-400"
+                className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -155,7 +170,18 @@ export default function RegisterForm() {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-sm text-red-400">{error}</p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-400">{error}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setError("")}
+                className="text-red-400 hover:text-red-300 transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
           </div>
         )}
