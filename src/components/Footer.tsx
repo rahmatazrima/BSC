@@ -10,22 +10,23 @@ export default function Footer() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-3 mb-6">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
               <Image
                 src="/logoo.png"
                 alt="Bukhari Service Center"
-                width={48}
-                height={48}
+                width={40}
+                height={40}
+                className="sm:w-12 sm:h-12"
               />
-              <span className="font-bold text-xl text-white">
+              <span className="font-bold text-lg sm:text-xl text-white">
                 Bukhari Service Center
               </span>
             </Link>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6 leading-relaxed">
               Mitra terpercaya untuk perbaikan dan perawatan perangkat mobile Anda. 
               Layanan profesional dengan teknologi terkini.
             </p>
@@ -55,12 +56,12 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold text-lg text-white mb-6">
+            <h3 className="font-bold text-base sm:text-lg text-white mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Quick Links
               </span>
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
               <li>
                 <Link href="/" className="text-gray-300 hover:text-white hover:pl-2 transition-all duration-300">
                   Beranda
@@ -81,12 +82,12 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-bold text-lg text-white mb-6">
+            <h3 className="font-bold text-base sm:text-lg text-white mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Hubungi Kami
               </span>
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
               <div className="flex items-start space-x-3">
                 <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center mt-0.5">
                   <span className="text-blue-400 text-xs">📍</span>
@@ -121,12 +122,12 @@ export default function Footer() {
 
           {/* Business Hours */}
           <div>
-            <h3 className="font-bold text-lg text-white mb-6">
+            <h3 className="font-bold text-base sm:text-lg text-white mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Jam Operasional
               </span>
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
               <div className="flex justify-between items-center py-2 border-b border-white/10">
                 <span className="text-gray-300">Senin - Kamis</span>
                 <span className="text-white font-medium">08:00 - 18:00</span>
@@ -144,12 +145,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 mt-12 pt-8">
+        <div className="border-t border-white/10 mt-8 sm:mt-12 pt-6 sm:pt-8">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-xs sm:text-sm text-center lg:text-left">
               © 2025 Bukhari Service Center. All rights reserved.
             </div>
-            <div className="flex space-x-6 text-sm">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 Privacy Policy
               </a>

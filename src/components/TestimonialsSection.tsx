@@ -84,16 +84,16 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-10 right-20 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl"></div>
         <div className="absolute bottom-10 left-20 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-12 md:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
             <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               Pengalaman Pelanggan
             </span>
@@ -102,7 +102,7 @@ export default function TestimonialsSection() {
               Bersama Kami
             </span>
           </h2>
-          <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto mb-8">
+          <p className="text-gray-300 text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
             Kami bangga menjadi pilihan terpercaya bagi banyak pelanggan, dan inilah cerita mereka:
           </p>
         </div>
@@ -112,50 +112,50 @@ export default function TestimonialsSection() {
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-20 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-50 group"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 sm:-translate-x-6 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-50 group"
           >
-            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-20 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-50 group"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 sm:translate-x-6 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-50 group"
           >
-            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
           {/* Testimonial Cards */}
-          <div className="relative overflow-hidden rounded-3xl">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl px-8 sm:px-12 md:px-0">
             <div 
               className="flex transition-transform duration-500 ease-out"
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="w-full flex-shrink-0 px-4">
-                  <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 lg:p-12">
+                <div key={index} className="w-full flex-shrink-0 px-2 sm:px-4">
+                  <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-8 lg:p-12">
                     {/* Quote mark */}
-                    <div className="text-6xl text-blue-500/20 font-serif mb-6">"</div>
+                    <div className="text-4xl sm:text-5xl lg:text-6xl text-blue-500/20 font-serif mb-4 sm:mb-6">"</div>
                     
                     {/* Testimonial text */}
-                    <p className="text-gray-300 text-lg lg:text-xl leading-relaxed italic mb-8">
+                    <p className="text-gray-300 text-sm sm:text-base lg:text-lg xl:text-xl leading-relaxed italic mb-6 sm:mb-8">
                       {testimonial.text}
                     </p>
                     
                     {/* Avatar and Info */}
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center font-bold text-white text-base sm:text-lg lg:text-xl shadow-lg flex-shrink-0">
                         {testimonial.initials}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-lg">{testimonial.name}</h4>
-                        <p className="text-gray-400 text-sm">{testimonial.position}</p>
-                        <div className="flex gap-1 mt-2">
+                        <h4 className="font-semibold text-white text-base sm:text-lg">{testimonial.name}</h4>
+                        <p className="text-gray-400 text-xs sm:text-sm">{testimonial.position}</p>
+                        <div className="flex gap-1 mt-1 sm:mt-2">
                           {Array.from({ length: testimonial.rating }).map((_, idx) => (
-                            <span key={idx} className="text-yellow-400 text-lg">★</span>
+                            <span key={idx} className="text-yellow-400 text-sm sm:text-base lg:text-lg">★</span>
                           ))}
                         </div>
                       </div>
