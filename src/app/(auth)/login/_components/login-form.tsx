@@ -67,7 +67,7 @@ export default function LoginForm() {
           <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
             Bukhari Service Center
           </h1>
-          <p className="text-gray-400 mt-2">Sign in to your account</p>
+          <p className="text-gray-400 mt-2">Masuk ke akun Anda</p>
         </div>
 
         {/* Glass morphism form */}
@@ -90,7 +90,7 @@ export default function LoginForm() {
                       <input
                         {...field}
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Masukkan email Anda"
                         className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm"
                         required
                       />
@@ -111,13 +111,13 @@ export default function LoginForm() {
                 render={({ field, fieldState: { error } }) => (
                   <div className="flex flex-col gap-2">
                     <label className="text-gray-300 text-sm font-medium">
-                      Password
+                      Kata Sandi
                     </label>
                     <div className="relative">
                       <input
                         {...field}
                         type="password"
-                        placeholder="Enter your password"
+                        placeholder="Masukkan kata sandi Anda"
                         className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm"
                         required
                       />
@@ -140,14 +140,14 @@ export default function LoginForm() {
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/20 bg-white/10 rounded"
                   />
                   <span className="ml-2 text-sm text-gray-300">
-                    Remember me
+                    Ingat saya
                   </span>
                 </label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                 >
-                  Forgot Password?
+                  Lupa Kata Sandi?
                 </Link>
               </div>
 
@@ -158,7 +158,7 @@ export default function LoginForm() {
                 className="group relative w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <span className="relative z-10">
-                  {isLoading ? "Signing In..." : "Sign In"}
+                  {isLoading ? "Sedang Masuk..." : "Masuk"}
                 </span>
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -172,19 +172,19 @@ export default function LoginForm() {
             {/* Divider */}
             <div className="my-8 flex items-center">
               <div className="flex-1 h-px bg-white/20"></div>
-              <span className="px-4 text-gray-400 text-sm">or</span>
+              <span className="px-4 text-gray-400 text-sm">atau</span>
               <div className="flex-1 h-px bg-white/20"></div>
             </div>
 
             {/* Sign Up link */}
             <div className="text-center">
               <p className="text-gray-400">
-                Don't have an account?{" "}
+                Belum punya akun?{" "}
                 <Link
                   href="/register"
                   className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
                 >
-                  Sign Up
+                  Daftar
                 </Link>
               </p>
             </div>

@@ -23,39 +23,39 @@ export default function RegisterForm() {
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = "Nama harus diisi";
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = "Name must be at least 3 characters";
+      newErrors.name = "Nama minimal 3 karakter";
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Email harus diisi";
     } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = "Format email tidak valid";
     }
 
     // Phone validation
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Phone number is required";
+      newErrors.phoneNumber = "Nomor telepon harus diisi";
     } else if (!phoneRegex.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be 10-15 digits";
+      newErrors.phoneNumber = "Nomor telepon harus 10-15 digit";
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "Kata sandi harus diisi";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Kata sandi minimal 6 karakter";
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = "Konfirmasi kata sandi Anda";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Kata sandi tidak cocok";
     }
 
     setErrors(newErrors);
@@ -100,7 +100,7 @@ export default function RegisterForm() {
       const json = await res.json();
 
       if (!res.ok) {
-        setError(json.message || "Registration failed");
+        setError(json.message || "Pendaftaran gagal");
         setLoading(false);
         return;
       }
@@ -109,13 +109,13 @@ export default function RegisterForm() {
       console.log("User:", json.data?.user?.name);
       console.log("Redirecting to:", json.data?.redirectUrl);
 
-      // Redirect berdasarkan role (default: /booking untuk USER)
-      const redirectUrl = json.data?.redirectUrl || "/booking";
+      // Redirect berdasarkan role (default: / untuk USER)
+      const redirectUrl = json.data?.redirectUrl || "/";
       router.push(redirectUrl);
       router.refresh();
     } catch (err) {
       console.error("Registration error:", err);
-      setError("Network error. Please try again.");
+      setError("Kesalahan jaringan. Silakan coba lagi.");
       setLoading(false);
     }
   }
@@ -134,9 +134,9 @@ export default function RegisterForm() {
               priority
             />
           </div>
-          <h1 className="text-3xl font-bold text-white">Create Account</h1>
+          <h1 className="text-3xl font-bold text-white">Buat Akun</h1>
           <p className="text-sm text-gray-400">
-            Join us and start managing your repairs
+            Bergabunglah dengan kami dan mulai kelola perbaikan Anda
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function RegisterForm() {
                 htmlFor="name"
                 className="text-sm font-medium text-gray-300"
               >
-                Full Name 
+                Nama Lengkap
               </label>
               <input
                 id="name"
@@ -179,7 +179,7 @@ export default function RegisterForm() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter your full name"
+                placeholder="Masukkan nama lengkap Anda"
                 disabled={loading}
                 className={`rounded-lg border ${
                   errors.name ? "border-red-500/50" : "border-white/10"
@@ -221,7 +221,7 @@ export default function RegisterForm() {
                 htmlFor="phoneNumber"
                 className="text-sm font-medium text-gray-300"
               >
-                Phone Number 
+                Nomor Telepon
               </label>
               <input
                 id="phoneNumber"
@@ -239,7 +239,7 @@ export default function RegisterForm() {
                 <p className="text-xs text-red-400">{errors.phoneNumber}</p>
               )}
               <p className="text-xs text-gray-500">
-                10-15 digits, numbers only
+                10-15 digit, hanya angka
               </p>
             </div>
 
@@ -249,7 +249,7 @@ export default function RegisterForm() {
                 htmlFor="password"
                 className="text-sm font-medium text-gray-300"
               >
-                Password 
+                Kata Sandi
               </label>
               <input
                 id="password"
@@ -266,7 +266,7 @@ export default function RegisterForm() {
               {errors.password && (
                 <p className="text-xs text-red-400">{errors.password}</p>
               )}
-              <p className="text-xs text-gray-500">Minimum 6 characters</p>
+              <p className="text-xs text-gray-500">Minimal 6 karakter</p>
             </div>
 
             {/* Confirm Password */}
@@ -275,7 +275,7 @@ export default function RegisterForm() {
                 htmlFor="confirmPassword"
                 className="text-sm font-medium text-gray-300"
               >
-                Confirm Password 
+                Konfirmasi Kata Sandi
               </label>
               <input
                 id="confirmPassword"
@@ -324,10 +324,10 @@ export default function RegisterForm() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  Creating Account...
+                  Membuat Akun...
                 </>
               ) : (
-                "Create Account"
+                "Buat Akun"
               )}
             </button>
           </form>
@@ -335,33 +335,34 @@ export default function RegisterForm() {
           {/* Divider */}
           <div className="relative flex items-center py-2">
             <div className="flex-grow border-t border-white/10"></div>
-            <span className="mx-4 flex-shrink text-sm text-gray-400">or</span>
+            <span className="mx-4 flex-shrink text-sm text-gray-400">atau</span>
             <div className="flex-grow border-t border-white/10"></div>
           </div>
 
           {/* Sign in link */}
           <div className="text-center">
             <p className="text-sm text-gray-400">
-              Already have an account?{" "}
+              Sudah punya akun?{" "}
               <Link
                 href="/login"
                 className="font-semibold text-blue-400 transition-colors hover:text-blue-300 hover:underline"
               >
-                Sign In
+                Masuk
               </Link>
             </p>
           </div>
 
           {/* Terms */}
           <p className="text-center text-xs text-gray-500">
-            By creating an account, you agree to our{" "}
+            Dengan membuat akun, Anda menyetujui{" "}
             <Link href="#" className="text-blue-400 hover:underline">
-              Terms of Service
+              Syarat Layanan
             </Link>{" "}
-            and{" "}
+            dan{" "}
             <Link href="#" className="text-blue-400 hover:underline">
-              Privacy Policy
-            </Link>
+              Kebijakan Privasi
+            </Link>{" "}
+            kami
           </p>
         </div>
       </div>

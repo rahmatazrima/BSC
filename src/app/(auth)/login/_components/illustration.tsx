@@ -26,10 +26,10 @@ export default function Illustration() {
         {/* Welcome Text */}
         <div className="text-white">
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-            Welcome Back!
+            Selamat Datang Kembali!
           </h2>
           <p className="text-gray-300 text-lg">
-            Your trusted partner for mobile device repairs and maintenance.
+            Mitra terpercaya Anda untuk perbaikan dan perawatan perangkat mobile.
           </p>
         </div>
       </div>

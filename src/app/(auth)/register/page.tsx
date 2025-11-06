@@ -31,10 +31,10 @@ export default function RegisterPage() {
           {/* Welcome Text */}
           <div className="text-white">
             <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-              Join Us Today!
+              Bergabunglah Bersama Kami!
             </h2>
             <p className="text-gray-300 text-lg leading-relaxed">
-              Create your account and experience the best mobile repair service in town.
+              Buat akun Anda dan rasakan layanan perbaikan mobile terbaik di kota.
             </p>
             
             {/* Features */}
@@ -46,8 +46,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-gray-200 font-medium">Quick & Easy Booking</p>
-                  <p className="text-gray-400 text-sm">Book your repair service in just a few clicks</p>
+                  <p className="text-gray-200 font-medium">Pemesanan Cepat & Mudah</p>
+                  <p className="text-gray-400 text-sm">Pesan layanan perbaikan Anda hanya dalam beberapa klik</p>
                 </div>
               </div>
               
@@ -58,8 +58,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-gray-200 font-medium">Professional Service</p>
-                  <p className="text-gray-400 text-sm">Experienced technicians at your service</p>
+                  <p className="text-gray-200 font-medium">Layanan Profesional</p>
+                  <p className="text-gray-400 text-sm">Teknisi berpengalaman siap melayani Anda</p>
                 </div>
               </div>
               
@@ -70,8 +70,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-gray-200 font-medium">Track Your Order</p>
-                  <p className="text-gray-400 text-sm">Real-time updates on your repair status</p>
+                  <p className="text-gray-200 font-medium">Lacak Pesanan Anda</p>
+                  <p className="text-gray-400 text-sm">Pembaruan real-time tentang status perbaikan Anda</p>
                 </div>
               </div>
             </div>
@@ -117,19 +117,19 @@ export default function RegisterPage() {
               <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              <span>Quick & Easy Booking</span>
+              <span>Pemesanan Cepat & Mudah</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-400 text-sm">
               <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              <span>Professional Service</span>
+              <span>Layanan Profesional</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-400 text-sm">
               <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              <span>Track Your Order</span>
+              <span>Lacak Pesanan Anda</span>
             </div>
           </div>
         </div>
