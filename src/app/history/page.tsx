@@ -61,7 +61,7 @@ const historyOrders: HistoryOrder[] = [
   {
     id: "ORD-004",
     device: "Samsung Galaxy A54",
-    problem: "Ganti Speaker dan Mic",
+    problem: "Ganti Speaker",
     status: "pending",
     serviceType: "On-Site Service : Jl. Teuku Umar No. 123",
     scheduledDate: "2 Maret 2025 pukul 09:00",

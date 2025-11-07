@@ -31,7 +31,7 @@ const servicePricing = {
   "Ganti Baterai": { base: 50000, premium: 75000 },
   "Ganti LCD": { base: 150000, premium: 200000 },
   "Install Ulang": { base: 75000, premium: 100000 },
-  "Ganti Speaker dan Mic": { base: 125000, premium: 175000 },
+  "Ganti Speaker": { base: 125000, premium: 175000 },
   "Ganti Tombol Power dan Volume": { base: 100000, premium: 150000 },
   "Ganti Kamera": { base: 175000, premium: 250000 },
 };
@@ -112,14 +112,15 @@ export default function BookingPage() {
           {currentStep === 5 && <Step5 serviceData={serviceData} price={calculatePrice()} />}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between gap-3 sm:gap-4 mt-8 sm:mt-10 md:mt-12">
-            <button
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 text-sm sm:text-base"
-            >
-              Kembali
-            </button>
+          <div className={`flex gap-3 sm:gap-4 mt-8 sm:mt-10 md:mt-12 ${currentStep === 1 ? 'justify-end' : 'justify-between'}`}>
+            {currentStep > 1 && (
+              <button
+                onClick={prevStep}
+                className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 text-sm sm:text-base"
+              >
+                Kembali
+              </button>
+            )}
             
             {currentStep < 5 ? (
               <button
@@ -177,7 +178,7 @@ const Step2 = ({ serviceData, updateServiceData }: any) => {
     "Ganti Baterai",
     "Ganti LCD", 
     "Install Ulang",
-    "Ganti Speaker dan Mic",
+    "Ganti Speaker",
     "Ganti Tombol Power dan Volume",
     "Ganti Kamera"
   ];
@@ -238,25 +239,33 @@ const Step3 = ({ serviceData, updateServiceData }: any) => (
           value={serviceData.schedule.date}
           onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, date: e.target.value })}
           min={new Date().toISOString().split('T')[0]}
-          className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base"
+          className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base [color-scheme:dark]"
+          style={{ colorScheme: 'dark' }}
         />
       </div>
       
       <div>
         <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Pilih Waktu</label>
-        <select
-          value={serviceData.schedule.time}
-          onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, time: e.target.value })}
-          className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base"
-        >
-          <option value="" className="bg-gray-800">Pilih waktu</option>
-          <option value="09:00" className="bg-gray-800">09:00 - 10:00</option>
-          <option value="10:00" className="bg-gray-800">10:00 - 11:00</option>
-          <option value="11:00" className="bg-gray-800">11:00 - 12:00</option>
-          <option value="13:00" className="bg-gray-800">13:00 - 14:00</option>
-          <option value="14:00" className="bg-gray-800">14:00 - 15:00</option>
-          <option value="15:00" className="bg-gray-800">15:00 - 16:00</option>
-        </select>
+        <div className="relative">
+          <select
+            value={serviceData.schedule.time}
+            onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, time: e.target.value })}
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base appearance-none cursor-pointer"
+          >
+            <option value="" className="bg-gray-800">Pilih waktu</option>
+            <option value="09:00" className="bg-gray-800">09:00 - 10:00</option>
+            <option value="10:00" className="bg-gray-800">10:00 - 11:00</option>
+            <option value="11:00" className="bg-gray-800">11:00 - 12:00</option>
+            <option value="13:00" className="bg-gray-800">13:00 - 14:00</option>
+            <option value="14:00" className="bg-gray-800">14:00 - 15:00</option>
+            <option value="15:00" className="bg-gray-800">15:00 - 16:00</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-white">
+            <svg className="fill-current h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   </div>

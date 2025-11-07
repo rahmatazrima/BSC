@@ -56,7 +56,7 @@ const dummyOrders: Order[] = [
     id: "ORD-004",
     customerName: "Maya Putri",
     device: "iPhone 13",
-    problem: "Ganti Speaker dan Mic",
+    problem: "Ganti Speaker",
     status: "pending",
     serviceType: "Mekanik datang ke lokasi Anda",
     scheduledDate: "2024-01-17",
