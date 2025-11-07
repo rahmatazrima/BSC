@@ -70,7 +70,7 @@ const trackingData: { [key: string]: TrackingData } = {
   "ORD-002": {
     orderId: "ORD-002",
     device: "iPhone 14 Pro",
-    problem: "Layar Depan Retak",
+    problem: "Ganti LCD",
     status: "pending",
     currentStep: 1,
     scheduledDate: "28 Februari 2025 pukul 10:00",

@@ -29,11 +29,11 @@ interface ServiceData {
 // Pricing data
 const servicePricing = {
   "Ganti Baterai": { base: 50000, premium: 75000 },
-  "Layar Depan Retak": { base: 150000, premium: 200000 },
+  "Ganti LCD": { base: 150000, premium: 200000 },
   "Install Ulang": { base: 75000, premium: 100000 },
-  "Speaker atau Mikrofon Bermasalah": { base: 125000, premium: 175000 },
-  "Tombol Tidak Berfungsi": { base: 100000, premium: 150000 },
-  "Kamera Tidak Berfungsi dengan Baik": { base: 175000, premium: 250000 },
+  "Ganti Speaker dan Mic": { base: 125000, premium: 175000 },
+  "Ganti Tombol Power dan Volume": { base: 100000, premium: 150000 },
+  "Ganti Kamera": { base: 175000, premium: 250000 },
 };
 
 export default function BookingPage() {
@@ -168,11 +168,11 @@ const Step1 = ({ serviceData, updateServiceData }: any) => (
 const Step2 = ({ serviceData, updateServiceData }: any) => {
   const problems = [
     "Ganti Baterai",
-    "Layar Depan Retak", 
+    "Ganti LCD", 
     "Install Ulang",
-    "Speaker atau Mikrofon Bermasalah",
-    "Tombol Tidak Berfungsi",
-    "Kamera Tidak Berfungsi dengan Baik"
+    "Ganti Speaker dan Mic",
+    "Ganti Tombol Power dan Volume",
+    "Ganti Kamera"
   ];
 
   return (

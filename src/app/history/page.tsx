@@ -38,7 +38,7 @@ const historyOrders: HistoryOrder[] = [
   {
     id: "ORD-002",
     device: "iPhone 14 Pro",
-    problem: "Layar Depan Retak", 
+    problem: "Ganti LCD", 
     status: "in-progress",
     serviceType: "Datang ke Bukhari Service Center",
     scheduledDate: "28 Februari 2025 pukul 10:00",
@@ -61,7 +61,7 @@ const historyOrders: HistoryOrder[] = [
   {
     id: "ORD-004",
     device: "Samsung Galaxy A54",
-    problem: "Speaker atau Mikrofon Bermasalah",
+    problem: "Ganti Speaker dan Mic",
     status: "pending",
     serviceType: "On-Site Service : Jl. Teuku Umar No. 123",
     scheduledDate: "2 Maret 2025 pukul 09:00",
