@@ -13,7 +13,7 @@ interface DeviceInfo {
 
 interface ServiceData {
   deviceInfo: DeviceInfo;
-  problem: string;
+  problem: string[];
   schedule: {
     date: string;
     time: string;
@@ -40,7 +40,7 @@ export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [serviceData, setServiceData] = useState<ServiceData>({
     deviceInfo: { brand: '', type: '' },
-    problem: '',
+    problem: [],
     schedule: { date: '', time: '' },
     serviceType: '',
     customerInfo: { name: '', phone: '', address: '' }
@@ -62,12 +62,19 @@ export default function BookingPage() {
   };
 
   const calculatePrice = () => {
-    const pricing = servicePricing[serviceData.problem as keyof typeof servicePricing];
-    if (!pricing) return 0;
+    if (serviceData.problem.length === 0) return 0;
     
-    return serviceData.serviceType === 'Datang ke Bukhari Service Center' 
-      ? pricing.base 
-      : pricing.premium;
+    let total = 0;
+    serviceData.problem.forEach((problem) => {
+      const pricing = servicePricing[problem as keyof typeof servicePricing];
+      if (pricing) {
+        total += serviceData.serviceType === 'Datang ke Bukhari Service Center' 
+          ? pricing.base 
+          : pricing.premium;
+      }
+    });
+    
+    return total;
   };
 
   return (
@@ -175,18 +182,29 @@ const Step2 = ({ serviceData, updateServiceData }: any) => {
     "Ganti Kamera"
   ];
 
+  const toggleProblem = (problem: string) => {
+    const currentProblems = serviceData.problem || [];
+    if (currentProblems.includes(problem)) {
+      // Remove problem if already selected
+      updateServiceData('problem', currentProblems.filter((p: string) => p !== problem));
+    } else {
+      // Add problem if not selected
+      updateServiceData('problem', [...currentProblems, problem]);
+    }
+  };
+
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Deskripsikan Masalah Anda</h2>
-      <p className="text-sm sm:text-base text-gray-300 mb-6 sm:mb-8">Pilih topik yang paling sesuai dengan masalah perangkat Anda</p>
+      <p className="text-sm sm:text-base text-gray-300 mb-6 sm:mb-8">Pilih satu atau lebih masalah yang sesuai dengan perangkat Anda</p>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {problems.map((problem) => (
           <button
             key={problem}
-            onClick={() => updateServiceData('problem', problem)}
+            onClick={() => toggleProblem(problem)}
             className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 text-left text-sm sm:text-base ${
-              serviceData.problem === problem
+              serviceData.problem.includes(problem)
                 ? 'border-blue-500 bg-blue-500/20 text-white'
                 : 'border-white/20 bg-white/5 text-gray-300 hover:border-blue-500/50 hover:bg-blue-500/10'
             }`}
@@ -195,6 +213,14 @@ const Step2 = ({ serviceData, updateServiceData }: any) => {
           </button>
         ))}
       </div>
+      
+      {serviceData.problem.length > 0 && (
+        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg sm:rounded-xl">
+          <p className="text-white text-sm sm:text-base">
+            <span className="font-semibold">{serviceData.problem.length}</span> masalah dipilih
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -302,7 +328,14 @@ const Step5 = ({ serviceData, price }: { serviceData: ServiceData; price: number
             </div>
             <div>
               <span className="text-gray-400">Masalah:</span>
-              <span className="text-white ml-2">{serviceData.problem}</span>
+              <div className="text-white ml-2 mt-1 space-y-1">
+                {serviceData.problem.map((prob, idx) => (
+                  <div key={idx} className="flex items-center">
+                    <span className="text-blue-400 mr-2">•</span>
+                    <span>{prob}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
