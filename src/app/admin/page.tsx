@@ -127,12 +127,20 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-300">Bukhari Service Center</p>
             </div>
           </div>
-          <Link
-            href="/"
-            className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
-          >
-            Kembali ke Beranda
-          </Link>
+          <div className="flex space-x-3">
+            <Link
+              href="/admin/master-data"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300 font-semibold"
+            >
+              📊 Master Data
+            </Link>
+            <Link
+              href="/"
+              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
+            >
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       </div>
 

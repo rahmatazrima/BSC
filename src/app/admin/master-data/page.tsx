@@ -1,0 +1,779 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+// Types
+interface PergantianBarang {
+  id: string;
+  namaBarang: string;
+  harga: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface KendalaHandphone {
+  id: string;
+  topikMasalah: string;
+  pergantianBarangId: string;
+  pergantianBarang: PergantianBarang;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Handphone {
+  id: string;
+  brand: string;
+  tipe: string;
+  kendalaHandphoneId: string;
+  kendalaHanphone: KendalaHandphone;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Waktu {
+  id: string;
+  namaShift: string;
+  jamMulai: string;
+  jamSelesai: string;
+  isAvailable: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function MasterDataPage() {
+  const [selectedTab, setSelectedTab] = useState<'sparepart' | 'kendala' | 'handphone' | 'waktu'>('sparepart');
+  const [loading, setLoading] = useState(false);
+  
+  // States for each entity
+  const [sparepartList, setSparepartList] = useState<PergantianBarang[]>([]);
+  const [kendalaList, setKendalaList] = useState<KendalaHandphone[]>([]);
+  const [handphoneList, setHandphoneList] = useState<Handphone[]>([]);
+  const [waktuList, setWaktuList] = useState<Waktu[]>([]);
+
+  // Form states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  // Form data states
+  const [formData, setFormData] = useState<any>({});
+
+  // Fetch data on mount and tab change
+  useEffect(() => {
+    fetchData();
+  }, [selectedTab]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      switch (selectedTab) {
+        case 'sparepart':
+          const sparepartRes = await fetch('/api/pergantian-barang');
+          const sparepartData = await sparepartRes.json();
+          if (sparepartData.status) setSparepartList(sparepartData.content);
+          break;
+        case 'kendala':
+          const kendalaRes = await fetch('/api/kendala-handphone');
+          const kendalaData = await kendalaRes.json();
+          if (kendalaData.status) setKendalaList(kendalaData.content);
+          break;
+        case 'handphone':
+          const handphoneRes = await fetch('/api/handphone');
+          const handphoneData = await handphoneRes.json();
+          if (handphoneData.status) setHandphoneList(handphoneData.content);
+          break;
+        case 'waktu':
+          const waktuRes = await fetch('/api/waktu');
+          const waktuData = await waktuRes.json();
+          if (waktuData.status) setWaktuList(waktuData.content);
+          break;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      alert('Gagal mengambil data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openCreateModal = async () => {
+    setModalMode('create');
+    setSelectedItem(null);
+    setFormData({});
+    
+    // Load related data for forms that need it
+    await loadRelatedData();
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = async (item: any) => {
+    setModalMode('edit');
+    setSelectedItem(item);
+    setFormData(item);
+    
+    // Load related data for forms that need it
+    await loadRelatedData();
+    setIsModalOpen(true);
+  };
+
+  const loadRelatedData = async () => {
+    try {
+      // Load sparepart list for kendala form
+      if (selectedTab === 'kendala' && sparepartList.length === 0) {
+        const res = await fetch('/api/pergantian-barang');
+        const data = await res.json();
+        if (data.status) setSparepartList(data.content);
+      }
+      
+      // Load kendala list for handphone form
+      if (selectedTab === 'handphone' && kendalaList.length === 0) {
+        const res = await fetch('/api/kendala-handphone');
+        const data = await res.json();
+        if (data.status) setKendalaList(data.content);
+      }
+    } catch (error) {
+      console.error('Error loading related data:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+    setFormData({});
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      let url = '';
+      let method = modalMode === 'create' ? 'POST' : 'PUT';
+      let body: any = {};
+
+      switch (selectedTab) {
+        case 'sparepart':
+          url = '/api/pergantian-barang';
+          body = {
+            id: modalMode === 'edit' ? selectedItem.id : undefined,
+            namaBarang: formData.namaBarang,
+            harga: parseFloat(formData.harga)
+          };
+          break;
+        case 'kendala':
+          url = '/api/kendala-handphone';
+          body = {
+            id: modalMode === 'edit' ? selectedItem.id : undefined,
+            topikMasalah: formData.topikMasalah,
+            pergantianBarangId: formData.pergantianBarangId
+          };
+          break;
+        case 'handphone':
+          url = '/api/handphone';
+          body = {
+            id: modalMode === 'edit' ? selectedItem.id : undefined,
+            brand: formData.brand,
+            tipe: formData.tipe,
+            kendalaHandphoneId: formData.kendalaHandphoneId
+          };
+          break;
+        case 'waktu':
+          url = '/api/waktu';
+          body = {
+            id: modalMode === 'edit' ? selectedItem.id : undefined,
+            namaShift: formData.namaShift,
+            jamMulai: formData.jamMulai,
+            jamSelesai: formData.jamSelesai,
+            isAvailable: formData.isAvailable !== undefined ? formData.isAvailable : true
+          };
+          break;
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(modalMode === 'create' ? 'Data berhasil ditambahkan!' : 'Data berhasil diupdate!');
+        closeModal();
+        fetchData();
+      } else {
+        alert(result.message || 'Terjadi kesalahan');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Gagal menyimpan data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+
+    setLoading(true);
+    try {
+      let url = '';
+      switch (selectedTab) {
+        case 'sparepart':
+          url = `/api/pergantian-barang?id=${id}`;
+          break;
+        case 'kendala':
+          url = `/api/kendala-handphone?id=${id}`;
+          break;
+        case 'handphone':
+          url = `/api/handphone?id=${id}`;
+          break;
+        case 'waktu':
+          url = `/api/waktu?id=${id}`;
+          break;
+      }
+
+      const response = await fetch(url, { method: 'DELETE' });
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Data berhasil dihapus!');
+        fetchData();
+      } else {
+        alert(result.message || 'Gagal menghapus data');
+      }
+    } catch (error) {
+      console.error('Error deleting:', error);
+      alert('Gagal menghapus data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
+      {/* Header */}
+      <div className="bg-black/20 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Image
+              src="/logo.png"
+              alt="Bukhari Service Center"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <div>
+              <h1 className="font-bold text-xl text-white">Master Data Management</h1>
+              <p className="text-sm text-gray-300">Kelola Data HP, Kendala, Sparepart & Waktu</p>
+            </div>
+          </div>
+          <Link
+            href="/admin"
+            className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
+          >
+            Kembali ke Dashboard
+          </Link>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="flex space-x-1 bg-white/10 p-1 rounded-xl mb-8">
+          {[
+            { id: 'sparepart', label: '🔧 Sparepart', icon: '🔧' },
+            { id: 'kendala', label: '⚠️ Kendala HP', icon: '⚠️' },
+            { id: 'handphone', label: '📱 Handphone', icon: '📱' },
+            { id: 'waktu', label: '⏰ Waktu/Shift', icon: '⏰' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedTab(tab.id as any)}
+              className={`flex-1 py-3 px-6 rounded-lg text-center transition-all duration-300 ${
+                selectedTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Add Button */}
+        <div className="mb-6">
+          <button
+            onClick={openCreateModal}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg"
+          >
+            + Tambah Data Baru
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+          {loading ? (
+            <div className="p-12 text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
+              <p className="text-white mt-4">Loading...</p>
+            </div>
+          ) : (
+            <>
+              {/* Sparepart Tab */}
+              {selectedTab === 'sparepart' && (
+                <SparepartTable 
+                  data={sparepartList} 
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              )}
+
+              {/* Kendala Tab */}
+              {selectedTab === 'kendala' && (
+                <KendalaTable 
+                  data={kendalaList}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              )}
+
+              {/* Handphone Tab */}
+              {selectedTab === 'handphone' && (
+                <HandphoneTable 
+                  data={handphoneList}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              )}
+
+              {/* Waktu Tab */}
+              {selectedTab === 'waktu' && (
+                <WaktuTable 
+                  data={waktuList}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalMode === 'create' ? 'Tambah Data Baru' : 'Edit Data'}
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {selectedTab === 'sparepart' && (
+              <SparepartForm formData={formData} setFormData={setFormData} />
+            )}
+            {selectedTab === 'kendala' && (
+              <KendalaForm 
+                formData={formData} 
+                setFormData={setFormData}
+                sparepartList={sparepartList}
+              />
+            )}
+            {selectedTab === 'handphone' && (
+              <HandphoneForm 
+                formData={formData} 
+                setFormData={setFormData}
+                kendalaList={kendalaList}
+              />
+            )}
+            {selectedTab === 'waktu' && (
+              <WaktuForm formData={formData} setFormData={setFormData} />
+            )}
+
+            <div className="flex space-x-4 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
+              >
+                {loading ? 'Menyimpan...' : 'Simpan'}
+              </button>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all"
+              >
+                Batal
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// Modal Component
+function Modal({ isOpen, onClose, title, children }: any) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-gray-900 rounded-2xl border border-white/20 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-2xl"
+          >
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Form Components
+function SparepartForm({ formData, setFormData }: any) {
+  return (
+    <>
+      <div>
+        <label className="block text-white mb-2">Nama Sparepart</label>
+        <input
+          type="text"
+          value={formData.namaBarang || ''}
+          onChange={(e) => setFormData({ ...formData, namaBarang: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: LCD iPhone 14 Pro"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Harga (Rp)</label>
+        <input
+          type="number"
+          value={formData.harga || ''}
+          onChange={(e) => setFormData({ ...formData, harga: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="150000"
+          required
+          min="0"
+        />
+      </div>
+    </>
+  );
+}
+
+function KendalaForm({ formData, setFormData, sparepartList }: any) {
+  return (
+    <>
+      <div>
+        <label className="block text-white mb-2">Topik Masalah</label>
+        <input
+          type="text"
+          value={formData.topikMasalah || ''}
+          onChange={(e) => setFormData({ ...formData, topikMasalah: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: LCD Rusak"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Sparepart Pengganti</label>
+        <select
+          value={formData.pergantianBarangId || ''}
+          onChange={(e) => setFormData({ ...formData, pergantianBarangId: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          required
+        >
+          <option value="" className="bg-gray-800">Pilih Sparepart</option>
+          {sparepartList.map((sp: PergantianBarang) => (
+            <option key={sp.id} value={sp.id} className="bg-gray-800">
+              {sp.namaBarang} - Rp {sp.harga.toLocaleString('id-ID')}
+            </option>
+          ))}
+        </select>
+      </div>
+    </>
+  );
+}
+
+function HandphoneForm({ formData, setFormData, kendalaList }: any) {
+  return (
+    <>
+      <div>
+        <label className="block text-white mb-2">Brand HP</label>
+        <input
+          type="text"
+          value={formData.brand || ''}
+          onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: iPhone"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Tipe HP</label>
+        <input
+          type="text"
+          value={formData.tipe || ''}
+          onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: 14 Pro Max"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Kendala Handphone</label>
+        <select
+          value={formData.kendalaHandphoneId || ''}
+          onChange={(e) => setFormData({ ...formData, kendalaHandphoneId: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          required
+        >
+          <option value="" className="bg-gray-800">Pilih Kendala</option>
+          {kendalaList.map((k: KendalaHandphone) => (
+            <option key={k.id} value={k.id} className="bg-gray-800">
+              {k.topikMasalah}
+            </option>
+          ))}
+        </select>
+      </div>
+    </>
+  );
+}
+
+function WaktuForm({ formData, setFormData }: any) {
+  return (
+    <>
+      <div>
+        <label className="block text-white mb-2">Nama Shift</label>
+        <input
+          type="text"
+          value={formData.namaShift || ''}
+          onChange={(e) => setFormData({ ...formData, namaShift: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: Shift 1"
+          required
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-white mb-2">Jam Mulai</label>
+          <input
+            type="time"
+            value={formData.jamMulai || ''}
+            onChange={(e) => setFormData({ ...formData, jamMulai: e.target.value })}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-white mb-2">Jam Selesai</label>
+          <input
+            type="time"
+            value={formData.jamSelesai || ''}
+            onChange={(e) => setFormData({ ...formData, jamSelesai: e.target.value })}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label className="flex items-center space-x-3">
+          <input
+            type="checkbox"
+            checked={formData.isAvailable !== undefined ? formData.isAvailable : true}
+            onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+            className="w-5 h-5 rounded"
+          />
+          <span className="text-white">Tersedia untuk booking</span>
+        </label>
+      </div>
+    </>
+  );
+}
+
+// Table Components
+function SparepartTable({ data, onEdit, onDelete }: any) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-white/20">
+            <th className="px-6 py-4 text-left text-white font-semibold">Nama Sparepart</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item: PergantianBarang) => (
+            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <td className="px-6 py-4 text-white">{item.namaBarang}</td>
+              <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
+              <td className="px-6 py-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function KendalaTable({ data, onEdit, onDelete }: any) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-white/20">
+            <th className="px-6 py-4 text-left text-white font-semibold">Topik Masalah</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Sparepart Pengganti</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item: KendalaHandphone) => (
+            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
+              <td className="px-6 py-4 text-gray-300">{item.pergantianBarang?.namaBarang}</td>
+              <td className="px-6 py-4 text-green-400 font-semibold">
+                Rp {item.pergantianBarang?.harga.toLocaleString('id-ID')}
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function HandphoneTable({ data, onEdit, onDelete }: any) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-white/20">
+            <th className="px-6 py-4 text-left text-white font-semibold">Brand</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Tipe</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Kendala</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Sparepart</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item: Handphone) => (
+            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
+              <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
+              <td className="px-6 py-4 text-yellow-400">{item.kendalaHanphone?.topikMasalah}</td>
+              <td className="px-6 py-4 text-gray-300">{item.kendalaHanphone?.pergantianBarang?.namaBarang}</td>
+              <td className="px-6 py-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function WaktuTable({ data, onEdit, onDelete }: any) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-white/20">
+            <th className="px-6 py-4 text-left text-white font-semibold">Nama Shift</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Jam Mulai</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Jam Selesai</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item: Waktu) => (
+            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <td className="px-6 py-4 text-white font-semibold">{item.namaShift}</td>
+              <td className="px-6 py-4 text-blue-400">{item.jamMulai}</td>
+              <td className="px-6 py-4 text-blue-400">{item.jamSelesai}</td>
+              <td className="px-6 py-4">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  item.isAvailable 
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                }`}>
+                  {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
+                </span>
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
