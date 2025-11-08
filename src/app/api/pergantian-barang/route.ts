@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       const pergantianBarang = await prisma.pergantianBarang.findUnique({
         where: { id },
         include: {
-          kendalaHanphone: {
+          kendalaHandphone: {
             include: {
               handphone: {
                 select: {
@@ -107,15 +107,9 @@ export async function GET(request: NextRequest) {
     const pergantianBarangList = await prisma.pergantianBarang.findMany({
       where,
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
-            handphone: {
-              select: {
-                id: true,
-                brand: true,
-                tipe: true
-              }
-            }
+            handphone: true
           }
         }
       },
@@ -188,11 +182,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       namaBarang,
-      harga
+      harga,
+      kendalaHandphoneId
     } = body;
 
     // Validasi input required
-    if (!namaBarang || harga === undefined || harga === null) {
+    if (!namaBarang || harga === undefined || harga === null || !kendalaHandphoneId) {
       return NextResponse.json(
         {
           error: 'Validation failed',
@@ -200,6 +195,7 @@ export async function POST(request: NextRequest) {
           fields: {
             namaBarang: !namaBarang ? 'Nama barang is required' : null,
             harga: (harga === undefined || harga === null) ? 'Harga is required' : null,
+            kendalaHandphoneId: !kendalaHandphoneId ? 'Kendala handphone ID is required' : null,
           }
         },
         { status: 400 }
@@ -218,23 +214,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Cek apakah barang dengan nama yang sama sudah ada
-    const existingBarang = await prisma.pergantianBarang.findFirst({
-      where: { 
-        namaBarang: {
-          equals: namaBarang,
-          mode: 'insensitive'
-        }
-      }
+    // Cek apakah kendala handphone exists
+    const existingKendala = await prisma.kendalaHandphone.findUnique({
+      where: { id: kendalaHandphoneId }
     });
 
-    if (existingBarang) {
+    if (!existingKendala) {
       return NextResponse.json(
         {
-          error: 'Conflict',
-          message: `Barang dengan nama '${namaBarang}' sudah ada`
+          error: 'Not found',
+          message: 'Kendala handphone not found'
         },
-        { status: 409 }
+        { status: 404 }
       );
     }
 
@@ -242,7 +233,15 @@ export async function POST(request: NextRequest) {
     const newPergantianBarang = await prisma.pergantianBarang.create({
       data: {
         namaBarang,
-        harga: parsedHarga
+        harga: parsedHarga,
+        kendalaHandphoneId
+      },
+      include: {
+        kendalaHandphone: {
+          include: {
+            handphone: true
+          }
+        }
       }
     });
 
@@ -312,7 +311,8 @@ export async function PUT(request: NextRequest) {
     const { 
       id,
       namaBarang,
-      harga
+      harga,
+      kendalaHandphoneId
     } = body;
 
     if (!id) {
@@ -344,26 +344,6 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {};
     
     if (namaBarang !== undefined) {
-      // Cek nama barang conflict (exclude current record)
-      const conflictBarang = await prisma.pergantianBarang.findFirst({
-        where: { 
-          namaBarang: {
-            equals: namaBarang,
-            mode: 'insensitive'
-          },
-          id: { not: id }
-        }
-      });
-
-      if (conflictBarang) {
-        return NextResponse.json(
-          {
-            error: 'Conflict',
-            message: `Barang dengan nama '${namaBarang}' sudah ada`
-          },
-          { status: 409 }
-        );
-      }
       updateData.namaBarang = namaBarang;
     }
 
@@ -381,20 +361,33 @@ export async function PUT(request: NextRequest) {
       updateData.harga = parsedHarga;
     }
 
+    if (kendalaHandphoneId !== undefined) {
+      // Cek apakah kendala handphone exists
+      const kendalaExists = await prisma.kendalaHandphone.findUnique({
+        where: { id: kendalaHandphoneId }
+      });
+
+      if (!kendalaExists) {
+        return NextResponse.json(
+          {
+            error: 'Not found',
+            message: 'Kendala handphone not found'
+          },
+          { status: 404 }
+        );
+      }
+
+      updateData.kendalaHandphoneId = kendalaHandphoneId;
+    }
+
     // Update pergantian barang
     const updatedPergantianBarang = await prisma.pergantianBarang.update({
       where: { id },
       data: updateData,
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
-            handphone: {
-              select: {
-                id: true,
-                brand: true,
-                tipe: true
-              }
-            }
+            handphone: true
           }
         }
       }
@@ -476,7 +469,11 @@ export async function DELETE(request: NextRequest) {
     const existingPergantianBarang = await prisma.pergantianBarang.findUnique({
       where: { id },
       include: {
-        kendalaHanphone: true
+        kendalaHandphone: {
+          include: {
+            handphone: true
+          }
+        }
       }
     });
 
@@ -490,16 +487,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Cek apakah ada kendala handphone yang menggunakan pergantian barang ini
-    if (existingPergantianBarang.kendalaHanphone) {
-      return NextResponse.json(
-        {
-          error: 'Conflict',
-          message: `Cannot delete pergantian barang. It is being used by kendala handphone '${existingPergantianBarang.kendalaHanphone.topikMasalah}'`
-        },
-        { status: 409 }
-      );
-    }
+    // Note: PergantianBarang belongs to KendalaHandphone (not the other way)
+    // So it's safe to delete as long as no services are using the kendala
+    // We can safely delete the sparepart without breaking relationships
 
     // Hapus pergantian barang
     await prisma.pergantianBarang.delete({

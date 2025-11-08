@@ -36,28 +36,28 @@ model Handphone {
   tipe        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  kendalaHandphone KendalaHandphone[]
   services    Service[]
-  kendalaHandphoneId String 
-  kendalaHanphone KendalaHandphone @relation(fields: [kendalaHandphoneId] , references: [id])
 }
 
 model KendalaHandphone {
   id          String   @id @default(uuid())
   topikMasalah String
+  handphoneId String
+  handphone   Handphone @relation(fields: [handphoneId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  pergantianBarangId String @unique
-  pergantianBarang PergantianBarang @relation(fields: [pergantianBarangId] , references: [id])
-  handphone Handphone[]
+  pergantianBarang PergantianBarang[]
 }
 
 model PergantianBarang {
   id          String   @id @default(uuid())
   namaBarang  String
   harga       Float
+  kendalaHandphoneId String
+  kendalaHandphone KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  kendalaHanphone KendalaHandphone?
 }
 
 model Waktu {

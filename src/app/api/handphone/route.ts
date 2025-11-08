@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const brand = searchParams.get('brand');
     const tipe = searchParams.get('tipe');
-    const kendalaId = searchParams.get('kendalaId');
 
     // Build where condition
     const where: any = {};
@@ -67,25 +66,14 @@ export async function GET(request: NextRequest) {
         mode: 'insensitive' 
       };
     }
-    if (kendalaId) {
-      where.kendalaHandphoneId = kendalaId;
-    }
 
     // Ambil semua handphone dengan relasi
     const handphoneList = await prisma.handphone.findMany({
       where,
       include: {
-        kendalaHanphone: {
-          select: {
-            id: true,
-            topikMasalah: true,
-            pergantianBarang: {
-              select: {
-                id: true,
-                namaBarang: true,
-                harga: true
-              }
-            }
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true
           }
         },
         services: {
@@ -115,7 +103,8 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            services: true
+            services: true,
+            kendalaHandphone: true
           }
         }
       },
@@ -189,12 +178,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       brand,
-      tipe,
-      kendalaHandphoneId
+      tipe
     } = body;
 
     // Validasi input required
-    if (!brand || !tipe || !kendalaHandphoneId) {
+    if (!brand || !tipe) {
       return NextResponse.json(
         {
           error: 'Validation failed',
@@ -202,72 +190,46 @@ export async function POST(request: NextRequest) {
           fields: {
             brand: !brand ? 'Brand is required' : null,
             tipe: !tipe ? 'Tipe is required' : null,
-            kendalaHandphoneId: !kendalaHandphoneId ? 'Kendala handphone ID is required' : null,
           }
         },
         { status: 400 }
       );
     }
 
-    // Cek apakah kendala handphone exists
-    const existingKendalaHandphone = await prisma.kendalaHandphone.findUnique({
-      where: { id: kendalaHandphoneId }
-    });
+    // Cek apakah kombinasi brand + tipe sudah ada (boleh duplikat untuk testing)
+    // const existingHandphone = await prisma.handphone.findFirst({
+    //   where: { 
+    //     brand: {
+    //       equals: brand,
+    //       mode: 'insensitive'
+    //     },
+    //     tipe: {
+    //       equals: tipe,
+    //       mode: 'insensitive'
+    //     }
+    //   }
+    // });
 
-    if (!existingKendalaHandphone) {
-      return NextResponse.json(
-        {
-          error: 'Not found',
-          message: 'Kendala handphone not found'
-        },
-        { status: 404 }
-      );
-    }
-
-    // Cek apakah kombinasi brand + tipe + kendala sudah ada
-    const existingHandphone = await prisma.handphone.findFirst({
-      where: { 
-        brand: {
-          equals: brand,
-          mode: 'insensitive'
-        },
-        tipe: {
-          equals: tipe,
-          mode: 'insensitive'
-        },
-        kendalaHandphoneId
-      }
-    });
-
-    if (existingHandphone) {
-      return NextResponse.json(
-        {
-          error: 'Conflict',
-          message: `Handphone ${brand} ${tipe} with this problem already exists`
-        },
-        { status: 409 }
-      );
-    }
+    // if (existingHandphone) {
+    //   return NextResponse.json(
+    //     {
+    //       error: 'Conflict',
+    //       message: `Handphone ${brand} ${tipe} already exists`
+    //     },
+    //     { status: 409 }
+    //   );
+    // }
 
     // Buat handphone baru
     const newHandphone = await prisma.handphone.create({
       data: {
         brand,
-        tipe,
-        kendalaHandphoneId
+        tipe
       },
       include: {
-        kendalaHanphone: {
-          select: {
-            id: true,
-            topikMasalah: true,
-            pergantianBarang: {
-              select: {
-                id: true,
-                namaBarang: true,
-                harga: true
-              }
-            }
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true
           }
         }
       }
@@ -339,8 +301,7 @@ export async function PUT(request: NextRequest) {
     const { 
       id,
       brand,
-      tipe,
-      kendalaHandphoneId
+      tipe
     } = body;
 
     if (!id) {
@@ -373,74 +334,15 @@ export async function PUT(request: NextRequest) {
     
     if (brand !== undefined) updateData.brand = brand;
     if (tipe !== undefined) updateData.tipe = tipe;
-    
-    if (kendalaHandphoneId !== undefined) {
-      // Cek apakah kendala handphone exists
-      const kendalaExists = await prisma.kendalaHandphone.findUnique({
-        where: { id: kendalaHandphoneId }
-      });
-
-      if (!kendalaExists) {
-        return NextResponse.json(
-          {
-            error: 'Not found',
-            message: 'Kendala handphone not found'
-          },
-          { status: 404 }
-        );
-      }
-
-      updateData.kendalaHandphoneId = kendalaHandphoneId;
-    }
-
-    // Cek duplikasi setelah update
-    if (brand !== undefined || tipe !== undefined || kendalaHandphoneId !== undefined) {
-      const finalBrand = brand !== undefined ? brand : existingHandphone.brand;
-      const finalTipe = tipe !== undefined ? tipe : existingHandphone.tipe;
-      const finalKendalaId = kendalaHandphoneId !== undefined ? kendalaHandphoneId : existingHandphone.kendalaHandphoneId;
-
-      const conflictHandphone = await prisma.handphone.findFirst({
-        where: { 
-          brand: {
-            equals: finalBrand,
-            mode: 'insensitive'
-          },
-          tipe: {
-            equals: finalTipe,
-            mode: 'insensitive'
-          },
-          kendalaHandphoneId: finalKendalaId,
-          id: { not: id }
-        }
-      });
-
-      if (conflictHandphone) {
-        return NextResponse.json(
-          {
-            error: 'Conflict',
-            message: `Handphone ${finalBrand} ${finalTipe} with this problem already exists`
-          },
-          { status: 409 }
-        );
-      }
-    }
 
     // Update handphone
     const updatedHandphone = await prisma.handphone.update({
       where: { id },
       data: updateData,
       include: {
-        kendalaHanphone: {
-          select: {
-            id: true,
-            topikMasalah: true,
-            pergantianBarang: {
-              select: {
-                id: true,
-                namaBarang: true,
-                harga: true
-              }
-            }
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true
           }
         },
         services: {
@@ -531,9 +433,11 @@ export async function DELETE(request: NextRequest) {
       where: { id },
       include: {
         services: true,
+        kendalaHandphone: true,
         _count: {
           select: {
-            services: true
+            services: true,
+            kendalaHandphone: true
           }
         }
       }
@@ -549,12 +453,23 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Cek apakah ada kendala yang terkait dengan handphone ini
+    if (existingHandphone._count.kendalaHandphone > 0) {
+      return NextResponse.json(
+        {
+          error: 'Conflict',
+          message: `Cannot delete handphone. It has ${existingHandphone._count.kendalaHandphone} kendala(s) associated with it. Please delete the kendala first.`
+        },
+        { status: 409 }
+      );
+    }
+
     // Cek apakah ada services yang menggunakan handphone ini
     if (existingHandphone._count.services > 0) {
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} service(s)`
+          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} service(s). Please complete or cancel the services first.`
         },
         { status: 409 }
       );

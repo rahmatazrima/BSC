@@ -79,7 +79,7 @@ export async function GET(
                 id: true,
                 brand: true,
                 tipe: true,
-                kendalaHanphone: {
+                kendalaHandphone: {
                   select: {
                     id: true,
                     topikMasalah: true,
@@ -120,7 +120,7 @@ export async function GET(
       totalRevenue: waktu.services
         .filter(s => s.statusService === 'COMPLETED')
         .reduce((total, service) => {
-          const price = service.handphone.kendalaHanphone?.pergantianBarang?.harga || 0;
+          const price = service.handphone.kendalaHandphone?.pergantianBarang?.harga || 0;
           return total + price;
         }, 0),
       averageServiceValue: 0

@@ -64,7 +64,7 @@ export async function GET(
         },
         handphone: {
           include: {
-            kendalaHanphone: {
+            kendalaHandphone: {
               include: {
                 pergantianBarang: {
                   select: {
@@ -125,9 +125,9 @@ export async function GET(
 
     // Calculate service cost and details
     const serviceDetails = {
-      problemDescription: service.handphone?.kendalaHanphone?.topikMasalah || 'No problem specified',
-      replacementPart: service.handphone?.kendalaHanphone?.pergantianBarang?.namaBarang || 'No parts needed',
-      estimatedCost: service.handphone?.kendalaHanphone?.pergantianBarang?.harga || 0,
+      problemDescription: service.handphone?.kendalaHandphone?.topikMasalah || 'No problem specified',
+      replacementPart: service.handphone?.kendalaHandphone?.pergantianBarang?.namaBarang || 'No parts needed',
+      estimatedCost: service.handphone?.kendalaHandphone?.pergantianBarang?.harga || 0,
       deviceInfo: service.handphone ? 
         `${service.handphone.brand} ${service.handphone.tipe}` : 'Unknown device',
       serviceLocation: service.tempat
@@ -419,7 +419,7 @@ export async function PUT(
           },
           handphone: {
             include: {
-              kendalaHanphone: {
+              kendalaHandphone: {
                 include: {
                   pergantianBarang: true
                 }
@@ -636,7 +636,7 @@ async function getCommonProblemsForDevice(handphoneId: string) {
     include: {
       handphone: {
         include: {
-          kendalaHanphone: {
+          kendalaHandphone: {
             select: {
               topikMasalah: true
             }
@@ -647,7 +647,7 @@ async function getCommonProblemsForDevice(handphoneId: string) {
   });
 
   const problemCounts = services.reduce((acc, service) => {
-    const problem = service.handphone?.kendalaHanphone?.topikMasalah || 'Unknown';
+    const problem = service.handphone?.kendalaHandphone?.topikMasalah || 'Unknown';
     acc[problem] = (acc[problem] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);

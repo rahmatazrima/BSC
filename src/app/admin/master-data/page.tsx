@@ -4,30 +4,32 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// Types
-interface PergantianBarang {
+// Types - Updated to match new schema
+interface Handphone {
   id: string;
-  namaBarang: string;
-  harga: number;
+  brand: string;
+  tipe: string;
   createdAt: string;
   updatedAt: string;
+  kendalaHandphone?: KendalaHandphone[];
 }
 
 interface KendalaHandphone {
   id: string;
   topikMasalah: string;
-  pergantianBarangId: string;
-  pergantianBarang: PergantianBarang;
+  handphoneId: string;
+  handphone?: Handphone;
+  pergantianBarang?: PergantianBarang[];
   createdAt: string;
   updatedAt: string;
 }
 
-interface Handphone {
+interface PergantianBarang {
   id: string;
-  brand: string;
-  tipe: string;
+  namaBarang: string;
+  harga: number;
   kendalaHandphoneId: string;
-  kendalaHanphone: KendalaHandphone;
+  kendalaHandphone?: KendalaHandphone;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,21 +45,20 @@ interface Waktu {
 }
 
 export default function MasterDataPage() {
-  const [selectedTab, setSelectedTab] = useState<'sparepart' | 'kendala' | 'handphone' | 'waktu'>('sparepart');
+  // Updated tab order: handphone first!
+  const [selectedTab, setSelectedTab] = useState<'handphone' | 'kendala' | 'sparepart' | 'waktu'>('handphone');
   const [loading, setLoading] = useState(false);
   
   // States for each entity
-  const [sparepartList, setSparepartList] = useState<PergantianBarang[]>([]);
-  const [kendalaList, setKendalaList] = useState<KendalaHandphone[]>([]);
   const [handphoneList, setHandphoneList] = useState<Handphone[]>([]);
+  const [kendalaList, setKendalaList] = useState<KendalaHandphone[]>([]);
+  const [sparepartList, setSparepartList] = useState<PergantianBarang[]>([]);
   const [waktuList, setWaktuList] = useState<Waktu[]>([]);
 
   // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedItem, setSelectedItem] = useState<any>(null);
-
-  // Form data states
   const [formData, setFormData] = useState<any>({});
 
   // Fetch data on mount and tab change
@@ -69,20 +70,20 @@ export default function MasterDataPage() {
     setLoading(true);
     try {
       switch (selectedTab) {
-        case 'sparepart':
-          const sparepartRes = await fetch('/api/pergantian-barang');
-          const sparepartData = await sparepartRes.json();
-          if (sparepartData.status) setSparepartList(sparepartData.content);
+        case 'handphone':
+          const handphoneRes = await fetch('/api/handphone');
+          const handphoneData = await handphoneRes.json();
+          if (handphoneData.status) setHandphoneList(handphoneData.content);
           break;
         case 'kendala':
           const kendalaRes = await fetch('/api/kendala-handphone');
           const kendalaData = await kendalaRes.json();
           if (kendalaData.status) setKendalaList(kendalaData.content);
           break;
-        case 'handphone':
-          const handphoneRes = await fetch('/api/handphone');
-          const handphoneData = await handphoneRes.json();
-          if (handphoneData.status) setHandphoneList(handphoneData.content);
+        case 'sparepart':
+          const sparepartRes = await fetch('/api/pergantian-barang');
+          const sparepartData = await sparepartRes.json();
+          if (sparepartData.status) setSparepartList(sparepartData.content);
           break;
         case 'waktu':
           const waktuRes = await fetch('/api/waktu');
@@ -102,8 +103,6 @@ export default function MasterDataPage() {
     setModalMode('create');
     setSelectedItem(null);
     setFormData({});
-    
-    // Load related data for forms that need it
     await loadRelatedData();
     setIsModalOpen(true);
   };
@@ -112,23 +111,21 @@ export default function MasterDataPage() {
     setModalMode('edit');
     setSelectedItem(item);
     setFormData(item);
-    
-    // Load related data for forms that need it
     await loadRelatedData();
     setIsModalOpen(true);
   };
 
   const loadRelatedData = async () => {
     try {
-      // Load sparepart list for kendala form
-      if (selectedTab === 'kendala' && sparepartList.length === 0) {
-        const res = await fetch('/api/pergantian-barang');
+      // Load handphone list for kendala form
+      if (selectedTab === 'kendala' && handphoneList.length === 0) {
+        const res = await fetch('/api/handphone');
         const data = await res.json();
-        if (data.status) setSparepartList(data.content);
+        if (data.status) setHandphoneList(data.content);
       }
       
-      // Load kendala list for handphone form
-      if (selectedTab === 'handphone' && kendalaList.length === 0) {
+      // Load kendala list for sparepart form
+      if (selectedTab === 'sparepart' && kendalaList.length === 0) {
         const res = await fetch('/api/kendala-handphone');
         const data = await res.json();
         if (data.status) setKendalaList(data.content);
@@ -154,12 +151,12 @@ export default function MasterDataPage() {
       let body: any = {};
 
       switch (selectedTab) {
-        case 'sparepart':
-          url = '/api/pergantian-barang';
+        case 'handphone':
+          url = '/api/handphone';
           body = {
             id: modalMode === 'edit' ? selectedItem.id : undefined,
-            namaBarang: formData.namaBarang,
-            harga: parseFloat(formData.harga)
+            brand: formData.brand,
+            tipe: formData.tipe
           };
           break;
         case 'kendala':
@@ -167,15 +164,15 @@ export default function MasterDataPage() {
           body = {
             id: modalMode === 'edit' ? selectedItem.id : undefined,
             topikMasalah: formData.topikMasalah,
-            pergantianBarangId: formData.pergantianBarangId
+            handphoneId: formData.handphoneId
           };
           break;
-        case 'handphone':
-          url = '/api/handphone';
+        case 'sparepart':
+          url = '/api/pergantian-barang';
           body = {
             id: modalMode === 'edit' ? selectedItem.id : undefined,
-            brand: formData.brand,
-            tipe: formData.tipe,
+            namaBarang: formData.namaBarang,
+            harga: parseFloat(formData.harga),
             kendalaHandphoneId: formData.kendalaHandphoneId
           };
           break;
@@ -221,14 +218,14 @@ export default function MasterDataPage() {
     try {
       let url = '';
       switch (selectedTab) {
-        case 'sparepart':
-          url = `/api/pergantian-barang?id=${id}`;
+        case 'handphone':
+          url = `/api/handphone?id=${id}`;
           break;
         case 'kendala':
           url = `/api/kendala-handphone?id=${id}`;
           break;
-        case 'handphone':
-          url = `/api/handphone?id=${id}`;
+        case 'sparepart':
+          url = `/api/pergantian-barang?id=${id}`;
           break;
         case 'waktu':
           url = `/api/waktu?id=${id}`;
@@ -279,13 +276,13 @@ export default function MasterDataPage() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - NEW ORDER */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex space-x-1 bg-white/10 p-1 rounded-xl mb-8">
           {[
-            { id: 'sparepart', label: '🔧 Sparepart', icon: '🔧' },
-            { id: 'kendala', label: '⚠️ Kendala HP', icon: '⚠️' },
             { id: 'handphone', label: '📱 Handphone', icon: '📱' },
+            { id: 'kendala', label: '⚠️ Kendala HP', icon: '⚠️' },
+            { id: 'sparepart', label: '🔧 Sparepart', icon: '🔧' },
             { id: 'waktu', label: '⏰ Waktu/Shift', icon: '⏰' }
           ].map((tab) => (
             <button
@@ -321,10 +318,10 @@ export default function MasterDataPage() {
             </div>
           ) : (
             <>
-              {/* Sparepart Tab */}
-              {selectedTab === 'sparepart' && (
-                <SparepartTable 
-                  data={sparepartList} 
+              {/* Handphone Tab */}
+              {selectedTab === 'handphone' && (
+                <HandphoneTable 
+                  data={handphoneList} 
                   onEdit={openEditModal}
                   onDelete={handleDelete}
                 />
@@ -339,10 +336,10 @@ export default function MasterDataPage() {
                 />
               )}
 
-              {/* Handphone Tab */}
-              {selectedTab === 'handphone' && (
-                <HandphoneTable 
-                  data={handphoneList}
+              {/* Sparepart Tab */}
+              {selectedTab === 'sparepart' && (
+                <SparepartTable 
+                  data={sparepartList}
                   onEdit={openEditModal}
                   onDelete={handleDelete}
                 />
@@ -369,18 +366,18 @@ export default function MasterDataPage() {
           title={modalMode === 'create' ? 'Tambah Data Baru' : 'Edit Data'}
         >
           <form onSubmit={handleSubmit} className="space-y-4">
-            {selectedTab === 'sparepart' && (
-              <SparepartForm formData={formData} setFormData={setFormData} />
+            {selectedTab === 'handphone' && (
+              <HandphoneForm formData={formData} setFormData={setFormData} />
             )}
             {selectedTab === 'kendala' && (
               <KendalaForm 
                 formData={formData} 
                 setFormData={setFormData}
-                sparepartList={sparepartList}
+                handphoneList={handphoneList}
               />
             )}
-            {selectedTab === 'handphone' && (
-              <HandphoneForm 
+            {selectedTab === 'sparepart' && (
+              <SparepartForm 
                 formData={formData} 
                 setFormData={setFormData}
                 kendalaList={kendalaList}
@@ -435,72 +432,10 @@ function Modal({ isOpen, onClose, title, children }: any) {
   );
 }
 
-// Form Components
-function SparepartForm({ formData, setFormData }: any) {
-  return (
-    <>
-      <div>
-        <label className="block text-white mb-2">Nama Sparepart</label>
-        <input
-          type="text"
-          value={formData.namaBarang || ''}
-          onChange={(e) => setFormData({ ...formData, namaBarang: e.target.value })}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="Contoh: LCD iPhone 14 Pro"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-white mb-2">Harga (Rp)</label>
-        <input
-          type="number"
-          value={formData.harga || ''}
-          onChange={(e) => setFormData({ ...formData, harga: e.target.value })}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="150000"
-          required
-          min="0"
-        />
-      </div>
-    </>
-  );
-}
+// Form Components - UPDATED
 
-function KendalaForm({ formData, setFormData, sparepartList }: any) {
-  return (
-    <>
-      <div>
-        <label className="block text-white mb-2">Topik Masalah</label>
-        <input
-          type="text"
-          value={formData.topikMasalah || ''}
-          onChange={(e) => setFormData({ ...formData, topikMasalah: e.target.value })}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="Contoh: LCD Rusak"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-white mb-2">Sparepart Pengganti</label>
-        <select
-          value={formData.pergantianBarangId || ''}
-          onChange={(e) => setFormData({ ...formData, pergantianBarangId: e.target.value })}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          required
-        >
-          <option value="" className="bg-gray-800">Pilih Sparepart</option>
-          {sparepartList.map((sp: PergantianBarang) => (
-            <option key={sp.id} value={sp.id} className="bg-gray-800">
-              {sp.namaBarang} - Rp {sp.harga.toLocaleString('id-ID')}
-            </option>
-          ))}
-        </select>
-      </div>
-    </>
-  );
-}
-
-function HandphoneForm({ formData, setFormData, kendalaList }: any) {
+// NEW: Handphone Form (No dropdown needed!)
+function HandphoneForm({ formData, setFormData }: any) {
   return (
     <>
       <div>
@@ -510,7 +445,7 @@ function HandphoneForm({ formData, setFormData, kendalaList }: any) {
           value={formData.brand || ''}
           onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="Contoh: iPhone"
+          placeholder="Contoh: iPhone, Samsung, Xiaomi"
           required
         />
       </div>
@@ -521,12 +456,55 @@ function HandphoneForm({ formData, setFormData, kendalaList }: any) {
           value={formData.tipe || ''}
           onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="Contoh: 14 Pro Max"
+          placeholder="Contoh: 14 Pro, Galaxy S23"
           required
         />
       </div>
+    </>
+  );
+}
+
+// UPDATED: Kendala Form (Now needs handphone dropdown!)
+function KendalaForm({ formData, setFormData, handphoneList }: any) {
+  return (
+    <>
       <div>
-        <label className="block text-white mb-2">Kendala Handphone</label>
+        <label className="block text-white mb-2">Pilih Handphone</label>
+        <select
+          value={formData.handphoneId || ''}
+          onChange={(e) => setFormData({ ...formData, handphoneId: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          required
+        >
+          <option value="" className="bg-gray-800">Pilih Handphone</option>
+          {handphoneList.map((hp: Handphone) => (
+            <option key={hp.id} value={hp.id} className="bg-gray-800">
+              {hp.brand} {hp.tipe}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-white mb-2">Topik Masalah</label>
+        <input
+          type="text"
+          value={formData.topikMasalah || ''}
+          onChange={(e) => setFormData({ ...formData, topikMasalah: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: LCD Rusak, Baterai Lemah"
+          required
+        />
+      </div>
+    </>
+  );
+}
+
+// UPDATED: Sparepart Form (Now needs kendala dropdown!)
+function SparepartForm({ formData, setFormData, kendalaList }: any) {
+  return (
+    <>
+      <div>
+        <label className="block text-white mb-2">Pilih Kendala</label>
         <select
           value={formData.kendalaHandphoneId || ''}
           onChange={(e) => setFormData({ ...formData, kendalaHandphoneId: e.target.value })}
@@ -536,10 +514,33 @@ function HandphoneForm({ formData, setFormData, kendalaList }: any) {
           <option value="" className="bg-gray-800">Pilih Kendala</option>
           {kendalaList.map((k: KendalaHandphone) => (
             <option key={k.id} value={k.id} className="bg-gray-800">
-              {k.topikMasalah}
+              {k.topikMasalah} - {k.handphone?.brand} {k.handphone?.tipe}
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        <label className="block text-white mb-2">Nama Sparepart</label>
+        <input
+          type="text"
+          value={formData.namaBarang || ''}
+          onChange={(e) => setFormData({ ...formData, namaBarang: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="Contoh: LCD iPhone 14 Pro Original"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Harga (Rp)</label>
+        <input
+          type="number"
+          value={formData.harga || ''}
+          onChange={(e) => setFormData({ ...formData, harga: e.target.value })}
+          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          placeholder="2500000"
+          required
+          min="0"
+        />
       </div>
     </>
   );
@@ -596,23 +597,26 @@ function WaktuForm({ formData, setFormData }: any) {
   );
 }
 
-// Table Components
-function SparepartTable({ data, onEdit, onDelete }: any) {
+// Table Components - UPDATED
+
+function HandphoneTable({ data, onEdit, onDelete }: any) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Nama Sparepart</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Brand</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Tipe</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Kendala</th>
             <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item: PergantianBarang) => (
+          {data.map((item: Handphone) => (
             <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white">{item.namaBarang}</td>
-              <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
+              <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
+              <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
+              <td className="px-6 py-4 text-blue-400">{item.kendalaHandphone?.length || 0} kendala</td>
               <td className="px-6 py-4">
                 <div className="flex space-x-2">
                   <button
@@ -643,20 +647,20 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-white/20">
+            <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
             <th className="px-6 py-4 text-left text-white font-semibold">Topik Masalah</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Sparepart Pengganti</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Sparepart</th>
             <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {data.map((item: KendalaHandphone) => (
             <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
-              <td className="px-6 py-4 text-gray-300">{item.pergantianBarang?.namaBarang}</td>
-              <td className="px-6 py-4 text-green-400 font-semibold">
-                Rp {item.pergantianBarang?.harga.toLocaleString('id-ID')}
+              <td className="px-6 py-4 text-blue-400 font-semibold">
+                {item.handphone?.brand} {item.handphone?.tipe}
               </td>
+              <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
+              <td className="px-6 py-4 text-green-400">{item.pergantianBarang?.length || 0} opsi</td>
               <td className="px-6 py-4">
                 <div className="flex space-x-2">
                   <button
@@ -681,26 +685,28 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
   );
 }
 
-function HandphoneTable({ data, onEdit, onDelete }: any) {
+function SparepartTable({ data, onEdit, onDelete }: any) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Brand</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Tipe</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Kendala</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Sparepart</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Nama Sparepart</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Untuk Kendala</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
+            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
             <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item: Handphone) => (
+          {data.map((item: PergantianBarang) => (
             <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
-              <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
-              <td className="px-6 py-4 text-yellow-400">{item.kendalaHanphone?.topikMasalah}</td>
-              <td className="px-6 py-4 text-gray-300">{item.kendalaHanphone?.pergantianBarang?.namaBarang}</td>
+              <td className="px-6 py-4 text-white">{item.namaBarang}</td>
+              <td className="px-6 py-4 text-yellow-400">{item.kendalaHandphone?.topikMasalah}</td>
+              <td className="px-6 py-4 text-blue-400">
+                {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
+              </td>
+              <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
               <td className="px-6 py-4">
                 <div className="flex space-x-2">
                   <button
@@ -776,4 +782,3 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
     </div>
   );
 }
-

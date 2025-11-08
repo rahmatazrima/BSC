@@ -63,7 +63,7 @@ export async function GET(
     const handphone = await prisma.handphone.findUnique({
       where: { id },
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
             pergantianBarang: {
               select: {
@@ -119,9 +119,9 @@ export async function GET(
       inProgressServices: handphone.services.filter(s => s.statusService === 'IN_PROGRESS').length,
       completedServices: handphone.services.filter(s => s.statusService === 'COMPLETED').length,
       cancelledServices: handphone.services.filter(s => s.statusService === 'CANCELLED').length,
-      totalRevenue: handphone.kendalaHanphone?.pergantianBarang?.harga 
+      totalRevenue: handphone.kendalaHandphone?.pergantianBarang?.harga 
         ? handphone.services.filter(s => s.statusService === 'COMPLETED').length * 
-          handphone.kendalaHanphone.pergantianBarang.harga
+          handphone.kendalaHandphone.pergantianBarang.harga
         : 0
     };
 
@@ -257,7 +257,7 @@ export async function PUT(
       where: { id },
       data: updateData,
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
             pergantianBarang: true
           }
@@ -351,9 +351,12 @@ export async function DELETE(
     const existingHandphone = await prisma.handphone.findUnique({
       where: { id },
       include: {
+        services: true,
+        kendalaHandphone: true,
         _count: {
           select: {
-            services: true
+            services: true,
+            kendalaHandphone: true
           }
         }
       }
@@ -369,12 +372,23 @@ export async function DELETE(
       );
     }
 
-    // Cek dependency
+    // Cek apakah ada kendala yang terkait dengan handphone ini
+    if (existingHandphone._count.kendalaHandphone > 0) {
+      return NextResponse.json(
+        {
+          error: 'Conflict',
+          message: `Cannot delete handphone. It has ${existingHandphone._count.kendalaHandphone} kendala(s) associated with it. Please delete the kendala first.`
+        },
+        { status: 409 }
+      );
+    }
+
+    // Cek dependency - services
     if (existingHandphone._count.services > 0) {
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} service(s)`
+          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} service(s). Please complete or cancel the services first.`
         },
         { status: 409 }
       );

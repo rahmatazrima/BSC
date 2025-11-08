@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
           },
           handphone: {
             include: {
-              kendalaHanphone: {
+              kendalaHandphone: {
                 include: {
                   pergantianBarang: true
                 }
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         },
         handphone: {
           include: {
-            kendalaHanphone: {
+            kendalaHandphone: {
               include: {
                 pergantianBarang: true
               }
@@ -353,7 +353,7 @@ export async function POST(request: NextRequest) {
           },
           handphone: {
             include: {
-              kendalaHanphone: {
+              kendalaHandphone: {
                 include: {
                   pergantianBarang: true
                 }
@@ -593,7 +593,7 @@ export async function PUT(request: NextRequest) {
           },
           handphone: {
             include: {
-              kendalaHanphone: {
+              kendalaHandphone: {
                 include: {
                   pergantianBarang: true
                 }

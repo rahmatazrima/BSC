@@ -63,7 +63,7 @@ export async function GET(
     const pergantianBarang = await prisma.pergantianBarang.findUnique({
       where: { id },
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
             handphone: {
               select: {
@@ -224,7 +224,7 @@ export async function PUT(
       where: { id },
       data: updateData,
       include: {
-        kendalaHanphone: {
+        kendalaHandphone: {
           include: {
             handphone: {
               select: {
@@ -316,7 +316,11 @@ export async function DELETE(
     const existingPergantianBarang = await prisma.pergantianBarang.findUnique({
       where: { id },
       include: {
-        kendalaHanphone: true
+        kendalaHandphone: {
+          include: {
+            handphone: true
+          }
+        }
       }
     });
 
@@ -330,16 +334,9 @@ export async function DELETE(
       );
     }
 
-    // Cek apakah ada kendala handphone yang menggunakan pergantian barang ini
-    if (existingPergantianBarang.kendalaHanphone) {
-      return NextResponse.json(
-        {
-          error: 'Conflict',
-          message: `Cannot delete pergantian barang. It is being used by kendala handphone '${existingPergantianBarang.kendalaHanphone.topikMasalah}'`
-        },
-        { status: 409 }
-      );
-    }
+    // Note: PergantianBarang belongs to KendalaHandphone (not the other way)
+    // So it's safe to delete as long as no services are using the kendala
+    // We can safely delete the sparepart without breaking relationships
 
     // Hapus pergantian barang
     await prisma.pergantianBarang.delete({

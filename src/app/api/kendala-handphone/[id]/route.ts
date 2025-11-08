@@ -197,7 +197,7 @@ export async function PUT(
     const body = await request.json();
     const { 
       topikMasalah,
-      pergantianBarangId
+      handphoneId
     } = body;
 
     if (!id) {
@@ -229,9 +229,10 @@ export async function PUT(
     const updateData: any = {};
     
     if (topikMasalah !== undefined) {
-      // Cek topik masalah conflict (exclude current record)
+      // Cek topik masalah conflict untuk handphone yang sama (exclude current record)
       const conflictKendala = await prisma.kendalaHandphone.findFirst({
         where: { 
+          handphoneId: handphoneId || existingKendalaHandphone.handphoneId,
           topikMasalah: {
             equals: topikMasalah,
             mode: 'insensitive'
@@ -244,7 +245,7 @@ export async function PUT(
         return NextResponse.json(
           {
             error: 'Conflict',
-            message: `Kendala handphone dengan topik '${topikMasalah}' sudah ada`
+            message: `Kendala handphone dengan topik '${topikMasalah}' sudah ada untuk handphone ini`
           },
           { status: 409 }
         );
@@ -252,37 +253,23 @@ export async function PUT(
       updateData.topikMasalah = topikMasalah;
     }
 
-    if (pergantianBarangId !== undefined) {
-      // Cek apakah pergantian barang exists dan belum digunakan (exclude current record)
-      const existingPergantianBarang = await prisma.pergantianBarang.findUnique({
-        where: { id: pergantianBarangId },
-        include: {
-          kendalaHanphone: true
-        }
+    if (handphoneId !== undefined) {
+      // Cek apakah handphone exists
+      const existingHandphone = await prisma.handphone.findUnique({
+        where: { id: handphoneId }
       });
 
-      if (!existingPergantianBarang) {
+      if (!existingHandphone) {
         return NextResponse.json(
           {
             error: 'Not found',
-            message: 'Pergantian barang not found'
+            message: 'Handphone not found'
           },
           { status: 404 }
         );
       }
 
-      if (existingPergantianBarang.kendalaHanphone && 
-          existingPergantianBarang.kendalaHanphone.id !== id) {
-        return NextResponse.json(
-          {
-            error: 'Conflict',
-            message: `Pergantian barang '${existingPergantianBarang.namaBarang}' sudah digunakan oleh kendala handphone lain`
-          },
-          { status: 409 }
-        );
-      }
-
-      updateData.pergantianBarangId = pergantianBarangId;
+      updateData.handphoneId = handphoneId;
     }
 
     // Update kendala handphone
@@ -386,9 +373,10 @@ export async function DELETE(
       where: { id },
       include: {
         handphone: true,
+        pergantianBarang: true,
         _count: {
           select: {
-            handphone: true
+            pergantianBarang: true
           }
         }
       }
@@ -404,12 +392,12 @@ export async function DELETE(
       );
     }
 
-    // Cek apakah ada handphone yang menggunakan kendala ini
-    if (existingKendalaHandphone._count.handphone > 0) {
+    // Cek apakah ada sparepart yang menggunakan kendala ini
+    if (existingKendalaHandphone._count.pergantianBarang > 0) {
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: `Cannot delete kendala handphone. It is being used by ${existingKendalaHandphone._count.handphone} handphone(s)`
+          message: `Cannot delete kendala handphone. It has ${existingKendalaHandphone._count.pergantianBarang} sparepart(s) associated with it. Please delete the spareparts first.`
         },
         { status: 409 }
       );
