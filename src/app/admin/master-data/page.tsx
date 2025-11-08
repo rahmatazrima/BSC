@@ -253,32 +253,49 @@ export default function MasterDataPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
       {/* Header */}
       <div className="bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Image
-              src="/logo.png"
-              alt="Bukhari Service Center"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <div>
-              <h1 className="font-bold text-xl text-white">Master Data Management</h1>
-              <p className="text-sm text-gray-300">Kelola Data HP, Kendala, Sparepart & Waktu</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/logo.png"
+                alt="Bukhari Service Center"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <div>
+                <h1 className="font-bold text-lg sm:text-xl text-white">Master Data Management</h1>
+                <p className="text-xs sm:text-sm text-gray-300">Kelola Data HP, Kendala, Sparepart & Waktu</p>
+              </div>
             </div>
+            <Link
+              href="/admin"
+              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 text-sm sm:text-base whitespace-nowrap"
+            >
+              ← Kembali
+            </Link>
           </div>
-          <Link
-            href="/admin"
-            className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
-          >
-            Kembali ke Dashboard
-          </Link>
         </div>
       </div>
 
-      {/* Navigation Tabs - NEW ORDER */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex space-x-1 bg-white/10 p-1 rounded-xl mb-8">
+      {/* Navigation Tabs - RESPONSIVE */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        {/* Mobile: Dropdown */}
+        <div className="sm:hidden mb-6">
+          <select
+            value={selectedTab}
+            onChange={(e) => setSelectedTab(e.target.value as any)}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          >
+            <option value="handphone" className="bg-gray-800">📱 Handphone</option>
+            <option value="kendala" className="bg-gray-800">⚠️ Kendala HP</option>
+            <option value="sparepart" className="bg-gray-800">🔧 Sparepart</option>
+            <option value="waktu" className="bg-gray-800">⏰ Waktu/Shift</option>
+          </select>
+        </div>
+
+        {/* Desktop/Tablet: Tabs */}
+        <div className="hidden sm:flex space-x-1 bg-white/10 p-1 rounded-xl mb-6 sm:mb-8 overflow-x-auto">
           {[
             { id: 'handphone', label: '📱 Handphone', icon: '📱' },
             { id: 'kendala', label: '⚠️ Kendala HP', icon: '⚠️' },
@@ -288,7 +305,7 @@ export default function MasterDataPage() {
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id as any)}
-              className={`flex-1 py-3 px-6 rounded-lg text-center transition-all duration-300 ${
+              className={`flex-1 py-2 sm:py-3 px-3 sm:px-6 rounded-lg text-center transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
                 selectedTab === tab.id
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -300,10 +317,10 @@ export default function MasterDataPage() {
         </div>
 
         {/* Add Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={openCreateModal}
-            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg"
+            className="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg text-sm sm:text-base"
           >
             + Tambah Data Baru
           </button>
@@ -387,18 +404,18 @@ export default function MasterDataPage() {
               <WaktuForm formData={formData} setFormData={setFormData} />
             )}
 
-            <div className="flex space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
+                className="w-full sm:flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 text-sm sm:text-base"
               >
                 {loading ? 'Menyimpan...' : 'Simpan'}
               </button>
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all"
+                className="w-full sm:flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all text-sm sm:text-base"
               >
                 Batal
               </button>
@@ -415,13 +432,13 @@ function Modal({ isOpen, onClose, title, children }: any) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-gray-900 rounded-2xl border border-white/20 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-gray-900 rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6 w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
+            className="text-gray-400 hover:text-white text-2xl sm:text-3xl min-w-[40px] min-h-[40px] flex items-center justify-center"
           >
             ×
           </button>
@@ -597,188 +614,361 @@ function WaktuForm({ formData, setFormData }: any) {
   );
 }
 
-// Table Components - UPDATED
+// Table Components - RESPONSIVE
 
 function HandphoneTable({ data, onEdit, onDelete }: any) {
+  if (data.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-400">
+        <p>Belum ada data handphone. Klik tombol "Tambah Data Baru" untuk menambahkan.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Brand</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Tipe</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Kendala</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item: Handphone) => (
-            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
-              <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
-              <td className="px-6 py-4 text-blue-400">{item.kendalaHandphone?.length || 0} kendala</td>
-              <td className="px-6 py-4">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(item.id)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </td>
+    <>
+      {/* Mobile: Card Layout */}
+      <div className="sm:hidden p-4 space-y-4">
+        {data.map((item: Handphone) => (
+          <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="mb-3">
+              <div className="text-white font-bold text-lg">{item.brand}</div>
+              <div className="text-gray-300 text-sm">{item.tipe}</div>
+              <div className="text-blue-400 text-xs mt-1">{item.kendalaHandphone?.length || 0} kendala terdaftar</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+              >
+                🗑️ Hapus
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table Layout */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="px-6 py-4 text-left text-white font-semibold">Brand</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Tipe</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Kendala</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {data.map((item: Handphone) => (
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+                <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
+                <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
+                <td className="px-6 py-4 text-blue-400">{item.kendalaHandphone?.length || 0} kendala</td>
+                <td className="px-6 py-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(item.id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
 function KendalaTable({ data, onEdit, onDelete }: any) {
+  if (data.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-400">
+        <p>Belum ada data kendala. Tambahkan handphone terlebih dahulu, lalu buat kendala.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Topik Masalah</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Sparepart</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item: KendalaHandphone) => (
-            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-blue-400 font-semibold">
-                {item.handphone?.brand} {item.handphone?.tipe}
-              </td>
-              <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
-              <td className="px-6 py-4 text-green-400">{item.pergantianBarang?.length || 0} opsi</td>
-              <td className="px-6 py-4">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(item.id)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </td>
+    <>
+      {/* Mobile: Card Layout */}
+      <div className="sm:hidden p-4 space-y-4">
+        {data.map((item: KendalaHandphone) => (
+          <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="mb-3">
+              <div className="text-blue-400 font-semibold text-sm">
+                📱 {item.handphone?.brand} {item.handphone?.tipe}
+              </div>
+              <div className="text-white font-bold text-lg mt-1">{item.topikMasalah}</div>
+              <div className="text-green-400 text-xs mt-1">{item.pergantianBarang?.length || 0} sparepart tersedia</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+              >
+                🗑️ Hapus
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table Layout */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Topik Masalah</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Sparepart</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {data.map((item: KendalaHandphone) => (
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+                <td className="px-6 py-4 text-blue-400 font-semibold">
+                  {item.handphone?.brand} {item.handphone?.tipe}
+                </td>
+                <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
+                <td className="px-6 py-4 text-green-400">{item.pergantianBarang?.length || 0} opsi</td>
+                <td className="px-6 py-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(item.id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
 function SparepartTable({ data, onEdit, onDelete }: any) {
+  if (data.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-400">
+        <p>Belum ada data sparepart. Tambahkan kendala terlebih dahulu, lalu buat sparepart.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Nama Sparepart</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Untuk Kendala</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item: PergantianBarang) => (
-            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white">{item.namaBarang}</td>
-              <td className="px-6 py-4 text-yellow-400">{item.kendalaHandphone?.topikMasalah}</td>
-              <td className="px-6 py-4 text-blue-400">
-                {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
-              </td>
-              <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
-              <td className="px-6 py-4">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(item.id)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Hapus
-                  </button>
+    <>
+      {/* Mobile: Card Layout */}
+      <div className="sm:hidden p-4 space-y-4">
+        {data.map((item: PergantianBarang) => (
+          <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="mb-3">
+              <div className="text-white font-bold text-lg">{item.namaBarang}</div>
+              <div className="text-green-400 font-semibold text-xl mt-1">
+                Rp {item.harga.toLocaleString('id-ID')}
+              </div>
+              <div className="mt-2 space-y-1">
+                <div className="text-yellow-400 text-sm">
+                  ⚠️ {item.kendalaHandphone?.topikMasalah}
                 </div>
-              </td>
+                <div className="text-blue-400 text-xs">
+                  📱 {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+              >
+                🗑️ Hapus
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table Layout */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="px-6 py-4 text-left text-white font-semibold">Nama Sparepart</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Untuk Kendala</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {data.map((item: PergantianBarang) => (
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+                <td className="px-6 py-4 text-white">{item.namaBarang}</td>
+                <td className="px-6 py-4 text-yellow-400">{item.kendalaHandphone?.topikMasalah}</td>
+                <td className="px-6 py-4 text-blue-400">
+                  {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
+                </td>
+                <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
+                <td className="px-6 py-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(item.id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
 function WaktuTable({ data, onEdit, onDelete }: any) {
+  if (data.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-400">
+        <p>Belum ada data waktu/shift. Klik tombol "Tambah Data Baru" untuk menambahkan.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-white/20">
-            <th className="px-6 py-4 text-left text-white font-semibold">Nama Shift</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Jam Mulai</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Jam Selesai</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
-            <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item: Waktu) => (
-            <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
-              <td className="px-6 py-4 text-white font-semibold">{item.namaShift}</td>
-              <td className="px-6 py-4 text-blue-400">{item.jamMulai}</td>
-              <td className="px-6 py-4 text-blue-400">{item.jamSelesai}</td>
-              <td className="px-6 py-4">
+    <>
+      {/* Mobile: Card Layout */}
+      <div className="sm:hidden p-4 space-y-4">
+        {data.map((item: Waktu) => (
+          <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-white font-bold text-lg">{item.namaShift}</div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   item.isAvailable 
                     ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
                 }`}>
-                  {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
+                  {item.isAvailable ? '✓ Tersedia' : '✗ Tidak Tersedia'}
                 </span>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(item.id)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </td>
+              </div>
+              <div className="text-blue-400 text-sm">
+                ⏰ {item.jamMulai} - {item.jamSelesai}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+              >
+                🗑️ Hapus
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table Layout */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="px-6 py-4 text-left text-white font-semibold">Nama Shift</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Jam Mulai</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Jam Selesai</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {data.map((item: Waktu) => (
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+                <td className="px-6 py-4 text-white font-semibold">{item.namaShift}</td>
+                <td className="px-6 py-4 text-blue-400">{item.jamMulai}</td>
+                <td className="px-6 py-4 text-blue-400">{item.jamSelesai}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    item.isAvailable 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}>
+                    {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(item.id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
