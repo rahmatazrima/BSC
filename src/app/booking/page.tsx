@@ -26,12 +26,19 @@ interface PergantianBarang {
   kendalaHandphoneId: string;
 }
 
+interface ServiceSummary {
+  id: string;
+  statusService: string;
+  tanggalPesan: string;
+}
+
 interface Waktu {
   id: string;
   namaShift: string;
   jamMulai: string;
   jamSelesai: string;
   isAvailable: boolean;
+  services?: ServiceSummary[];
 }
 
 interface ServiceData {
@@ -48,6 +55,13 @@ interface ServiceData {
     address: string;
   };
 }
+
+const DIAGNOSTIC_PROBLEMS = new Set([
+  "Install Ulang",
+  "Handphone Tidak Bisa Menyala"
+]);
+
+const SERVICE_FEE = 50000;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -131,20 +145,26 @@ export default function BookingPage() {
   const calculatePrice = () => {
     if (serviceData.kendalaIds.length === 0) return 0;
     
-    let total = 0;
-    serviceData.kendalaIds.forEach((kendalaId) => {
-      const kendala = kendalas.find(k => k.id === kendalaId);
-      if (kendala && kendala.pergantianBarang && kendala.pergantianBarang.length > 0) {
+    const selectedKendalas = serviceData.kendalaIds
+      .map((kendalaId) => kendalas.find((k) => k.id === kendalaId))
+      .filter((kendala): kendala is KendalaHandphone => Boolean(kendala));
+    
+    if (selectedKendalas.length === 0) return 0;
+
+    const diagnosticOnly = selectedKendalas.every((kendala) =>
+      DIAGNOSTIC_PROBLEMS.has(kendala.topikMasalah)
+    );
+
+    if (diagnosticOnly) return 0;
+    
+    let total = SERVICE_FEE; // Biaya layanan tetap
+    
+    selectedKendalas.forEach((kendala) => {
+      if (kendala.pergantianBarang && kendala.pergantianBarang.length > 0) {
         // Ambil harga dari pergantian barang pertama
         // Dalam implementasi real, bisa disesuaikan logic untuk memilih sparepart
         const harga = kendala.pergantianBarang[0].harga;
-        
-        // Jika service type "Mekanik datang ke lokasi", tambahkan biaya premium
-        if (serviceData.serviceType === 'Mekanik datang ke lokasi Anda') {
-          total += harga + 50000; // Tambah 50rb untuk jasa datang ke lokasi
-        } else {
-          total += harga;
-        }
+        total += harga;
       }
     });
     
@@ -174,8 +194,8 @@ export default function BookingPage() {
       
       if (response.ok) {
         alert('Pemesanan berhasil dibuat!');
-        // Redirect to history page
-        window.location.href = '/history';
+        // Redirect to tracking page
+        window.location.href = '/tracking';
       } else {
         setError(data.message || 'Gagal membuat pemesanan');
         alert(data.message || 'Gagal membuat pemesanan');
@@ -353,10 +373,12 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
   const staticProblems = [
     "Ganti Baterai",
     "Ganti LCD",
-    "Install Ulang",
+    "Ganti Mic",
     "Ganti Speaker",
     "Ganti Tombol Power dan Volume",
-    "Ganti Kamera"
+    "Ganti Kamera",
+    "Install Ulang",
+    "Handphone Tidak Bisa Menyala"
   ];
   
   const toggleKendala = (kendalaId: string) => {
@@ -397,6 +419,7 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
               const kendala = getKendalaForProblem(problemName);
               const available = kendala !== null && kendala !== undefined;
               const isSelected = kendala && serviceData.kendalaIds.includes(kendala.id);
+              const showNote = DIAGNOSTIC_PROBLEMS.has(problemName);
               
               return (
                 <button
@@ -412,6 +435,16 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
                   }`}
                 >
                   <div className="font-medium">{problemName}</div>
+                  {available && !showNote && kendala && kendala.pergantianBarang && kendala.pergantianBarang.length > 0 && (
+                    <div className="text-xs mt-1 text-gray-400">
+                      {kendala.pergantianBarang[0].namaBarang} - Rp {kendala.pergantianBarang[0].harga.toLocaleString('id-ID')}
+                    </div>
+                  )}
+                  {showNote && (
+                    <div className="text-xs mt-1 text-gray-500 italic">
+                      Harga muncul setelah didiagnosa oleh mekanik
+                    </div>
+                  )}
                 </button>
               );
             })}
@@ -431,52 +464,86 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
 };
 
 // Step 3: Schedule
-const Step3 = ({ serviceData, updateServiceData, waktuList }: any) => (
-  <div>
-    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Jadwalkan Layanan untuk Anda</h2>
-    
-    <div className="space-y-5 sm:space-y-6">
-      <div>
-        <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Pilih Tanggal</label>
-        <input
-          type="date"
-          value={serviceData.schedule.date}
-          onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, date: e.target.value })}
-          min={new Date().toISOString().split('T')[0]}
-          className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base [color-scheme:dark]"
-          style={{ colorScheme: 'dark' }}
-        />
-      </div>
+const Step3 = ({ serviceData, updateServiceData, waktuList }: any) => {
+  const selectedDate = serviceData.schedule.date;
+
+  const isShiftBooked = React.useCallback((waktu: Waktu) => {
+    if (!selectedDate) return false;
+    if (!waktu.services || waktu.services.length === 0) return false;
+
+    return waktu.services.some((service) => {
+      if (!service || !service.tanggalPesan) return false;
+      const serviceDate = service.tanggalPesan.split('T')[0];
+      return (
+        service.statusService !== 'CANCELLED' &&
+        serviceDate === selectedDate
+      );
+    });
+  }, [selectedDate]);
+
+  React.useEffect(() => {
+    if (!serviceData.schedule.waktuId) return;
+    const selectedWaktu = waktuList.find((w: Waktu) => w.id === serviceData.schedule.waktuId);
+    if (selectedWaktu && isShiftBooked(selectedWaktu)) {
+      updateServiceData('schedule', { ...serviceData.schedule, waktuId: '' });
+    }
+  }, [serviceData.schedule.date, serviceData.schedule.waktuId, waktuList, isShiftBooked, updateServiceData]);
+
+  return (
+    <div>
+      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Jadwalkan Layanan untuk Anda</h2>
       
-      <div>
-        <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Pilih Shift Waktu</label>
-        <div className="relative">
-          <select
-            value={serviceData.schedule.waktuId}
-            onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, waktuId: e.target.value })}
-            className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base appearance-none cursor-pointer"
-          >
-            <option value="" className="bg-gray-800">Pilih shift waktu</option>
-            {waktuList.map((waktu: Waktu) => (
-              <option 
-                key={waktu.id} 
-                value={waktu.id} 
-                className="bg-gray-800"
-              >
-                {waktu.namaShift} ({waktu.jamMulai} - {waktu.jamSelesai})
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-white">
-            <svg className="fill-current h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-            </svg>
+      <div className="space-y-5 sm:space-y-6">
+        <div>
+          <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Pilih Tanggal</label>
+          <input
+            type="date"
+            value={serviceData.schedule.date}
+            onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, date: e.target.value, waktuId: '' })}
+            min={new Date().toISOString().split('T')[0]}
+            className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base [color-scheme:dark]"
+            style={{ colorScheme: 'dark' }}
+          />
+        </div>
+        
+        <div>
+          <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Pilih Shift Waktu</label>
+          <div className="relative">
+            <select
+              value={serviceData.schedule.waktuId}
+              onChange={(e) => updateServiceData('schedule', { ...serviceData.schedule, waktuId: e.target.value })}
+              disabled={!selectedDate}
+              className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="" className="bg-gray-800">Pilih shift waktu</option>
+              {waktuList.map((waktu: Waktu) => {
+                const booked = isShiftBooked(waktu);
+                return (
+                  <option 
+                    key={waktu.id} 
+                    value={waktu.id}
+                    disabled={booked}
+                    className="bg-gray-800"
+                  >
+                    {waktu.namaShift} ({waktu.jamMulai} - {waktu.jamSelesai}){booked ? ' - Sudah dibooking' : ''}
+                  </option>
+                );
+              })}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-white">
+              <svg className="fill-current h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
           </div>
+          {!selectedDate && (
+            <p className="text-xs text-gray-400 mt-2">Pilih tanggal terlebih dahulu untuk melihat ketersediaan shift</p>
+          )}
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Step 4: Service Type
 const Step4 = ({ serviceData, updateServiceData }: any) => {
@@ -533,6 +600,10 @@ const Step5 = ({ serviceData, price, handphones, kendalas, waktuList }: any) => 
   const selectedHandphone = handphones.find((h: Handphone) => h.id === serviceData.handphoneId);
   const selectedKendalas = kendalas.filter((k: KendalaHandphone) => serviceData.kendalaIds.includes(k.id));
   const selectedWaktu = waktuList.find((w: Waktu) => w.id === serviceData.schedule.waktuId);
+  const diagnosticOnly = selectedKendalas.length > 0 && selectedKendalas.every((kendala: KendalaHandphone) =>
+    DIAGNOSTIC_PROBLEMS.has(kendala.topikMasalah)
+  );
+  const totalPrice = diagnosticOnly ? 0 : price;
   
   return (
     <div>
@@ -558,11 +629,15 @@ const Step5 = ({ serviceData, price, handphones, kendalas, waktuList }: any) => 
                         <span className="text-blue-400 mr-2">•</span>
                         <div>
                           <span>{kendala.topikMasalah}</span>
-                          {kendala.pergantianBarang && kendala.pergantianBarang.length > 0 && (
+                          {DIAGNOSTIC_PROBLEMS.has(kendala.topikMasalah) ? (
+                            <div className="text-xs text-gray-400 mt-0.5 italic">
+                              Harga akan muncul setelah didiagnosa oleh mekanik
+                            </div>
+                          ) : kendala.pergantianBarang && kendala.pergantianBarang.length > 0 ? (
                             <div className="text-xs text-gray-400 mt-0.5">
                               {kendala.pergantianBarang[0].namaBarang} - Rp {kendala.pergantianBarang[0].harga.toLocaleString('id-ID')}
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     ))
@@ -614,12 +689,14 @@ const Step5 = ({ serviceData, price, handphones, kendalas, waktuList }: any) => 
           <div>
             <h3 className="text-xl sm:text-2xl font-bold text-white">Total Biaya</h3>
             <p className="text-sm sm:text-base text-gray-300">Estimasi biaya perbaikan</p>
-            {serviceData.serviceType === 'Mekanik datang ke lokasi Anda' && (
-              <p className="text-xs text-yellow-300 mt-1">*Termasuk biaya jasa datang ke lokasi (+Rp 50.000)</p>
-            )}
+            <p className="text-xs text-yellow-300 mt-1">
+              {diagnosticOnly
+                ? '*Harga akan muncul setelah didiagnosa oleh mekanik'
+                : '*Termasuk biaya layanan jasa service'}
+            </p>
           </div>
           <div className="text-left sm:text-right w-full sm:w-auto">
-            <div className="text-2xl sm:text-3xl font-bold text-white">Rp {price.toLocaleString('id-ID')}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-white">Rp {totalPrice.toLocaleString('id-ID')}</div>
             <p className="text-xs sm:text-sm text-gray-300 mt-1">*Harga dapat berubah setelah diagnosa</p>
           </div>
         </div>
