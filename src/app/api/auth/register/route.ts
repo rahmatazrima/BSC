@@ -13,11 +13,18 @@ export async function POST(request: NextRequest) {
       email, 
       password,
       phoneNumber,
-      role = 'USER' // Default role adalah USER
     } = body;
 
+    // Force default role untuk user registration
+    const role = 'USER';
+
+    // Sanitize nomor telepon agar hanya angka
+    const sanitizedPhoneNumber = typeof phoneNumber === 'string'
+      ? phoneNumber.replace(/\D/g, '')
+      : '';
+
     // Validasi input required
-    if (!name || !email || !password || !phoneNumber) {
+    if (!name || !email || !password || !sanitizedPhoneNumber) {
       return NextResponse.json(
         {
           error: 'Validation failed',
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
             name: !name ? 'Name is required' : null,
             email: !email ? 'Email is required' : null,
             password: !password ? 'Password is required' : null,
-            phoneNumber: !phoneNumber ? 'Phone number is required' : null,
+            phoneNumber: !sanitizedPhoneNumber ? 'Phone number is required' : null,
           }
         },
         { status: 400 }
@@ -58,23 +65,11 @@ export async function POST(request: NextRequest) {
 
     // Validasi phone number (hanya angka dan minimal 10 digit)
     const phoneRegex = /^[0-9]{10,15}$/;
-    if (!phoneRegex.test(phoneNumber)) {
+    if (!phoneRegex.test(sanitizedPhoneNumber)) {
       return NextResponse.json(
         {
           error: 'Validation failed',
           message: 'Phone number must be 10-15 digits'
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validasi role (hanya ADMIN atau USER)
-    const validRoles = ['USER', 'ADMIN'];
-    if (!validRoles.includes(role)) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          message: 'Invalid role. Must be USER or ADMIN'
         },
         { status: 400 }
       );
@@ -97,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Cek apakah nomor telepon sudah terdaftar
     const existingPhone = await prisma.user.findFirst({
-      where: { phoneNumber }
+      where: { phoneNumber: sanitizedPhoneNumber }
     });
 
     if (existingPhone) {
@@ -120,7 +115,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        phoneNumber,
+        phoneNumber: sanitizedPhoneNumber,
         role
       },
       select: {

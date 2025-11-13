@@ -37,10 +37,11 @@ export default function RegisterForm() {
     }
 
     // Phone validation
+    const sanitizedPhone = formData.phoneNumber.replace(/\D/g, "");
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!formData.phoneNumber) {
       newErrors.phoneNumber = "Nomor telepon harus diisi";
-    } else if (!phoneRegex.test(formData.phoneNumber)) {
+    } else if (!phoneRegex.test(sanitizedPhone)) {
       newErrors.phoneNumber = "Nomor telepon harus 10-15 digit";
     }
 
@@ -93,7 +94,7 @@ export default function RegisterForm() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          phoneNumber: formData.phoneNumber,
+          phoneNumber: formData.phoneNumber.replace(/\D/g, ""),
         }),
       });
 
@@ -188,7 +189,7 @@ export default function RegisterForm() {
         {/* Glass morphism form */}
         <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl">
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl pointer-events-none"></div>
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Full Name */}
