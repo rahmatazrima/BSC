@@ -1,300 +1,371 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import NavbarCustomer from '@/components/NavbarCustomer';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useMemo, useState } from "react";
+import NavbarCustomer from "@/components/NavbarCustomer";
+import Image from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-// Types
-interface TrackingData {
-  orderId: string;
-  device: string;
-  problem: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  currentStep: number;
-  steps: {
-    id: number;
-    title: string;
-    description: string;
-    completed: boolean;
-    timestamp?: string;
-  }[];
-  scheduledDate: string;
-  serviceType: string;
-  estimatedCompletion: string;
-  technician?: {
-    name: string;
-    phone: string;
-  };
+type StatusService = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+
+interface TrackingStep {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+  timestamp?: string;
 }
 
-// Dummy tracking data
-const trackingData: { [key: string]: TrackingData } = {
-  "ORD-001": {
-    orderId: "ORD-001",
-    device: "Samsung Galaxy S25 Ultra",
-    problem: "Ganti Baterai", 
-    status: "in-progress",
-    currentStep: 2,
-    scheduledDate: "24 Februari 2025 pukul 00:43",
-    serviceType: "On-Site Service : Warkop Plut Kupie, Lampineung",
-    estimatedCompletion: "24 Februari 2025 - 16:00",
-    technician: {
-      name: "Ahmad Teknisi",
-      phone: "+62 822 1234 5678"
-    },
-    steps: [
-      {
-        id: 1,
-        title: "Belum dikerjakan",
-        description: "Pesanan Anda sedang dalam antrian",
-        completed: true,
-        timestamp: "24 Feb 2025 - 00:45"
-      },
-      {
-        id: 2, 
-        title: "Sedang dikerjakan",
-        description: "Teknisi sedang mengerjakan perbaikan perangkat Anda",
-        completed: true,
-        timestamp: "24 Feb 2025 - 09:30"
-      },
-      {
-        id: 3,
-        title: "Selesai",
-        description: "Perbaikan selesai dan perangkat siap digunakan",
-        completed: false
-      }
-    ]
-  },
-  "ORD-002": {
-    orderId: "ORD-002",
-    device: "iPhone 14 Pro",
-    problem: "Ganti LCD",
-    status: "pending",
-    currentStep: 1,
-    scheduledDate: "28 Februari 2025 pukul 10:00",
-    serviceType: "Datang ke Bukhari Service Center",
-    estimatedCompletion: "28 Februari 2025 - 15:00",
-    steps: [
-      {
-        id: 1,
-        title: "Belum dikerjakan",
-        description: "Pesanan Anda sedang dalam antrian",
-        completed: true,
-        timestamp: "27 Feb 2025 - 14:20"
-      },
-      {
-        id: 2,
-        title: "Sedang dikerjakan", 
-        description: "Teknisi sedang mengerjakan perbaikan perangkat Anda",
-        completed: false
-      },
-      {
-        id: 3,
-        title: "Selesai",
-        description: "Perbaikan selesai dan perangkat siap digunakan",
-        completed: false
-      }
-    ]
+interface TrackingEntry {
+  serviceId: string;
+  status: StatusService;
+  tempat: string;
+  tanggalPesan: string;
+  createdAt: string;
+  updatedAt: string;
+  handphone: {
+    brand: string;
+    tipe: string;
+  };
+  issue: {
+    topikMasalah: string;
+  } | null;
+  waktu: {
+    namaShift: string;
+    jamMulai: string;
+    jamSelesai: string;
+  } | null;
+  steps: TrackingStep[];
+}
+
+const statusBadge = (status: StatusService) => {
+  switch (status) {
+    case "PENDING":
+      return {
+        className:
+          "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
+        label: "Sedang dalam antrian",
+      };
+    case "IN_PROGRESS":
+      return {
+        className: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+        label: "Sedang dalam perbaikan",
+      };
+    case "COMPLETED":
+      return {
+        className: "bg-green-500/20 text-green-400 border border-green-500/30",
+        label: "Selesai",
+      };
+    case "CANCELLED":
+      return {
+        className: "bg-red-500/20 text-red-400 border border-red-500/30",
+        label: "Dibatalkan",
+      };
+    default:
+      return {
+        className: "bg-gray-500/20 text-gray-400 border border-gray-500/30",
+        label: status,
+      };
   }
+};
+
+const formatDateTime = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const formatDateShort = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatOrderLabel = (entry: TrackingEntry) => {
+  const deviceName = `${entry.handphone.brand} ${entry.handphone.tipe}`;
+  const statusInfo = statusBadge(entry.status);
+  return `${deviceName} - ${statusInfo.label}`;
 };
 
 export default function TrackingPage() {
   const searchParams = useSearchParams();
-  const orderId = searchParams?.get('order') || 'ORD-001';
-  const [data, setData] = useState<TrackingData | null>(null);
-  const [selectedOrderId, setSelectedOrderId] = useState(orderId);
+  const requestedOrder = searchParams?.get("order");
+
+  const [entries, setEntries] = useState<TrackingEntry[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const orderData = trackingData[selectedOrderId];
-    if (orderData) {
-      setData(orderData);
-    }
-  }, [selectedOrderId]);
+    const fetchTracking = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">📱</span>
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Pesanan Tidak Ditemukan</h2>
-          <p className="text-gray-400 mb-6">ID pesanan tidak valid atau tidak ditemukan</p>
-          <Link href="/history" className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors">
-            Kembali ke Riwayat
-          </Link>
-        </div>
-      </div>
-    );
-  }
+        const response = await fetch("/api/service/getMyTracking", {
+          credentials: "include",
+        });
+
+        const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json.message || "Gagal memuat data tracking");
+        }
+
+        const items: TrackingEntry[] = json.content ?? [];
+        setEntries(items);
+
+        if (items.length === 0) {
+          setSelectedId(null);
+          return;
+        }
+
+        if (requestedOrder && items.some((item) => item.serviceId === requestedOrder)) {
+          setSelectedId(requestedOrder);
+        } else {
+          setSelectedId(items[0].serviceId);
+        }
+      } catch (err: unknown) {
+        console.error("Fetch tracking error:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Terjadi kesalahan saat memuat tracking"
+        );
+        setEntries([]);
+        setSelectedId(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTracking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectedEntry = useMemo(
+    () => entries.find((entry) => entry.serviceId === selectedId) ?? null,
+    [entries, selectedId]
+  );
+
+  const currentStepIndex = useMemo(() => {
+    if (!selectedEntry) return 0;
+    const index = selectedEntry.steps.findIndex((step) => !step.completed);
+    return index === -1 ? selectedEntry.steps.length - 1 : index;
+  }, [selectedEntry]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
-      {/* Header */}
       <NavbarCustomer />
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Order Selector */}
-        <div className="mb-8">
-          <label className="block text-gray-300 text-sm font-medium mb-3">Pilih Pesanan untuk Dilacak:</label>
-          <select
-            value={selectedOrderId}
-            onChange={(e) => setSelectedOrderId(e.target.value)}
-            className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm"
-          >
-            {Object.keys(trackingData).map((id) => (
-              <option key={id} value={id} className="bg-gray-800">
-                {id} - {trackingData[id].device}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Device Card */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 mb-8">
-          <div className="flex items-center space-x-6">
-            {/* Device Image */}
-            <div className="w-24 h-24 bg-white/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Image
-                src="/galaksi.png"
-                alt="Device"
-                width={80}
-                height={80}
-                className="opacity-70"
-              />
-            </div>
-            
-            {/* Device Info */}
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">{data.device}</h2>
-              <div className="flex items-center space-x-3 mb-4">
-                <span className="text-blue-400 text-lg">🔧</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                  data.status === 'in-progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                  'bg-green-500/20 text-green-400 border border-green-500/30'
-                }`}>
-                  {data.status === 'pending' ? 'Sedang dalam antrian' :
-                   data.status === 'in-progress' ? 'Sedang dalam perbaikan' : 'Selesai'}
-                </span>
-              </div>
-            </div>
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        {loading && (
+          <div className="mb-6 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-gray-200">
+            Memuat data tracking...
           </div>
+        )}
 
-          {/* Order Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/10">
-            <div>
-              <h4 className="text-gray-400 text-sm mb-1">Uraian Masalah</h4>
-              <p className="text-white font-medium">{data.problem}</p>
-            </div>
-            <div>
-              <h4 className="text-gray-400 text-sm mb-1">Waktu yang Dijadwalkan</h4>
-              <p className="text-white">{data.scheduledDate}</p>
-            </div>
-            <div>
-              <h4 className="text-gray-400 text-sm mb-1">Layanan Service</h4>
-              <p className="text-white">{data.serviceType}</p>
-            </div>
-            <div>
-              <h4 className="text-gray-400 text-sm mb-1">Estimasi Selesai</h4>
-              <p className="text-white">{data.estimatedCompletion}</p>
-            </div>
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200">
+            {error}
           </div>
+        )}
 
-          {/* Technician Info */}
-          {data.technician && (
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h4 className="text-gray-400 text-sm mb-3">Teknisi yang Menangani</h4>
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-blue-400 text-lg">👨‍🔧</span>
+        {entries.length > 0 && selectedEntry ? (
+          <>
+            <div className="mb-8">
+              <label className="mb-3 block text-sm font-medium text-gray-300">
+                Pilih Pesanan untuk Dilacak
+              </label>
+              <select
+                value={selectedEntry.serviceId}
+                onChange={(event) => setSelectedId(event.target.value)}
+                className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none transition-all backdrop-blur-sm focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+              >
+                {entries.map((entry) => (
+                  <option key={entry.serviceId} value={entry.serviceId} className="bg-gray-800 text-white">
+                    {formatOrderLabel(entry)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-8 backdrop-blur-md">
+              <div className="flex items-center space-x-6">
+                <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10">
+                  <Image
+                    src="/galaksi.png"
+                    alt="Device"
+                    width={80}
+                    height={80}
+                    className="opacity-70"
+                  />
                 </div>
+
+                <div className="flex-1">
+                  <h2 className="mb-2 text-2xl font-bold text-white">
+                    {selectedEntry.handphone.brand} {selectedEntry.handphone.tipe}
+                  </h2>
+                  <div className="mb-4 flex items-center space-x-3">
+                    <span className="text-lg text-blue-400">🔧</span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm font-medium ${statusBadge(selectedEntry.status).className}`}
+                    >
+                      {statusBadge(selectedEntry.status).label}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-6 border-t border-white/10 pt-6 md:grid-cols-2">
                 <div>
-                  <p className="text-white font-medium">{data.technician.name}</p>
-                  <p className="text-gray-300 text-sm">{data.technician.phone}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Progress Steps */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8">
-          <h3 className="text-xl font-bold text-white mb-8">Status Pengerjaan</h3>
-          
-          <div className="space-y-8">
-            {data.steps.map((step, index) => (
-              <div key={step.id} className="flex items-start space-x-6">
-                {/* Step Circle */}
-                <div className="flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                    step.completed 
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30'
-                      : index === data.currentStep
-                      ? 'bg-blue-500/20 border-blue-500 text-blue-400 animate-pulse'
-                      : 'bg-gray-700 border-gray-600 text-gray-400'
-                  }`}>
-                    {step.completed ? (
-                      <span className="text-lg">✓</span>
-                    ) : index === data.currentStep ? (
-                      <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-                    ) : (
-                      <span className="text-sm font-bold">{step.id}</span>
-                    )}
-                  </div>
-                  
-                  {/* Connection Line */}
-                  {index < data.steps.length - 1 && (
-                    <div className={`w-0.5 h-16 mt-4 transition-colors duration-300 ${
-                      step.completed ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}></div>
-                  )}
-                </div>
-
-                {/* Step Content */}
-                <div className="flex-1 pb-8">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className={`text-lg font-semibold ${
-                      step.completed ? 'text-white' : 
-                      index === data.currentStep ? 'text-blue-400' : 'text-gray-400'
-                    }`}>
-                      {step.title}
-                    </h4>
-                    {step.timestamp && (
-                      <span className="text-sm text-gray-400">{step.timestamp}</span>
-                    )}
-                  </div>
-                  <p className={`text-sm ${
-                    step.completed ? 'text-gray-300' : 
-                    index === data.currentStep ? 'text-gray-300' : 'text-gray-500'
-                  }`}>
-                    {step.description}
+                  <h4 className="mb-1 text-sm text-gray-400">Uraian Masalah</h4>
+                  <p className="font-medium text-white">
+                    {selectedEntry.issue?.topikMasalah ?? "-"}
                   </p>
                 </div>
+                <div>
+                  <h4 className="mb-1 text-sm text-gray-400">Waktu Pemesanan</h4>
+                  <p className="text-white">{formatDateTime(selectedEntry.tanggalPesan)}</p>
+                </div>
+                <div>
+                  <h4 className="mb-1 text-sm text-gray-400">Shift</h4>
+                  <p className="text-white">
+                    {selectedEntry.waktu
+                      ? `${selectedEntry.waktu.namaShift} (${selectedEntry.waktu.jamMulai} - ${selectedEntry.waktu.jamSelesai})`
+                      : "-"}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="mb-1 text-sm text-gray-400">Lokasi Layanan</h4>
+                  <p className="text-white">{selectedEntry.tempat}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
-          <Link
-            href="/history"
-            className="flex-1 bg-white/10 text-white py-4 px-6 rounded-xl font-medium text-center hover:bg-white/20 transition-all duration-300"
-          >
-            Lihat Riwayat Lengkap
-          </Link>
-          {data.technician && (
-            <a
-              href={`tel:${data.technician.phone}`}
-              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl font-medium text-center hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg"
-            >
-              Hubungi Teknisi
-            </a>
-          )}
-        </div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 p-8 backdrop-blur-md">
+              <h3 className="mb-8 text-xl font-bold text-white">Status Pengerjaan</h3>
+
+              <div className="space-y-8">
+                {selectedEntry.steps.map((step, index) => {
+                  const isCurrent = index === currentStepIndex;
+                  return (
+                    <div key={step.id} className="flex items-start space-x-6">
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                            step.completed
+                              ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                              : isCurrent
+                              ? "border-blue-500 bg-blue-500/20 text-blue-400 animate-pulse"
+                              : "border-gray-600 bg-gray-700 text-gray-400"
+                          }`}
+                        >
+                          {step.completed ? (
+                            <span className="text-lg">✓</span>
+                          ) : isCurrent ? (
+                            <div className="h-3 w-3 rounded-full bg-blue-400 animate-pulse" />
+                          ) : (
+                            <span className="text-sm font-bold">{step.id}</span>
+                          )}
+                        </div>
+
+                        {index < selectedEntry.steps.length - 1 && (
+                          <div
+                            className={`mt-4 h-16 w-0.5 transition-colors duration-300 ${
+                              step.completed ? "bg-blue-600" : "bg-gray-700"
+                            }`}
+                          />
+                        )}
+                      </div>
+
+                      <div className="flex-1 pb-8">
+                        <div className="mb-2 flex items-center justify-between">
+                          <h4
+                            className={`text-lg font-semibold ${
+                              step.completed
+                                ? "text-white"
+                                : isCurrent
+                                ? "text-blue-400"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            {step.title}
+                          </h4>
+                          {step.timestamp && (
+                            <span className="text-sm text-gray-400">
+                              {formatDateTime(step.timestamp)}
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className={`text-sm ${
+                            step.completed
+                              ? "text-gray-300"
+                              : isCurrent
+                              ? "text-gray-300"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/history"
+                className="flex-1 rounded-xl bg-white/10 px-6 py-4 text-center font-medium text-white transition-all duration-300 hover:bg-white/20"
+              >
+                Lihat Riwayat Lengkap
+              </Link>
+              <div className="flex-1 rounded-xl border border-white/20 bg-white/5 px-6 py-4 text-center text-sm text-gray-300">
+                Terakhir diperbarui: {formatDateTime(selectedEntry.updatedAt)}
+              </div>
+            </div>
+          </>
+        ) : (
+          !loading &&
+          !error && (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center text-center text-gray-300">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/10">
+                <span className="text-3xl">📱</span>
+              </div>
+              <h2 className="mb-2 text-xl font-semibold text-white">
+                Belum ada pesanan yang bisa dilacak
+              </h2>
+              <p className="mb-6 max-w-md text-gray-400">
+                Setelah Anda membuat pemesanan dan terjadwal, status perjalanannya akan muncul di halaman ini.
+              </p>
+              <Link
+                href="/booking"
+                className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-3 font-medium text-white transition-all duration-300 hover:from-blue-700 hover:to-cyan-700"
+              >
+                Buat Pesanan Baru
+              </Link>
+            </div>
+          )
+        )}
       </div>
     </div>
   );
