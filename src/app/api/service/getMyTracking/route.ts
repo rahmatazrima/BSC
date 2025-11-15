@@ -84,9 +84,12 @@ export async function GET(request: NextRequest) {
           title: "Sedang dikerjakan",
           description:
             "Teknisi sedang mengerjakan perbaikan perangkat Anda atau sedang dijadwalkan",
-          completed: service.statusService === "IN_PROGRESS",
+          // Completed jika status IN_PROGRESS atau COMPLETED (sudah melewati tahap ini)
+          completed: 
+            service.statusService === "IN_PROGRESS" || 
+            service.statusService === "COMPLETED",
           timestamp:
-            service.statusService === "IN_PROGRESS"
+            service.statusService === "IN_PROGRESS" || service.statusService === "COMPLETED"
               ? service.updatedAt.toISOString()
               : undefined,
         },
