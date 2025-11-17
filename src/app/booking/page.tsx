@@ -186,6 +186,7 @@ export default function BookingPage() {
           tanggalPesan: serviceData.schedule.date,
           handphoneId: serviceData.handphoneId,
           waktuId: serviceData.schedule.waktuId,
+          kendalaHandphoneIds: serviceData.kendalaIds, // Kirim array kendala IDs yang dipilih user
           statusService: 'PENDING'
         }),
       });

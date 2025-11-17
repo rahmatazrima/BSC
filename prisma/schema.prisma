@@ -48,6 +48,7 @@ model KendalaHandphone {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   pergantianBarang PergantianBarang[]
+  services    Service[]
 }
 
 model PergantianBarang {
@@ -88,6 +89,7 @@ model Service  {
   handphone     Handphone @relation(fields: [handphoneId], references: [id])
   waktuId       String
   waktu         Waktu    @relation(fields: [waktuId], references: [id])
+  kendalaHandphone KendalaHandphone[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

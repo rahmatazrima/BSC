@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Query service dengan relasi kendalaHandphone (many-to-many)
+    // Jika relasi belum tersedia, akan return empty array
     const services = await prisma.service.findMany({
       where: {
         userId: currentUser.userId,
@@ -54,20 +56,35 @@ export async function GET(request: NextRequest) {
       },
       include: {
         handphone: {
-          include: {
-            kendalaHandphone: {
-              include: {
-                pergantianBarang: true,
-              },
-            },
+          select: {
+            id: true,
+            brand: true,
+            tipe: true,
           },
         },
         waktu: true,
+        // Ambil kendalaHandphone yang dipilih user untuk service ini (relasi many-to-many)
+        kendalaHandphone: {
+          select: {
+            id: true,
+            topikMasalah: true,
+            handphoneId: true,
+          },
+        },
       },
     });
 
     const trackingData = services.map((service) => {
-      const primaryIssue = service.handphone.kendalaHandphone?.[0];
+      // Ambil semua kendala yang dipilih user untuk service ini
+      // Type assertion untuk handle relasi many-to-many yang mungkin belum tersedia di type
+      const serviceWithKendala = service as typeof service & {
+        kendalaHandphone?: Array<{
+          id: string;
+          topikMasalah: string;
+          handphoneId: string;
+        }>;
+      };
+      const selectedKendalas = serviceWithKendala.kendalaHandphone || [];
 
       const steps: TrackingStep[] = [
         {
@@ -123,12 +140,11 @@ export async function GET(request: NextRequest) {
           brand: service.handphone.brand,
           tipe: service.handphone.tipe,
         },
-        issue: primaryIssue
-          ? {
-              id: primaryIssue.id,
-              topikMasalah: primaryIssue.topikMasalah,
-            }
-          : null,
+        // Kirim array semua kendala yang dipilih user
+        issues: selectedKendalas.map((kendala) => ({
+          id: kendala.id,
+          topikMasalah: kendala.topikMasalah,
+        })),
         waktu: service.waktu
           ? {
               id: service.waktu.id,
@@ -148,11 +164,18 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching tracking data:", error);
+    
+    // Log error detail untuk debugging
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
 
     return NextResponse.json(
       {
         error: "Internal server error",
         message: "Failed to fetch tracking data",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

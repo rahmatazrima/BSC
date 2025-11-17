@@ -27,9 +27,11 @@ interface TrackingEntry {
     brand: string;
     tipe: string;
   };
-  issue: {
+  // Array semua kendala yang dipilih user untuk service ini
+  issues: {
+    id: string;
     topikMasalah: string;
-  } | null;
+  }[];
   waktu: {
     namaShift: string;
     jamMulai: string;
@@ -93,6 +95,19 @@ const formatDateShort = (value: string) => {
   return date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
+    year: "numeric",
+  });
+};
+
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
     year: "numeric",
   });
 };
@@ -236,13 +251,21 @@ export default function TrackingPage() {
               <div className="mt-6 grid grid-cols-1 gap-6 border-t border-white/10 pt-6 md:grid-cols-2">
                 <div>
                   <h4 className="mb-1 text-sm text-gray-400">Uraian Masalah</h4>
-                  <p className="font-medium text-white">
-                    {selectedEntry.issue?.topikMasalah ?? "-"}
-                  </p>
+                  {selectedEntry.issues && selectedEntry.issues.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedEntry.issues.map((issue, index) => (
+                        <p key={issue.id} className="font-medium text-white">
+                          {index + 1}. {issue.topikMasalah}
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="font-medium text-white">-</p>
+                  )}
                 </div>
                 <div>
                   <h4 className="mb-1 text-sm text-gray-400">Waktu Pemesanan</h4>
-                  <p className="text-white">{formatDateTime(selectedEntry.tanggalPesan)}</p>
+                  <p className="text-white">{formatDate(selectedEntry.tanggalPesan)}</p>
                 </div>
                 <div>
                   <h4 className="mb-1 text-sm text-gray-400">Shift</h4>

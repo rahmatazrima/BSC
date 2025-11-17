@@ -194,7 +194,8 @@ export async function POST(request: NextRequest) {
       tempat,
       tanggalPesan,
       handphoneId,
-      waktuId
+      waktuId,
+      kendalaHandphoneIds = [] // Array of kendala IDs yang dipilih user
     } = body;
 
     // Validasi input required (userId tidak perlu dari body, ambil dari token)
@@ -209,6 +210,28 @@ export async function POST(request: NextRequest) {
             handphoneId: !handphoneId ? 'Handphone ID is required' : null,
             waktuId: !waktuId ? 'Waktu ID is required' : null,
           }
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validasi kendalaHandphoneIds harus array
+    if (!Array.isArray(kendalaHandphoneIds)) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          message: 'kendalaHandphoneIds must be an array'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validasi minimal harus ada 1 kendala yang dipilih
+    if (kendalaHandphoneIds.length === 0) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          message: 'Minimal harus memilih 1 uraian masalah'
         },
         { status: 400 }
       );
@@ -274,6 +297,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validasi semua kendalaHandphoneIds exist dan terkait dengan handphone yang dipilih
+    const kendalaHandphones = await prisma.kendalaHandphone.findMany({
+      where: {
+        id: { in: kendalaHandphoneIds },
+        handphoneId: handphoneId // Pastikan kendala terkait dengan handphone yang dipilih
+      }
+    });
+
+    // Cek apakah semua kendalaHandphoneIds yang dikirim valid
+    if (kendalaHandphones.length !== kendalaHandphoneIds.length) {
+      const foundIds = kendalaHandphones.map(k => k.id);
+      const notFoundIds = kendalaHandphoneIds.filter(id => !foundIds.includes(id));
+      
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          message: 'Beberapa uraian masalah tidak ditemukan atau tidak terkait dengan handphone yang dipilih',
+          details: {
+            notFoundIds,
+            handphoneId
+          }
+        },
+        { status: 400 }
+      );
+    }
+
     // Cek apakah shift sudah terisi pada tanggal yang sama
     // Set waktu ke awal dan akhir hari untuk query
     const startOfDay = new Date(parsedDate);
@@ -331,7 +380,7 @@ export async function POST(request: NextRequest) {
 
     // Buat service baru dan update isAvailable shift menjadi false
     const newService = await prisma.$transaction(async (tx) => {
-      // Buat service
+      // Buat service dengan connect ke kendalaHandphone yang dipilih user
       const service = await tx.service.create({
         data: {
           statusService,
@@ -339,7 +388,11 @@ export async function POST(request: NextRequest) {
           tanggalPesan: parsedDate,
           userId,
           handphoneId,
-          waktuId
+          waktuId,
+          // Connect ke kendalaHandphone yang dipilih user (many-to-many relation)
+          kendalaHandphone: {
+            connect: kendalaHandphoneIds.map((id: string) => ({ id }))
+          }
         },
         include: {
           user: {
@@ -360,7 +413,15 @@ export async function POST(request: NextRequest) {
               }
             }
           },
-          waktu: true
+          waktu: true,
+          // Include kendalaHandphone yang dipilih user untuk service ini
+          kendalaHandphone: {
+            select: {
+              id: true,
+              topikMasalah: true,
+              handphoneId: true
+            }
+          }
         }
       });
 
