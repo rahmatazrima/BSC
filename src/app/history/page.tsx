@@ -19,9 +19,16 @@ interface HistoryOrder {
     brand: string;
     tipe: string;
   };
-  issue: {
+  issues: {
+    id: string;
     topikMasalah: string;
-  } | null;
+    harga: number;
+    pergantianBarang: {
+      id: string;
+      namaBarang: string;
+      harga: number;
+    }[];
+  }[];
   waktu: {
     namaShift: string;
     jamMulai: string;
@@ -36,6 +43,8 @@ const STATUS_FILTERS = [
   { value: "completed", label: "Selesai" },
   { value: "cancelled", label: "Dibatalkan" },
 ] as const;
+
+const SERVICE_FEE = 50000; // Biaya jasa per transaksi
 
 export default function HistoryPage() {
   const [orders, setOrders] = useState<HistoryOrder[]>([]);
@@ -77,7 +86,12 @@ export default function HistoryPage() {
   }, []);
 
   const formatCurrency = (value: number) =>
-    value > 0 ? `Rp ${value.toLocaleString("id-ID")}` : "Belum tersedia";
+    value > 0 ? `Rp ${value.toLocaleString("id-ID")}` : "Harga muncul setelah didiagnosa";
+
+  // Fungsi untuk menghitung total biaya termasuk service fee
+  const calculateTotalWithServiceFee = (estimasiBiaya: number) => {
+    return estimasiBiaya + SERVICE_FEE;
+  };
 
   const formatDateTime = (value: string) => {
     const date = new Date(value);
@@ -196,11 +210,47 @@ export default function HistoryPage() {
               </div>
 
               <div className="mb-6 space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Uraian Masalah:</span>
-                  <span className="text-right text-white">
-                    {order.issue?.topikMasalah ?? "-"}
-                  </span>
+                <div>
+                  <span className="text-gray-400 font-medium">Uraian Masalah yang Dipilih:</span>
+                  {order.issues && order.issues.length > 0 ? (
+                    <div className="mt-2 space-y-2">
+                      {order.issues.map((issue, index) => (
+                        <div
+                          key={issue.id}
+                          className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 hover:bg-blue-500/15 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <p className="font-semibold text-white mb-1">
+                                {index + 1}. {issue.topikMasalah}
+                              </p>
+                              {issue.pergantianBarang &&
+                                issue.pergantianBarang.length > 0 && (
+                                  <div className="mt-2 space-y-1">
+                                    {issue.pergantianBarang.map((item) => (
+                                      <p
+                                        key={item.id}
+                                        className="text-sm text-gray-300"
+                                      >
+                                        • {item.namaBarang}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                            </div>
+                            <div className="flex-shrink-0 text-right">
+                              <div className="text-xs text-gray-400 mb-1">Harga</div>
+                              <div className="text-lg font-bold text-blue-400">
+                                {formatCurrency(issue.harga)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="ml-2 text-white">Tidak ada masalah dipilih</span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Shift:</span>
@@ -216,11 +266,27 @@ export default function HistoryPage() {
                     {order.tempat}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Estimasi Biaya:</span>
-                  <span className="text-right text-white font-bold">
-                    {formatCurrency(order.estimasiBiaya)}
-                  </span>
+                <div className="border-t border-white/10 pt-3 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Biaya Perbaikan:</span>
+                    <span className="text-right text-white">
+                      {formatCurrency(order.estimasiBiaya)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Biaya Jasa:</span>
+                    <span className="text-right text-white">
+                      {formatCurrency(SERVICE_FEE)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-white/10 pt-2">
+                    <span className="text-gray-400 font-semibold">
+                      Total Estimasi Biaya:
+                    </span>
+                    <span className="text-right text-lg font-bold text-green-400">
+                      {formatCurrency(calculateTotalWithServiceFee(order.estimasiBiaya))}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Dibuat:</span>
@@ -298,10 +364,46 @@ export default function HistoryPage() {
                 </span>
               </div>
               <div>
-                <span className="text-gray-400">Masalah:</span>
-                <span className="ml-2 text-white">
-                  {selectedOrder.issue?.topikMasalah ?? "-"}
-                </span>
+                <span className="text-gray-400 font-medium">Uraian Masalah yang Dipilih:</span>
+                {selectedOrder.issues && selectedOrder.issues.length > 0 ? (
+                  <div className="mt-2 space-y-2">
+                    {selectedOrder.issues.map((issue, index) => (
+                      <div
+                        key={issue.id}
+                        className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 hover:bg-blue-500/15 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <p className="font-semibold text-white mb-1">
+                              {index + 1}. {issue.topikMasalah}
+                            </p>
+                            {issue.pergantianBarang &&
+                              issue.pergantianBarang.length > 0 && (
+                                <div className="mt-2 space-y-1">
+                                  {issue.pergantianBarang.map((item) => (
+                                    <p
+                                      key={item.id}
+                                      className="text-sm text-gray-300"
+                                    >
+                                      • {item.namaBarang}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <div className="text-xs text-gray-400 mb-1">Harga</div>
+                            <div className="text-lg font-bold text-blue-400">
+                              {formatCurrency(issue.harga)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="ml-2 text-white">Tidak ada masalah dipilih</span>
+                )}
               </div>
               <div>
                 <span className="text-gray-400">Status:</span>
@@ -337,11 +439,25 @@ export default function HistoryPage() {
                     : "-"}
                 </span>
               </div>
-              <div>
-                <span className="text-gray-400">Estimasi Biaya:</span>
-                <span className="ml-2 text-white font-medium">
-                  {formatCurrency(selectedOrder.estimasiBiaya)}
-                </span>
+              <div className="border-t border-white/10 pt-3 space-y-2">
+                <div>
+                  <span className="text-gray-400">Biaya Perbaikan:</span>
+                  <span className="ml-2 text-white">
+                    {formatCurrency(selectedOrder.estimasiBiaya)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Biaya Jasa:</span>
+                  <span className="ml-2 text-white">
+                    {formatCurrency(SERVICE_FEE)}
+                  </span>
+                </div>
+                <div className="border-t border-white/10 pt-2">
+                  <span className="text-gray-400 font-semibold">Total Estimasi Biaya:</span>
+                  <span className="ml-2 text-white font-bold text-lg">
+                    {formatCurrency(calculateTotalWithServiceFee(selectedOrder.estimasiBiaya))}
+                  </span>
+                </div>
               </div>
             </div>
 

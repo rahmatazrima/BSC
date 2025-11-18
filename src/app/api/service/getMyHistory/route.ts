@@ -46,24 +46,33 @@ export async function GET(request: NextRequest) {
       },
       include: {
         handphone: {
-          include: {
-            kendalaHandphone: {
-              include: {
-                pergantianBarang: true,
-              },
-            },
+          select: {
+            id: true,
+            brand: true,
+            tipe: true,
           },
         },
         waktu: true,
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true,
+          },
+        },
       },
     });
 
     const history = services.map((service) => {
-      const primaryIssue = service.handphone.kendalaHandphone?.[0];
-      const partsPrice = primaryIssue?.pergantianBarang?.reduce(
-        (total, item) => total + item.harga,
-        0
-      );
+      // Ambil semua kendala yang dipilih user untuk service ini
+      const selectedIssues = service.kendalaHandphone || [];
+      
+      // Hitung total harga dari semua pergantian barang dari semua kendala yang dipilih
+      const totalPrice = selectedIssues.reduce((total, issue) => {
+        const issuePrice = issue.pergantianBarang?.reduce(
+          (sum, item) => sum + item.harga,
+          0
+        ) || 0;
+        return total + issuePrice;
+      }, 0);
 
       return {
         serviceId: service.id,
@@ -77,12 +86,19 @@ export async function GET(request: NextRequest) {
           brand: service.handphone.brand,
           tipe: service.handphone.tipe,
         },
-        issue: primaryIssue
-          ? {
-              id: primaryIssue.id,
-              topikMasalah: primaryIssue.topikMasalah,
-            }
-          : null,
+        issues: selectedIssues.map((issue) => ({
+          id: issue.id,
+          topikMasalah: issue.topikMasalah,
+          harga: issue.pergantianBarang?.reduce(
+            (sum, item) => sum + item.harga,
+            0
+          ) || 0,
+          pergantianBarang: issue.pergantianBarang?.map((item) => ({
+            id: item.id,
+            namaBarang: item.namaBarang,
+            harga: item.harga,
+          })) || [],
+        })),
         waktu: service.waktu
           ? {
               id: service.waktu.id,
@@ -91,7 +107,7 @@ export async function GET(request: NextRequest) {
               jamSelesai: service.waktu.jamSelesai,
             }
           : null,
-        estimasiBiaya: partsPrice ?? 0,
+        estimasiBiaya: totalPrice,
       };
     });
 

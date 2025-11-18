@@ -54,15 +54,19 @@ export async function GET(request: NextRequest) {
             }
           },
           handphone: {
-            include: {
-              kendalaHandphone: {
-                include: {
-                  pergantianBarang: true
-                }
-              }
+            select: {
+              id: true,
+              brand: true,
+              tipe: true
             }
           },
-          waktu: true
+          waktu: true,
+          // Include kendalaHandphone yang dipilih user untuk service ini (many-to-many)
+          kendalaHandphone: {
+            include: {
+              pergantianBarang: true
+            }
+          }
         }
       });
 
@@ -104,7 +108,14 @@ export async function GET(request: NextRequest) {
       if (userId) where.userId = userId;
     }
     
-    if (status) where.statusService = status;
+    // Validasi status jika ada
+    if (status) {
+      const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+      if (validStatuses.includes(status.toUpperCase())) {
+        where.statusService = status.toUpperCase();
+      }
+    }
+    
     if (tempat) where.tempat = { contains: tempat, mode: 'insensitive' };
 
     // Ambil semua services dengan relasi
@@ -121,15 +132,19 @@ export async function GET(request: NextRequest) {
           }
         },
         handphone: {
-          include: {
-            kendalaHandphone: {
-              include: {
-                pergantianBarang: true
-              }
-            }
+          select: {
+            id: true,
+            brand: true,
+            tipe: true
           }
         },
-        waktu: true
+        waktu: true,
+        // Include kendalaHandphone yang dipilih user untuk service ini (many-to-many)
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true
+          }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -151,6 +166,7 @@ export async function GET(request: NextRequest) {
       {
         error: "Internal server error",
         message: "Failed to fetch services",
+        details: error instanceof Error ? error.message : String(error)
       },
       { status: 500 }
     );
