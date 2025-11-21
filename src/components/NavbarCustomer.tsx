@@ -106,43 +106,8 @@ export default function NavbarCustomer() {
         </div>
       </Link>
 
-      {/* Navigation Menu & User Profile */}
+      {/* User Profile Dropdown */}
       <div className="flex items-center gap-4 sm:gap-6">
-        {/* Navigation Links */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link 
-            href="/booking" 
-            className={`text-xs sm:text-sm font-medium transition-colors ${
-              isActive('/booking')
-                ? 'text-blue-400'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            Reservasi
-          </Link>
-          <Link 
-            href="/tracking" 
-            className={`text-xs sm:text-sm font-medium transition-colors ${
-              isActive('/tracking')
-                ? 'text-blue-400'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            Lacak Status
-          </Link>
-          <Link 
-            href="/history" 
-            className={`text-xs sm:text-sm font-medium transition-colors ${
-              isActive('/history')
-                ? 'text-blue-400'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            Riwayat
-          </Link>
-        </div>
-
-        {/* User Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -185,34 +150,72 @@ export default function NavbarCustomer() {
                 <div className="px-4 py-3 border-b border-white/10">
                   <p className="text-white font-semibold text-sm">{userData.name}</p>
                   <p className="text-gray-400 text-xs mt-1">{userData.email}</p>
-                  <span className="inline-block mt-2 px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full border border-blue-500/30">
-                    User
-                  </span>
+                  
                 </div>
               )}
 
               {/* Menu Items */}
               <div className="py-2">
                 <Link
+                  href="/booking"
+                  className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                    isActive('/booking')
+                      ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-400'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm">Reservasi</span>
+                </Link>
+
+                <Link
+                  href="/tracking"
+                  className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                    isActive('/tracking')
+                      ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-400'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm">Lacak Status</span>
+                </Link>
+
+                <Link
+                  href="/history"
+                  className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                    isActive('/history')
+                      ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-400'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm">Riwayat</span>
+                </Link>
+
+                <div className="border-t border-white/10 my-2"></div>
+
+                <Link
                   href="/profile"
-                  className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                  className={`flex items-center space-x-3 px-4 py-3 transition-colors ${
+                    isActive('/profile')
+                      ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-400'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  }`}
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <span className="text-sm">Profil Saya</span>
-                </Link>
-
-                <Link
-                  href="/history"
-                  className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-sm">Riwayat Pesanan</span>
                 </Link>
               </div>
 
