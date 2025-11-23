@@ -14,6 +14,7 @@ interface Order {
   problem: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   serviceType: string;
+  alamat: string | null; // Alamat lengkap pelanggan (opsional)
   scheduledDate: string;
   price: number;
   createdAt: string;
@@ -286,6 +287,9 @@ export default function AdminDashboard() {
                           <div>
                             <p className="font-semibold text-white">{order.customerName}</p>
                             <p className="text-sm text-gray-300">{order.device} - {order.problem}</p>
+                            {order.alamat && (
+                              <p className="text-xs text-gray-400 mt-1">📍 {order.alamat}</p>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -11,6 +11,7 @@ interface HistoryOrder {
   serviceId: string;
   status: StatusService;
   tempat: string;
+  alamat: string | null; // Alamat lengkap pelanggan (opsional)
   tanggalPesan: string;
   createdAt: string;
   updatedAt: string;
@@ -288,6 +289,14 @@ export default function HistoryPage() {
                     {order.tempat}
                   </span>
                 </div>
+                {order.alamat && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Alamat Lengkap:</span>
+                    <span className="text-right text-sm text-white break-words max-w-[60%]">
+                      {order.alamat}
+                    </span>
+                  </div>
+                )}
                 <div className="border-t border-white/10 pt-3 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Biaya Perbaikan:</span>
@@ -457,6 +466,12 @@ export default function HistoryPage() {
                 <span className="text-gray-400">Lokasi:</span>
                 <span className="ml-2 text-white">{selectedOrder.tempat}</span>
               </div>
+              {selectedOrder.alamat && (
+                <div>
+                  <span className="text-gray-400">Alamat Lengkap:</span>
+                  <span className="ml-2 text-white break-words">{selectedOrder.alamat}</span>
+                </div>
+              )}
               <div>
                 <span className="text-gray-400">Shift:</span>
                 <span className="ml-2 text-white">

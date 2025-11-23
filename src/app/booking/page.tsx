@@ -183,6 +183,7 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           tempat: serviceData.serviceType,
+          alamat: serviceData.customerInfo.address || null, // Alamat lengkap pelanggan (opsional)
           tanggalPesan: serviceData.schedule.date,
           handphoneId: serviceData.handphoneId,
           waktuId: serviceData.schedule.waktuId,

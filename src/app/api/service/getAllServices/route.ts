@@ -119,6 +119,7 @@ export async function GET(request: NextRequest) {
         problem: primaryIssue?.topikMasalah ?? "-",
         status: service.statusService,
         serviceType: service.tempat,
+        alamat: service.alamat, // Alamat lengkap pelanggan (opsional)
         scheduledDate: service.tanggalPesan,
         price: partsPrice,
         createdAt: service.createdAt,

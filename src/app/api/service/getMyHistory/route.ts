@@ -78,6 +78,7 @@ export async function GET(request: NextRequest) {
         serviceId: service.id,
         status: service.statusService,
         tempat: service.tempat,
+        alamat: service.alamat, // Alamat lengkap pelanggan (opsional)
         tanggalPesan: service.tanggalPesan,
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,

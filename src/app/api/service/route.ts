@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
     const { 
       statusService = 'PENDING',
       tempat,
+      alamat,
       tanggalPesan,
       handphoneId,
       waktuId,
@@ -401,6 +402,7 @@ export async function POST(request: NextRequest) {
         data: {
           statusService,
           tempat,
+          alamat: alamat || null, // Alamat lengkap pelanggan (opsional)
           tanggalPesan: parsedDate,
           userId,
           handphoneId,
@@ -521,6 +523,7 @@ export async function PUT(request: NextRequest) {
       id,
       statusService,
       tempat,
+      alamat,
       tanggalPesan,
       handphoneId,
       waktuId
@@ -555,6 +558,7 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {};
     if (statusService) updateData.statusService = statusService;
     if (tempat) updateData.tempat = tempat;
+    if (alamat !== undefined) updateData.alamat = alamat || null; // Alamat lengkap pelanggan (opsional)
     if (tanggalPesan) {
       const parsedDate = new Date(tanggalPesan);
       if (isNaN(parsedDate.getTime())) {

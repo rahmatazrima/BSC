@@ -14,14 +14,14 @@ datasource db {
 }
 
 model User {
-  id      String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String
+  password    String
   phoneNumber String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role        Role      @default(USER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   services    Service[]
 }
 
@@ -31,44 +31,44 @@ enum Role {
 }
 
 model Handphone {
-  id          String   @id @default(uuid())
-  brand       String
-  tipe        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String             @id @default(uuid())
+  brand            String
+  tipe             String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   kendalaHandphone KendalaHandphone[]
-  services    Service[]
+  services         Service[]
 }
 
 model KendalaHandphone {
-  id          String   @id @default(uuid())
-  topikMasalah String
-  handphoneId String
-  handphone   Handphone @relation(fields: [handphoneId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String             @id @default(uuid())
+  topikMasalah     String
+  handphoneId      String
+  handphone        Handphone          @relation(fields: [handphoneId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   pergantianBarang PergantianBarang[]
-  services    Service[]
+  services         Service[]
 }
 
 model PergantianBarang {
-  id          String   @id @default(uuid())
-  namaBarang  String
-  harga       Float
+  id                 String           @id @default(uuid())
+  namaBarang         String
+  harga              Float
   kendalaHandphoneId String
-  kendalaHandphone KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  kendalaHandphone   KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id])
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 }
 
 model Waktu {
-  id          String   @id @default(uuid())
-  namaShift       String
-  jamSelesai   String
-  jamMulai     String
-  isAvailable  Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(uuid())
+  namaShift   String
+  jamSelesai  String
+  jamMulai    String
+  isAvailable Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   services    Service[]
 }
 
@@ -78,19 +78,20 @@ enum StatusService {
   COMPLETED
   CANCELLED
 }
-model Service  {
-  id                String   @id @default(uuid())
-  statusService    StatusService @default(PENDING)
-  tempat         String
-  tanggalPesan   DateTime 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  handphoneId   String
-  handphone     Handphone @relation(fields: [handphoneId], references: [id])
-  waktuId       String
-  waktu         Waktu    @relation(fields: [waktuId], references: [id])
-  kendalaHandphone KendalaHandphone[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
 
+model Service {
+  id               String             @id @default(uuid())
+  statusService    StatusService      @default(PENDING)
+  tempat           String
+  alamat           String?
+  tanggalPesan     DateTime
+  userId           String
+  user             User               @relation(fields: [userId], references: [id])
+  handphoneId      String
+  handphone        Handphone          @relation(fields: [handphoneId], references: [id])
+  waktuId          String
+  waktu            Waktu              @relation(fields: [waktuId], references: [id])
+  kendalaHandphone KendalaHandphone[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}

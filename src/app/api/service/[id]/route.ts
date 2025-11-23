@@ -241,6 +241,7 @@ export async function PUT(
     const { 
       statusService,
       tempat,
+      alamat,
       tanggalPesan,
       handphoneId,
       waktuId
@@ -287,6 +288,7 @@ export async function PUT(
     const updateData: any = {};
     if (statusService !== undefined) updateData.statusService = statusService;
     if (tempat !== undefined) updateData.tempat = tempat;
+    if (alamat !== undefined) updateData.alamat = alamat || null; // Alamat lengkap pelanggan (opsional)
     
     if (tanggalPesan !== undefined) {
       const parsedDate = new Date(tanggalPesan);

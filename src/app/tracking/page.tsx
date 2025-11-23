@@ -20,6 +20,7 @@ interface TrackingEntry {
   serviceId: string;
   status: StatusService;
   tempat: string;
+  alamat: string | null; // Alamat lengkap pelanggan (opsional)
   tanggalPesan: string;
   createdAt: string;
   updatedAt: string;
@@ -240,7 +241,7 @@ export default function TrackingPage() {
                   <div className="mb-4 flex items-center space-x-3">
                     <span className="text-lg text-blue-400">🔧</span>
                     <span
-                      className={`rounded-full px-3 py-1 text-sm font-medium ${statusBadge(selectedEntry.status).className}`}
+                      className={`border px-3 py-1 text-sm font-medium ${statusBadge(selectedEntry.status).className}`}
                     >
                       {statusBadge(selectedEntry.status).label}
                     </span>
@@ -248,36 +249,46 @@ export default function TrackingPage() {
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-6 border-t border-white/10 pt-6 md:grid-cols-2">
-                <div>
-                  <h4 className="mb-1 text-sm text-gray-400">Uraian Masalah</h4>
-                  {selectedEntry.issues && selectedEntry.issues.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedEntry.issues.map((issue, index) => (
-                        <p key={issue.id} className="font-medium text-white">
-                          {index + 1}. {issue.topikMasalah}
-                        </p>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="font-medium text-white">-</p>
-                  )}
+              <div className="mt-6 grid grid-cols-1 gap-4 border-t border-white/10 pt-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="mb-1 text-sm text-gray-400">Uraian Masalah</h4>
+                    {selectedEntry.issues && selectedEntry.issues.length > 0 ? (
+                      <div className="space-y-2">
+                        {selectedEntry.issues.map((issue, index) => (
+                          <p key={issue.id} className="font-medium text-white">
+                            {index + 1}. {issue.topikMasalah}
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="font-medium text-white">-</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="mb-1 text-sm text-gray-400">Shift</h4>
+                    <p className="text-white">
+                      {selectedEntry.waktu
+                        ? `${selectedEntry.waktu.namaShift} (${selectedEntry.waktu.jamMulai} - ${selectedEntry.waktu.jamSelesai})`
+                        : "-"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="mb-1 text-sm text-gray-400">Waktu Pemesanan</h4>
-                  <p className="text-white">{formatDate(selectedEntry.tanggalPesan)}</p>
-                </div>
-                <div>
-                  <h4 className="mb-1 text-sm text-gray-400">Shift</h4>
-                  <p className="text-white">
-                    {selectedEntry.waktu
-                      ? `${selectedEntry.waktu.namaShift} (${selectedEntry.waktu.jamMulai} - ${selectedEntry.waktu.jamSelesai})`
-                      : "-"}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="mb-1 text-sm text-gray-400">Lokasi Layanan</h4>
-                  <p className="text-white">{selectedEntry.tempat}</p>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="mb-1 text-sm text-gray-400">Waktu Pemesanan</h4>
+                    <p className="text-white">{formatDate(selectedEntry.tanggalPesan)}</p>
+                  </div>
+                  <div>
+                    <h4 className="mb-1 text-sm text-gray-400">Lokasi Layanan</h4>
+                    <p className="text-white">{selectedEntry.tempat}</p>
+                    {selectedEntry.alamat && (
+                      <>
+                        <h4 className="mb-1 text-sm text-gray-400 mt-3">Alamat Lengkap</h4>
+                        <p className="text-white break-words">{selectedEntry.alamat}</p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
