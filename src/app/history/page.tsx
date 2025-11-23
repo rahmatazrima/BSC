@@ -46,6 +46,24 @@ const STATUS_FILTERS = [
 
 const SERVICE_FEE = 50000; // Biaya jasa per transaksi
 
+// Daftar uraian masalah yang memerlukan styling khusus untuk harga
+const DIAGNOSTIC_PROBLEMS = [
+  "Install Ulang",
+  "Handphone Tidak Bisa Menyala",
+  "install ulang dan handphone tidak bisa menyala",
+  "Install ulang dan handphone tidak bisa menyala"
+];
+
+// Fungsi untuk mengecek apakah uraian masalah termasuk diagnostic problem
+const isDiagnosticProblem = (topikMasalah: string): boolean => {
+  const normalized = topikMasalah.toLowerCase().trim();
+  return DIAGNOSTIC_PROBLEMS.some(problem => 
+    normalized === problem.toLowerCase() || 
+    normalized.includes("install ulang") || 
+    normalized.includes("handphone tidak bisa menyala")
+  );
+};
+
 export default function HistoryPage() {
   const [orders, setOrders] = useState<HistoryOrder[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -240,7 +258,11 @@ export default function HistoryPage() {
                             </div>
                             <div className="flex-shrink-0 text-right">
                               <div className="text-xs text-gray-400 mb-1">Harga</div>
-                              <div className="text-lg font-bold text-blue-400">
+                              <div className={
+                                isDiagnosticProblem(issue.topikMasalah)
+                                  ? "text-sm italic text-blue-400"
+                                  : "text-lg font-bold text-blue-400"
+                              }>
                                 {formatCurrency(issue.harga)}
                               </div>
                             </div>
@@ -393,7 +415,11 @@ export default function HistoryPage() {
                           </div>
                           <div className="flex-shrink-0 text-right">
                             <div className="text-xs text-gray-400 mb-1">Harga</div>
-                            <div className="text-lg font-bold text-blue-400">
+                            <div className={
+                              isDiagnosticProblem(issue.topikMasalah)
+                                ? "text-sm italic text-blue-400"
+                                : "text-lg font-bold text-blue-400"
+                            }>
                               {formatCurrency(issue.harga)}
                             </div>
                           </div>
