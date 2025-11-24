@@ -20,6 +20,7 @@ export default function Illustration() {
             width={400}
             height={400}
             className="object-contain relative z-10 drop-shadow-2xl"
+            unoptimized={true}
           />
         </div>
 

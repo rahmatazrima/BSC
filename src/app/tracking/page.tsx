@@ -231,6 +231,7 @@ export default function TrackingPage() {
                     width={80}
                     height={80}
                     className="opacity-70"
+                    unoptimized={true}
                   />
                 </div>
 

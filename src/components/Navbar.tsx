@@ -11,6 +11,7 @@ export default function Navbar() {
           alt="Bukhari Service Center"
           width={40}
           height={40}
+          unoptimized={true}
         />
         <span className="font-bold text-xl text-white hidden sm:block">
           Bukhari Service Center

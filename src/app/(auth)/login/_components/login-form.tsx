@@ -77,6 +77,7 @@ export default function LoginForm() {
                 width={80}
                 height={80}
                 className="relative z-10 drop-shadow-2xl"
+                unoptimized={true}
               />
             </div>
           </div>

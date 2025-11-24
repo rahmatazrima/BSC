@@ -6,6 +6,12 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')
   const { pathname } = request.nextUrl
 
+  // Skip middleware for static files (images, fonts, etc.)
+  const staticFileExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.woff', '.woff2', '.ttf', '.eot']
+  if (staticFileExtensions.some(ext => pathname.toLowerCase().endsWith(ext))) {
+    return NextResponse.next()
+  }
+
   // Public routes - Exact match only
   const publicRoutes = ['/login', '/register', '/']
   const isPublicRoute = publicRoutes.includes(pathname)
@@ -66,6 +72,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
   ],
 }

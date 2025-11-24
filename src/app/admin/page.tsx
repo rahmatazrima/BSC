@@ -170,6 +170,7 @@ export default function AdminDashboard() {
               width={40}
               height={40}
               className="rounded-full"
+              unoptimized={true}
             />
             <div>
               <h1 className="font-bold text-xl text-white">Admin Dashboard</h1>

@@ -148,6 +148,7 @@ export default function RegisterForm() {
               fill
               className="object-contain"
               priority
+              unoptimized={true}
             />
           </div>
           <h1 className="text-3xl font-bold text-white">Buat Akun</h1>

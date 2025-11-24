@@ -95,6 +95,7 @@ export default function NavbarCustomer() {
           alt="Bukhari Service Center"
           width={40}
           height={40}
+          unoptimized={true}
         />
         <div>
           <span className="font-bold text-xl text-white hidden sm:block">

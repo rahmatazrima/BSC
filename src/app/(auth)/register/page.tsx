@@ -25,6 +25,7 @@ export default function RegisterPage() {
               height={400}
               className="object-contain relative z-10 drop-shadow-2xl"
               priority
+              unoptimized={true}
             />
           </div>
           
