@@ -12,6 +12,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Skip middleware for PWA files (service worker, manifest)
+  const pwaFiles = ['/sw.js', '/manifest.json', '/service-worker.js']
+  if (pwaFiles.includes(pathname)) {
+    return NextResponse.next()
+  }
+
   // Public routes - Exact match only
   const publicRoutes = ['/login', '/register', '/']
   const isPublicRoute = publicRoutes.includes(pathname)
@@ -72,6 +78,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.json|service-worker.js|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
   ],
 }

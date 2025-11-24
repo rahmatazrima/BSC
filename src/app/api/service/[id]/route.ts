@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // GET - Mengambil service berdasarkan ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk mendapatkan user info
@@ -36,7 +36,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -124,10 +124,14 @@ export async function GET(
     };
 
     // Calculate service cost and details
+    // kendalaHandphone is an array, so we need to access the first element
+    const firstKendala = service.handphone?.kendalaHandphone?.[0];
+    const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
+    
     const serviceDetails = {
-      problemDescription: service.handphone?.kendalaHandphone?.topikMasalah || 'No problem specified',
-      replacementPart: service.handphone?.kendalaHandphone?.pergantianBarang?.namaBarang || 'No parts needed',
-      estimatedCost: service.handphone?.kendalaHandphone?.pergantianBarang?.harga || 0,
+      problemDescription: firstKendala?.topikMasalah || 'No problem specified',
+      replacementPart: firstPergantianBarang?.namaBarang || 'No parts needed',
+      estimatedCost: firstPergantianBarang?.harga || 0,
       deviceInfo: service.handphone ? 
         `${service.handphone.brand} ${service.handphone.tipe}` : 'Unknown device',
       serviceLocation: service.tempat
@@ -195,7 +199,7 @@ export async function GET(
 // PUT - Update service berdasarkan ID (Alternative route)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -236,7 +240,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { 
       statusService,
@@ -478,7 +482,7 @@ export async function PUT(
 // DELETE - Hapus service berdasarkan ID (Alternative route)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -519,7 +523,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -649,7 +653,8 @@ async function getCommonProblemsForDevice(handphoneId: string) {
   });
 
   const problemCounts = services.reduce((acc, service) => {
-    const problem = service.handphone?.kendalaHandphone?.topikMasalah || 'Unknown';
+    const firstKendala = service.handphone?.kendalaHandphone?.[0];
+    const problem = firstKendala?.topikMasalah || 'Unknown';
     acc[problem] = (acc[problem] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);

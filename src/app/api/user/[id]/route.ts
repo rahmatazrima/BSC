@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 // GET - Mengambil user berdasarkan ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -48,7 +48,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -85,7 +85,7 @@ export async function GET(
 // PUT - Update user berdasarkan ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -127,7 +127,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { email, name, password, phoneNumber, role } = body;
 
@@ -196,7 +196,7 @@ export async function PUT(
 // DELETE - Hapus user berdasarkan ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -238,7 +238,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Cek apakah user ada
     const existingUser = await prisma.user.findUnique({

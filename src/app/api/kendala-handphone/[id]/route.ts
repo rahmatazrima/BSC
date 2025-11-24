@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // GET - Mengambil kendala handphone berdasarkan ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -47,7 +47,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -112,20 +112,15 @@ export async function GET(
     }
 
     // Calculate additional statistics
+    const handphoneServices = kendalaHandphone.handphone?.services || [];
     const stats = {
-      totalServices: kendalaHandphone.handphone.length > 0 
-        ? kendalaHandphone.handphone.reduce((total, hp) => total + hp.services.length, 0)
-        : 0,
-      activeServices: kendalaHandphone.handphone.length > 0
-        ? kendalaHandphone.handphone.reduce((total, hp) => 
-            total + hp.services.filter(service => 
-              service.statusService === 'PENDING' || service.statusService === 'IN_PROGRESS'
-            ).length, 0)
-        : 0,
-      completedServices: kendalaHandphone.handphone.length > 0
-        ? kendalaHandphone.handphone.reduce((total, hp) => 
-            total + hp.services.filter(service => service.statusService === 'COMPLETED').length, 0)
-        : 0
+      totalServices: handphoneServices.length,
+      activeServices: handphoneServices.filter(service => 
+        service.statusService === 'PENDING' || service.statusService === 'IN_PROGRESS'
+      ).length,
+      completedServices: handphoneServices.filter(service => 
+        service.statusService === 'COMPLETED'
+      ).length
     };
 
     return NextResponse.json({
@@ -151,7 +146,7 @@ export async function GET(
 // PUT - Update kendala handphone berdasarkan ID (Alternative route)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -193,7 +188,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { 
       topikMasalah,
@@ -314,7 +309,7 @@ export async function PUT(
 // DELETE - Hapus kendala handphone berdasarkan ID (Alternative route)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -356,7 +351,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

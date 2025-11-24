@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import NavbarCustomer from "@/components/NavbarCustomer";
 import Image from "next/image";
 import Link from "next/link";
@@ -119,7 +119,7 @@ const formatOrderLabel = (entry: TrackingEntry) => {
   return `${deviceName} - ${statusInfo.label}`;
 };
 
-export default function TrackingPage() {
+function TrackingContent() {
   const searchParams = useSearchParams();
   const requestedOrder = searchParams?.get("order");
 
@@ -173,7 +173,7 @@ export default function TrackingPage() {
 
     fetchTracking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [requestedOrder]);
 
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.serviceId === selectedId) ?? null,
@@ -403,5 +403,22 @@ export default function TrackingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TrackingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
+        <NavbarCustomer />
+        <div className="mx-auto max-w-4xl px-6 py-8">
+          <div className="mb-6 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-gray-200">
+            Memuat data tracking...
+          </div>
+        </div>
+      </div>
+    }>
+      <TrackingContent />
+    </Suspense>
   );
 }

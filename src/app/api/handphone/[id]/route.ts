@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // GET - Mengambil handphone berdasarkan ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -47,7 +47,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -113,16 +113,28 @@ export async function GET(
     }
 
     // Calculate service statistics
+    const completedServicesCount = handphone.services.filter(s => s.statusService === 'COMPLETED').length;
+    
+    // Calculate total revenue: sum all harga from pergantianBarang in all kendalaHandphone
+    // Then multiply by completed services count (assuming each completed service uses one set of parts)
+    const totalRevenue = handphone.kendalaHandphone.length > 0
+      ? handphone.kendalaHandphone.reduce((total, kendala) => {
+          const kendalaRevenue = kendala.pergantianBarang.length > 0
+            ? kendala.pergantianBarang.reduce((kendalaTotal, barang) => {
+                return kendalaTotal + (barang.harga || 0);
+              }, 0)
+            : 0;
+          return total + kendalaRevenue;
+        }, 0) * completedServicesCount
+      : 0;
+
     const serviceStats = {
       totalServices: handphone.services.length,
       pendingServices: handphone.services.filter(s => s.statusService === 'PENDING').length,
       inProgressServices: handphone.services.filter(s => s.statusService === 'IN_PROGRESS').length,
-      completedServices: handphone.services.filter(s => s.statusService === 'COMPLETED').length,
+      completedServices: completedServicesCount,
       cancelledServices: handphone.services.filter(s => s.statusService === 'CANCELLED').length,
-      totalRevenue: handphone.kendalaHandphone?.pergantianBarang?.harga 
-        ? handphone.services.filter(s => s.statusService === 'COMPLETED').length * 
-          handphone.kendalaHandphone.pergantianBarang.harga
-        : 0
+      totalRevenue: totalRevenue
     };
 
     // Recent services (last 5)
@@ -152,7 +164,7 @@ export async function GET(
 // PUT - Update handphone berdasarkan ID (Alternative route)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -194,7 +206,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { 
       brand,
@@ -293,7 +305,7 @@ export async function PUT(
 // DELETE - Hapus handphone berdasarkan ID (Alternative route)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -335,7 +347,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

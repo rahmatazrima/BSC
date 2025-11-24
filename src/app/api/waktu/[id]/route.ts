@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // GET - Mengambil waktu berdasarkan ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -47,7 +47,7 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -120,7 +120,9 @@ export async function GET(
       totalRevenue: waktu.services
         .filter(s => s.statusService === 'COMPLETED')
         .reduce((total, service) => {
-          const price = service.handphone.kendalaHandphone?.pergantianBarang?.harga || 0;
+          const firstKendala = service.handphone.kendalaHandphone?.[0];
+          const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
+          const price = firstPergantianBarang?.harga || 0;
           return total + price;
         }, 0),
       averageServiceValue: 0
@@ -195,7 +197,7 @@ export async function GET(
 // PUT - Update waktu berdasarkan ID (Alternative route)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -237,7 +239,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { 
       namaShift,
@@ -396,7 +398,7 @@ export async function PUT(
 // DELETE - Hapus waktu berdasarkan ID (Alternative route)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify JWT token untuk memastikan user adalah ADMIN
@@ -438,7 +440,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
