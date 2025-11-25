@@ -24,6 +24,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.65.0",
+    "resend": "^6.5.2",
     "sharp": "^0.34.5",
     "workbox-precaching": "^7.4.0",
     "workbox-routing": "^7.4.0",

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import EmailSender from '@/components/EmailSender';
 
 // Types
 interface Order {
@@ -200,6 +201,7 @@ export default function AdminDashboard() {
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'orders', label: 'Kelola Pesanan' },
+            { id: 'email', label: 'Kirim Email' },
             { id: 'analytics', label: 'Analitik' }
           ].map((tab) => (
             <button
@@ -386,6 +388,13 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Email Tab */}
+        {selectedTab === 'email' && (
+          <div className="space-y-8">
+            <EmailSender />
           </div>
         )}
 
