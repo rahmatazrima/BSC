@@ -96,8 +96,10 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('sync', (event) => {
   if (event.tag === 'background-sync') {
     event.waitUntil(
-      // Implement background sync logic here
-      console.log('[Service Worker] Background sync triggered')
+      Promise.resolve().then(() => {
+        // Implement background sync logic here
+        console.log('[Service Worker] Background sync triggered');
+      })
     );
   }
 });
@@ -113,6 +115,9 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil(
     self.registration.showNotification('Bukhari Service Center', options)
+      .catch((error) => {
+        console.error('[Service Worker] Failed to show notification:', error);
+      })
   );
 });
 

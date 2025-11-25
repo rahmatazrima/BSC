@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const token = cookieStore.get('auth-token');
 
     if (!token) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           error: 'Unauthorized',
           message: 'No authentication token found',
@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
         },
         { status: 401 }
       );
+      // Set cache control headers
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      return response;
     }
 
     // Verify and decode JWT token
@@ -34,7 +39,7 @@ export async function GET(request: NextRequest) {
       };
     } catch (jwtError) {
       // Token invalid atau expired
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           error: 'Unauthorized',
           message: 'Invalid or expired token',
@@ -42,6 +47,11 @@ export async function GET(request: NextRequest) {
         },
         { status: 401 }
       );
+      // Set cache control headers
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      return response;
     }
 
     // Get current user data from database
@@ -59,7 +69,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           error: 'Unauthorized',
           message: 'User not found',
@@ -67,10 +77,15 @@ export async function GET(request: NextRequest) {
         },
         { status: 401 }
       );
+      // Set cache control headers
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      return response;
     }
 
-    // Return user data
-    return NextResponse.json({
+    // Return user data dengan cache control headers
+    const response = NextResponse.json({
       status: true,
       message: 'User authenticated',
       data: {
@@ -79,10 +94,17 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Set cache control headers untuk mencegah caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
+
   } catch (error) {
     console.error('Get current user error:', error);
     
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         error: "Internal server error",
         message: "Failed to get current user",
@@ -90,5 +112,10 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
+    // Set cache control headers
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    return response;
   }
 }

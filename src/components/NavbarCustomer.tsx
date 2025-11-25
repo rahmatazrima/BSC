@@ -23,16 +23,27 @@ export default function NavbarCustomer() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // Gunakan cache: 'no-store' untuk mencegah browser cache response
         const response = await fetch('/api/auth/me', {
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-store', // Prevent caching
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
         });
         
         if (response.ok) {
           const data = await response.json();
           setUserData(data.data.user);
+        } else {
+          // Jika tidak authenticated, clear user data
+          setUserData(null);
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
+        setUserData(null);
       } finally {
         setIsLoading(false);
       }
@@ -56,17 +67,35 @@ export default function NavbarCustomer() {
   // Handle logout
   const handleLogout = async () => {
     try {
+      // Clear semua state sebelum logout
+      setUserData(null);
+      setIsDropdownOpen(false);
+      
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-store', // Prevent caching
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       });
 
       if (response.ok) {
-        router.push('/login');
-        router.refresh();
+        // Clear semua state setelah logout berhasil
+        setUserData(null);
+        
+        // Force hard navigation ke landing page untuk clear semua cache
+        // Gunakan window.location.href untuk hard navigation yang clear semua cache
+        window.location.href = '/';
+      } else {
+        console.error('Logout failed:', response.statusText);
       }
     } catch (error) {
       console.error('Logout failed:', error);
+      // Even if error, try to redirect
+      window.location.href = '/';
     }
   };
 

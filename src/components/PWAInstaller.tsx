@@ -11,18 +11,28 @@ export default function PWAInstaller() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
+    // Check if running on iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(iOS);
+
+    // Check if app is already installed (standalone mode)
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || 
+                      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+    setIsInstalled(standalone);
+
+    if (standalone) {
       return;
     }
 
     // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register('/sw.js', { scope: '/' })
         .then((registration) => {
           console.log('[PWA] Service Worker registered:', registration.scope);
 
@@ -32,9 +42,7 @@ export default function PWAInstaller() {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New service worker available
                   console.log('[PWA] New service worker available');
-                  // You can show a notification here to reload the page
                 }
               });
             }
@@ -54,9 +62,10 @@ export default function PWAInstaller() {
       });
     }
 
-    // Listen for beforeinstallprompt event
+    // Listen for beforeinstallprompt event (Chrome, Edge, etc.)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
+      console.log('[PWA] beforeinstallprompt event fired');
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowInstallButton(true);
     };
@@ -71,35 +80,68 @@ export default function PWAInstaller() {
       setDeferredPrompt(null);
     });
 
+    // For iOS, show install instructions after a delay if prompt doesn't appear
+    if (iOS && !standalone) {
+      const timer = setTimeout(() => {
+        if (!deferredPrompt) {
+          setShowInstallButton(true);
+        }
+      }, 3000);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      };
+    }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) {
+    if (isIOS) {
+      // For iOS, show instructions
+      alert('Untuk menginstall aplikasi di iOS:\n\n1. Tap tombol Share (kotak dengan panah)\n2. Pilih "Add to Home Screen"\n3. Tap "Add"');
       return;
     }
 
-    // Show the install prompt
-    deferredPrompt.prompt();
-
-    // Wait for the user to respond
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      console.log('[PWA] User accepted the install prompt');
-    } else {
-      console.log('[PWA] User dismissed the install prompt');
+    if (!deferredPrompt) {
+      // Fallback: try to trigger browser's install UI
+      console.log('[PWA] No deferred prompt available, checking if installable...');
+      return;
     }
 
-    // Clear the deferred prompt
-    setDeferredPrompt(null);
-    setShowInstallButton(false);
+    try {
+      // Show the install prompt
+      await deferredPrompt.prompt();
+
+      // Wait for the user to respond
+      const { outcome } = await deferredPrompt.userChoice;
+
+      if (outcome === 'accepted') {
+        console.log('[PWA] User accepted the install prompt');
+        setIsInstalled(true);
+      } else {
+        console.log('[PWA] User dismissed the install prompt');
+      }
+
+      // Clear the deferred prompt
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    } catch (error) {
+      console.error('[PWA] Error showing install prompt:', error);
+    }
   };
 
-  // Don't render anything if installed or no install prompt available
-  if (isInstalled || !showInstallButton) {
+  // Don't render if already installed
+  if (isInstalled) {
+    return null;
+  }
+
+  // Show install button if:
+  // 1. We have a deferred prompt (Android/Chrome), OR
+  // 2. It's iOS and we want to show instructions
+  if (!showInstallButton && !isIOS) {
     return null;
   }
 
@@ -107,7 +149,7 @@ export default function PWAInstaller() {
     <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
       <button
         onClick={handleInstallClick}
-        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium flex items-center space-x-2"
+        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium flex items-center space-x-2 backdrop-blur-sm"
         aria-label="Install Bukhari Service Center App"
       >
         <svg
@@ -123,7 +165,7 @@ export default function PWAInstaller() {
             d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
           />
         </svg>
-        <span>Install App</span>
+        <span>{isIOS ? 'Install App' : 'Install App'}</span>
       </button>
     </div>
   );

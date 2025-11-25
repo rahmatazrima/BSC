@@ -66,9 +66,20 @@ export async function middleware(request: NextRequest) {
       }
 
     } catch (error) {
-      // Token invalid
+      // Token invalid - hapus cookie dengan semua opsi yang sama
       const response = NextResponse.redirect(new URL('/login', request.url))
-      response.cookies.delete('auth-token')
+      response.cookies.set('auth-token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 0,
+        path: '/',
+        expires: new Date(0)
+      })
+      // Set cache control headers
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
       return response
     }
   }
