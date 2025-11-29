@@ -262,7 +262,6 @@ export default function MasterDataPage() {
                 width={40}
                 height={40}
                 className="rounded-full"
-                unoptimized={true}
               />
               <div>
                 <h1 className="font-bold text-lg sm:text-xl text-white">Master Data Management</h1>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { EnvelopeIcon } from '@/components/icons';
 
 interface User {
   id: string;
@@ -139,7 +140,7 @@ export default function EmailSender({ onEmailSent }: EmailSenderProps) {
   return (
     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
       <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <span>📧</span>
+        <EnvelopeIcon className="w-6 h-6 text-blue-400" />
         Kirim Notifikasi Email
       </h3>
 
@@ -274,7 +275,7 @@ export default function EmailSender({ onEmailSent }: EmailSenderProps) {
             </>
           ) : (
             <>
-              <span>📧</span>
+              <EnvelopeIcon className="w-5 h-5" />
               Kirim Email
             </>
           )}
