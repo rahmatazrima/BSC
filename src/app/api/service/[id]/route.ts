@@ -63,20 +63,10 @@ export async function GET(
           }
         },
         handphone: {
-          include: {
-            kendalaHandphone: {
-              include: {
-                pergantianBarang: {
-                  select: {
-                    id: true,
-                    namaBarang: true,
-                    harga: true,
-                    createdAt: true,
-                    updatedAt: true
-                  }
-                }
-              }
-            }
+          select: {
+            id: true,
+            brand: true,
+            tipe: true
           }
         },
         waktu: {
@@ -88,6 +78,20 @@ export async function GET(
             isAvailable: true,
             createdAt: true,
             updatedAt: true
+          }
+        },
+        // Include kendalaHandphone yang dipilih customer untuk service ini (many-to-many)
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: {
+              select: {
+                id: true,
+                namaBarang: true,
+                harga: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            }
           }
         }
       }
@@ -124,14 +128,25 @@ export async function GET(
     };
 
     // Calculate service cost and details
-    // kendalaHandphone is an array, so we need to access the first element
-    const firstKendala = service.handphone?.kendalaHandphone?.[0];
-    const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
+    // Menggunakan kendalaHandphone yang dipilih customer (dari service.kendalaHandphone)
+    const selectedKendala = service.kendalaHandphone || [];
+    
+    // Hitung total harga dari semua pergantianBarang dari semua kendala yang dipilih
+    const totalPrice = selectedKendala.reduce((total, kendala) => {
+      const kendalaPrice = kendala.pergantianBarang?.reduce(
+        (sum, item) => sum + item.harga,
+        0
+      ) ?? 0;
+      return total + kendalaPrice;
+    }, 0);
     
     const serviceDetails = {
-      problemDescription: firstKendala?.topikMasalah || 'No problem specified',
-      replacementPart: firstPergantianBarang?.namaBarang || 'No parts needed',
-      estimatedCost: firstPergantianBarang?.harga || 0,
+      problems: selectedKendala.map(k => ({
+        id: k.id,
+        topikMasalah: k.topikMasalah,
+        pergantianBarang: k.pergantianBarang
+      })),
+      totalPrice: totalPrice,
       deviceInfo: service.handphone ? 
         `${service.handphone.brand} ${service.handphone.tipe}` : 'Unknown device',
       serviceLocation: service.tempat
@@ -178,7 +193,13 @@ export async function GET(
       content: {
         ...service,
         serviceDuration,
-        serviceDetails,
+        serviceDetails: {
+          ...serviceDetails,
+          problems: serviceDetails.problems,
+          totalPrice: serviceDetails.totalPrice,
+          deviceInfo: serviceDetails.deviceInfo,
+          serviceLocation: serviceDetails.serviceLocation
+        },
         timeline,
         analytics
       }

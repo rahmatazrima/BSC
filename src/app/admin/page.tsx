@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import EmailSender from '@/components/EmailSender';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminHeader from '@/components/AdminHeader';
+import OrderDetailModal from '@/components/OrderDetailModal';
 import { 
   ClipboardDocumentListIcon, 
   ClockIcon, 
   WrenchScrewdriverIcon, 
-  CurrencyDollarIcon 
+  CurrencyDollarIcon,
+  PencilIcon
 } from '@/components/icons';
 
 // Types
@@ -67,43 +69,11 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch all services
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch("/api/service/getAllServices", {
-          credentials: "include",
-        });
-
-        const json = await response.json();
-
-        if (!response.ok) {
-          throw new Error(json.message || "Gagal memuat data service");
-        }
-
-        if (json.status && json.content) {
-          setOrders(json.content);
-          if (json.stats) {
-            setStats(json.stats);
-          }
-        }
-      } catch (err: unknown) {
-        console.error("Fetch services error:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Terjadi kesalahan saat memuat data service"
-        );
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchServices();
   }, []);
 
@@ -146,6 +116,55 @@ export default function AdminDashboard() {
           ? err.message
           : "Gagal mengupdate status pesanan"
       );
+    }
+  };
+
+  const handleViewDetail = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedOrderId(null);
+  };
+
+  const handleModalStatusUpdate = () => {
+    // Refresh orders list when status is updated in modal
+    fetchServices();
+  };
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/service/getAllServices", {
+        credentials: "include",
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json.message || "Gagal memuat data service");
+      }
+
+      if (json.status && json.content) {
+        setOrders(json.content);
+        if (json.stats) {
+          setStats(json.stats);
+        }
+      }
+    } catch (err: unknown) {
+      console.error("Fetch services error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memuat data service"
+      );
+      setOrders([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -350,12 +369,13 @@ export default function AdminDashboard() {
                           <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Detail</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredOrders.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                            <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                               Tidak ada pesanan untuk filter ini
                             </td>
                           </tr>
@@ -401,6 +421,15 @@ export default function AdminDashboard() {
                                   <option value="CANCELLED" className="bg-gray-800">Dibatalkan</option>
                                 </select>
                               </td>
+                              <td className="px-6 py-4">
+                                <button
+                                  onClick={() => handleViewDetail(order.id)}
+                                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2 text-sm"
+                                >
+                                  <PencilIcon className="w-4 h-4" />
+                                  <span>Lihat Detail</span>
+                                </button>
+                              </td>
                             </tr>
                           ))
                         )}
@@ -411,6 +440,14 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+
+          {/* Order Detail Modal */}
+          <OrderDetailModal
+            orderId={selectedOrderId}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onStatusUpdate={handleModalStatusUpdate}
+          />
 
           {/* Email Tab */}
           {selectedTab === 'email' && (
