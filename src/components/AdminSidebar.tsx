@@ -123,9 +123,13 @@ export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarP
           <div className="p-4 border-t border-white/10 space-y-2">
             <Link
               href="/admin/master-data"
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-all group"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all group ${
+                pathname === '/admin/master-data'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25'
+                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
+              }`}
             >
-              <span className="text-gray-400 group-hover:text-white">
+              <span className={pathname === '/admin/master-data' ? 'text-white' : 'text-gray-400 group-hover:text-white'}>
                 <Cog6ToothIcon />
               </span>
               <span className="font-medium">Master Data</span>

@@ -1,8 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import AdminSidebar from '@/components/AdminSidebar';
+import AdminHeader from '@/components/AdminHeader';
+import { 
+  DevicePhoneMobileIcon,
+  ExclamationTriangleIcon,
+  WrenchScrewdriverIcon,
+  ClockIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon
+} from '@/components/icons';
 
 // Types - Updated to match new schema
 interface Handphone {
@@ -45,7 +55,6 @@ interface Waktu {
 }
 
 export default function MasterDataPage() {
-  // Updated tab order: handphone first!
   const [selectedTab, setSelectedTab] = useState<'handphone' | 'kendala' | 'sparepart' | 'waktu'>('handphone');
   const [loading, setLoading] = useState(false);
   
@@ -249,130 +258,123 @@ export default function MasterDataPage() {
     }
   };
 
+  const tabs = [
+    { id: 'handphone' as const, label: 'Handphone', icon: DevicePhoneMobileIcon },
+    { id: 'kendala' as const, label: 'Kendala HP', icon: ExclamationTriangleIcon },
+    { id: 'sparepart' as const, label: 'Sparepart', icon: WrenchScrewdriverIcon },
+    { id: 'waktu' as const, label: 'Waktu/Shift', icon: ClockIcon }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
-      {/* Header */}
-      <div className="bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <Image
-                src="/logo.png"
-                alt="Bukhari Service Center"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div>
-                <h1 className="font-bold text-lg sm:text-xl text-white">Master Data Management</h1>
-                <p className="text-xs sm:text-sm text-gray-300">Kelola Data HP, Kendala, Sparepart & Waktu</p>
-              </div>
-            </div>
-            <Link
-              href="/admin"
-              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 text-sm sm:text-base whitespace-nowrap"
-            >
-              ← Kembali
-            </Link>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex">
+      {/* Sidebar */}
+      <AdminSidebar selectedTab="master-data" onTabChange={() => {}} />
 
-      {/* Navigation Tabs - RESPONSIVE */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-        {/* Mobile: Dropdown */}
-        <div className="sm:hidden mb-6">
-          <select
-            value={selectedTab}
-            onChange={(e) => setSelectedTab(e.target.value as any)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          >
-            <option value="handphone" className="bg-gray-800">📱 Handphone</option>
-            <option value="kendala" className="bg-gray-800">⚠️ Kendala HP</option>
-            <option value="sparepart" className="bg-gray-800">🔧 Sparepart</option>
-            <option value="waktu" className="bg-gray-800">⏰ Waktu/Shift</option>
-          </select>
-        </div>
-
-        {/* Desktop/Tablet: Tabs */}
-        <div className="hidden sm:flex space-x-1 bg-white/10 p-1 rounded-xl mb-6 sm:mb-8 overflow-x-auto">
-          {[
-            { id: 'handphone', label: '📱 Handphone', icon: '📱' },
-            { id: 'kendala', label: '⚠️ Kendala HP', icon: '⚠️' },
-            { id: 'sparepart', label: '🔧 Sparepart', icon: '🔧' },
-            { id: 'waktu', label: '⏰ Waktu/Shift', icon: '⏰' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedTab(tab.id as any)}
-              className={`flex-1 py-2 sm:py-3 px-3 sm:px-6 rounded-lg text-center transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
-                selectedTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Add Button */}
-        <div className="mb-4 sm:mb-6">
-          <button
-            onClick={openCreateModal}
-            className="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg text-sm sm:text-base"
-          >
-            + Tambah Data Baru
-          </button>
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <AdminHeader />
 
         {/* Content Area */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
-              <p className="text-white mt-4">Loading...</p>
+        <main className="flex-1 p-6 overflow-y-auto">
+          {/* Navigation Tabs */}
+          <div className="mb-6">
+            {/* Mobile: Dropdown */}
+            <div className="sm:hidden mb-4">
+              <select
+                value={selectedTab}
+                onChange={(e) => setSelectedTab(e.target.value as any)}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+              >
+                {tabs.map((tab) => (
+                  <option key={tab.id} value={tab.id} className="bg-gray-800">
+                    {tab.label}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : (
-            <>
-              {/* Handphone Tab */}
-              {selectedTab === 'handphone' && (
-                <HandphoneTable 
-                  data={handphoneList} 
-                  onEdit={openEditModal}
-                  onDelete={handleDelete}
-                />
-              )}
 
-              {/* Kendala Tab */}
-              {selectedTab === 'kendala' && (
-                <KendalaTable 
-                  data={kendalaList}
-                  onEdit={openEditModal}
-                  onDelete={handleDelete}
-                />
-              )}
+            {/* Desktop/Tablet: Tabs */}
+            <div className="hidden sm:flex space-x-1 bg-white/10 p-1 rounded-xl overflow-x-auto">
+              {tabs.map((tab) => {
+                const IconComponent = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`flex items-center space-x-2 flex-1 py-3 px-6 rounded-lg text-center transition-all duration-300 whitespace-nowrap ${
+                      selectedTab === tab.id
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <IconComponent className="w-5 h-5" />
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-              {/* Sparepart Tab */}
-              {selectedTab === 'sparepart' && (
-                <SparepartTable 
-                  data={sparepartList}
-                  onEdit={openEditModal}
-                  onDelete={handleDelete}
-                />
-              )}
+          {/* Add Button */}
+          <div className="mb-6">
+            <button
+              onClick={openCreateModal}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-semibold transition-all shadow-lg"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Tambah Data Baru</span>
+            </button>
+          </div>
 
-              {/* Waktu Tab */}
-              {selectedTab === 'waktu' && (
-                <WaktuTable 
-                  data={waktuList}
-                  onEdit={openEditModal}
-                  onDelete={handleDelete}
-                />
-              )}
-            </>
-          )}
-        </div>
+          {/* Content Area */}
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+            {loading ? (
+              <div className="p-12 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
+                <p className="text-white mt-4">Loading...</p>
+              </div>
+            ) : (
+              <>
+                {/* Handphone Tab */}
+                {selectedTab === 'handphone' && (
+                  <HandphoneTable 
+                    data={handphoneList} 
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                )}
+
+                {/* Kendala Tab */}
+                {selectedTab === 'kendala' && (
+                  <KendalaTable 
+                    data={kendalaList}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                )}
+
+                {/* Sparepart Tab */}
+                {selectedTab === 'sparepart' && (
+                  <SparepartTable 
+                    data={sparepartList}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                )}
+
+                {/* Waktu Tab */}
+                {selectedTab === 'waktu' && (
+                  <WaktuTable 
+                    data={waktuList}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </main>
       </div>
 
       {/* Modal */}
@@ -404,18 +406,18 @@ export default function MasterDataPage() {
               <WaktuForm formData={formData} setFormData={setFormData} />
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+            <div className="flex gap-4 pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 text-sm sm:text-base"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
               >
                 {loading ? 'Menyimpan...' : 'Simpan'}
               </button>
               <button
                 type="button"
                 onClick={closeModal}
-                className="w-full sm:flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all text-sm sm:text-base"
+                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold transition-all border border-white/20"
               >
                 Batal
               </button>
@@ -432,15 +434,15 @@ function Modal({ isOpen, onClose, title, children }: any) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-gray-900 rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6 w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-white">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-gray-900 rounded-2xl border border-white/20 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl sm:text-3xl min-w-[40px] min-h-[40px] flex items-center justify-center"
+            className="text-gray-400 hover:text-white transition-colors"
           >
-            ×
+            <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
         {children}
@@ -449,14 +451,12 @@ function Modal({ isOpen, onClose, title, children }: any) {
   );
 }
 
-// Form Components - UPDATED
-
-// NEW: Handphone Form (No dropdown needed!)
+// Form Components
 function HandphoneForm({ formData, setFormData }: any) {
   return (
     <>
       <div>
-        <label className="block text-white mb-2">Brand HP</label>
+        <label className="block text-white mb-2 font-medium">Brand HP</label>
         <input
           type="text"
           value={formData.brand || ''}
@@ -467,7 +467,7 @@ function HandphoneForm({ formData, setFormData }: any) {
         />
       </div>
       <div>
-        <label className="block text-white mb-2">Tipe HP</label>
+        <label className="block text-white mb-2 font-medium">Tipe HP</label>
         <input
           type="text"
           value={formData.tipe || ''}
@@ -481,12 +481,11 @@ function HandphoneForm({ formData, setFormData }: any) {
   );
 }
 
-// UPDATED: Kendala Form (Now needs handphone dropdown!)
 function KendalaForm({ formData, setFormData, handphoneList }: any) {
   return (
     <>
       <div>
-        <label className="block text-white mb-2">Pilih Handphone</label>
+        <label className="block text-white mb-2 font-medium">Pilih Handphone</label>
         <select
           value={formData.handphoneId || ''}
           onChange={(e) => setFormData({ ...formData, handphoneId: e.target.value })}
@@ -502,7 +501,7 @@ function KendalaForm({ formData, setFormData, handphoneList }: any) {
         </select>
       </div>
       <div>
-        <label className="block text-white mb-2">Topik Masalah</label>
+        <label className="block text-white mb-2 font-medium">Topik Masalah</label>
         <input
           type="text"
           value={formData.topikMasalah || ''}
@@ -516,12 +515,11 @@ function KendalaForm({ formData, setFormData, handphoneList }: any) {
   );
 }
 
-// UPDATED: Sparepart Form (Now needs kendala dropdown!)
 function SparepartForm({ formData, setFormData, kendalaList }: any) {
   return (
     <>
       <div>
-        <label className="block text-white mb-2">Pilih Kendala</label>
+        <label className="block text-white mb-2 font-medium">Pilih Kendala</label>
         <select
           value={formData.kendalaHandphoneId || ''}
           onChange={(e) => setFormData({ ...formData, kendalaHandphoneId: e.target.value })}
@@ -537,7 +535,7 @@ function SparepartForm({ formData, setFormData, kendalaList }: any) {
         </select>
       </div>
       <div>
-        <label className="block text-white mb-2">Nama Sparepart</label>
+        <label className="block text-white mb-2 font-medium">Nama Sparepart</label>
         <input
           type="text"
           value={formData.namaBarang || ''}
@@ -548,7 +546,7 @@ function SparepartForm({ formData, setFormData, kendalaList }: any) {
         />
       </div>
       <div>
-        <label className="block text-white mb-2">Harga (Rp)</label>
+        <label className="block text-white mb-2 font-medium">Harga (Rp)</label>
         <input
           type="number"
           value={formData.harga || ''}
@@ -567,7 +565,7 @@ function WaktuForm({ formData, setFormData }: any) {
   return (
     <>
       <div>
-        <label className="block text-white mb-2">Nama Shift</label>
+        <label className="block text-white mb-2 font-medium">Nama Shift</label>
         <input
           type="text"
           value={formData.namaShift || ''}
@@ -579,7 +577,7 @@ function WaktuForm({ formData, setFormData }: any) {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-white mb-2">Jam Mulai</label>
+          <label className="block text-white mb-2 font-medium">Jam Mulai</label>
           <input
             type="time"
             value={formData.jamMulai || ''}
@@ -589,7 +587,7 @@ function WaktuForm({ formData, setFormData }: any) {
           />
         </div>
         <div>
-          <label className="block text-white mb-2">Jam Selesai</label>
+          <label className="block text-white mb-2 font-medium">Jam Selesai</label>
           <input
             type="time"
             value={formData.jamSelesai || ''}
@@ -614,8 +612,7 @@ function WaktuForm({ formData, setFormData }: any) {
   );
 }
 
-// Table Components - RESPONSIVE
-
+// Table Components
 function HandphoneTable({ data, onEdit, onDelete }: any) {
   if (data.length === 0) {
     return (
@@ -639,15 +636,17 @@ function HandphoneTable({ data, onEdit, onDelete }: any) {
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
               >
-                ✏️ Edit
+                <PencilIcon className="w-4 h-4" />
+                <span>Edit</span>
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
               >
-                🗑️ Hapus
+                <TrashIcon className="w-4 h-4" />
+                <span>Hapus</span>
               </button>
             </div>
           </div>
@@ -667,7 +666,7 @@ function HandphoneTable({ data, onEdit, onDelete }: any) {
           </thead>
           <tbody>
             {data.map((item: Handphone) => (
-              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 text-white font-semibold">{item.brand}</td>
                 <td className="px-6 py-4 text-gray-300">{item.tipe}</td>
                 <td className="px-6 py-4 text-blue-400">{item.kendalaHandphone?.length || 0} kendala</td>
@@ -675,15 +674,17 @@ function HandphoneTable({ data, onEdit, onDelete }: any) {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onEdit(item)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Edit
+                      <PencilIcon className="w-4 h-4" />
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Hapus
+                      <TrashIcon className="w-4 h-4" />
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </td>
@@ -713,7 +714,7 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
           <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
             <div className="mb-3">
               <div className="text-blue-400 font-semibold text-sm">
-                📱 {item.handphone?.brand} {item.handphone?.tipe}
+                {item.handphone?.brand} {item.handphone?.tipe}
               </div>
               <div className="text-white font-bold text-lg mt-1">{item.topikMasalah}</div>
               <div className="text-green-400 text-xs mt-1">{item.pergantianBarang?.length || 0} sparepart tersedia</div>
@@ -721,15 +722,17 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
               >
-                ✏️ Edit
+                <PencilIcon className="w-4 h-4" />
+                <span>Edit</span>
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
               >
-                🗑️ Hapus
+                <TrashIcon className="w-4 h-4" />
+                <span>Hapus</span>
               </button>
             </div>
           </div>
@@ -749,7 +752,7 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
           </thead>
           <tbody>
             {data.map((item: KendalaHandphone) => (
-              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 text-blue-400 font-semibold">
                   {item.handphone?.brand} {item.handphone?.tipe}
                 </td>
@@ -759,15 +762,17 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onEdit(item)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Edit
+                      <PencilIcon className="w-4 h-4" />
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Hapus
+                      <TrashIcon className="w-4 h-4" />
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </td>
@@ -802,25 +807,27 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
               </div>
               <div className="mt-2 space-y-1">
                 <div className="text-yellow-400 text-sm">
-                  ⚠️ {item.kendalaHandphone?.topikMasalah}
+                  {item.kendalaHandphone?.topikMasalah}
                 </div>
                 <div className="text-blue-400 text-xs">
-                  📱 {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
+                  {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
                 </div>
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
               >
-                ✏️ Edit
+                <PencilIcon className="w-4 h-4" />
+                <span>Edit</span>
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
               >
-                🗑️ Hapus
+                <TrashIcon className="w-4 h-4" />
+                <span>Hapus</span>
               </button>
             </div>
           </div>
@@ -841,7 +848,7 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
           </thead>
           <tbody>
             {data.map((item: PergantianBarang) => (
-              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 text-white">{item.namaBarang}</td>
                 <td className="px-6 py-4 text-yellow-400">{item.kendalaHandphone?.topikMasalah}</td>
                 <td className="px-6 py-4 text-blue-400">
@@ -852,15 +859,17 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onEdit(item)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Edit
+                      <PencilIcon className="w-4 h-4" />
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Hapus
+                      <TrashIcon className="w-4 h-4" />
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </td>
@@ -891,30 +900,32 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
             <div className="mb-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-white font-bold text-lg">{item.namaShift}</div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                   item.isAvailable 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                    : 'bg-red-500/20 text-red-400 border-red-500/30'
                 }`}>
-                  {item.isAvailable ? '✓ Tersedia' : '✗ Tidak Tersedia'}
+                  {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
                 </span>
               </div>
               <div className="text-blue-400 text-sm">
-                ⏰ {item.jamMulai} - {item.jamSelesai}
+                {item.jamMulai} - {item.jamSelesai}
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
               >
-                ✏️ Edit
+                <PencilIcon className="w-4 h-4" />
+                <span>Edit</span>
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
               >
-                🗑️ Hapus
+                <TrashIcon className="w-4 h-4" />
+                <span>Hapus</span>
               </button>
             </div>
           </div>
@@ -935,15 +946,15 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
           </thead>
           <tbody>
             {data.map((item: Waktu) => (
-              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5">
+              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                 <td className="px-6 py-4 text-white font-semibold">{item.namaShift}</td>
                 <td className="px-6 py-4 text-blue-400">{item.jamMulai}</td>
                 <td className="px-6 py-4 text-blue-400">{item.jamSelesai}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                     item.isAvailable 
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                      : 'bg-red-500/20 text-red-400 border-red-500/30'
                   }`}>
                     {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
                   </span>
@@ -952,15 +963,17 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onEdit(item)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Edit
+                      <PencilIcon className="w-4 h-4" />
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                      className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
                     >
-                      Hapus
+                      <TrashIcon className="w-4 h-4" />
+                      <span>Hapus</span>
                     </button>
                   </div>
                 </td>

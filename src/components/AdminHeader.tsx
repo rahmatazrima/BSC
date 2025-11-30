@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ArrowRightOnRectangleIcon, ChevronDownIcon } from '@/components/icons';
 
 interface UserData {
@@ -74,13 +74,29 @@ export default function AdminHeader() {
       .slice(0, 2);
   };
 
+  const pathname = usePathname();
+  const getPageTitle = () => {
+    if (pathname === '/admin/master-data') {
+      return {
+        title: 'Master Data Management',
+        subtitle: 'Kelola Data HP, Kendala, Sparepart & Waktu'
+      };
+    }
+    return {
+      title: 'Admin Dashboard',
+      subtitle: 'Kelola semua aktivitas sistem'
+    };
+  };
+
+  const pageInfo = getPageTitle();
+
   return (
     <header className="sticky top-0 z-30 bg-black/40 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Page Title - akan diisi oleh parent */}
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-white">Admin Dashboard</h2>
-          <p className="text-sm text-gray-400">Kelola semua aktivitas sistem</p>
+          <h2 className="text-xl font-bold text-white">{pageInfo.title}</h2>
+          <p className="text-sm text-gray-400">{pageInfo.subtitle}</p>
         </div>
 
         {/* User Menu */}
