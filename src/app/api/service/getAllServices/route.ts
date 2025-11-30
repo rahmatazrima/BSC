@@ -87,15 +87,19 @@ export async function GET(request: NextRequest) {
           },
         },
         handphone: {
-          include: {
-            kendalaHandphone: {
-              include: {
-                pergantianBarang: true,
-              },
-            },
+          select: {
+            id: true,
+            brand: true,
+            tipe: true,
           },
         },
         waktu: true,
+        // Include kendalaHandphone yang dipilih customer untuk service ini (many-to-many)
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -104,11 +108,21 @@ export async function GET(request: NextRequest) {
 
     // Format data untuk admin dashboard
     const formattedServices = services.map((service) => {
-      const primaryIssue = service.handphone.kendalaHandphone?.[0];
-      const partsPrice = primaryIssue?.pergantianBarang?.reduce(
-        (total, item) => total + item.harga,
-        0
-      ) ?? 0;
+      // Ambil semua kendalaHandphone yang dipilih customer untuk service ini
+      const selectedKendala = service.kendalaHandphone || [];
+      
+      // Hitung total harga dari semua pergantianBarang dari semua kendala yang dipilih
+      const totalPrice = selectedKendala.reduce((total, kendala) => {
+        const kendalaPrice = kendala.pergantianBarang?.reduce(
+          (sum, item) => sum + item.harga,
+          0
+        ) ?? 0;
+        return total + kendalaPrice;
+      }, 0);
+
+      // Format semua uraian masalah yang dipilih customer
+      const problems = selectedKendala.map(k => k.topikMasalah);
+      const problemsText = problems.length > 0 ? problems.join(", ") : "-";
 
       return {
         id: service.id,
@@ -116,12 +130,13 @@ export async function GET(request: NextRequest) {
         customerEmail: service.user.email,
         customerPhone: service.user.phoneNumber,
         device: `${service.handphone.brand} ${service.handphone.tipe}`,
-        problem: primaryIssue?.topikMasalah ?? "-",
+        problem: problemsText, // Semua uraian masalah yang dipilih
+        problems: problems, // Array uraian masalah
         status: service.statusService,
         serviceType: service.tempat,
         alamat: service.alamat, // Alamat lengkap pelanggan (opsional)
         scheduledDate: service.tanggalPesan,
-        price: partsPrice,
+        price: totalPrice,
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,
         handphone: {
@@ -137,13 +152,12 @@ export async function GET(request: NextRequest) {
               jamSelesai: service.waktu.jamSelesai,
             }
           : null,
-        issue: primaryIssue
-          ? {
-              id: primaryIssue.id,
-              topikMasalah: primaryIssue.topikMasalah,
-              pergantianBarang: primaryIssue.pergantianBarang,
-            }
-          : null,
+        // Semua kendala yang dipilih customer dengan detail lengkap
+        kendalaHandphone: selectedKendala.map(k => ({
+          id: k.id,
+          topikMasalah: k.topikMasalah,
+          pergantianBarang: k.pergantianBarang,
+        })),
       };
     });
 
@@ -160,6 +174,19 @@ export async function GET(request: NextRequest) {
       totalRevenue: formattedServices
         .filter((s) => s.status === "COMPLETED")
         .reduce((sum, service) => sum + service.price, 0),
+      // Analytics untuk masalah paling sering berdasarkan kendala yang dipilih customer
+      popularProblems: (() => {
+        const problemCounts: Record<string, number> = {};
+        formattedServices.forEach((service) => {
+          service.problems?.forEach((problem) => {
+            problemCounts[problem] = (problemCounts[problem] || 0) + 1;
+          });
+        });
+        return Object.entries(problemCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 10)
+          .map(([problem, count]) => ({ problem, count }));
+      })(),
     };
 
     return NextResponse.json({

@@ -12,13 +12,24 @@ import {
 } from '@/components/icons';
 
 // Types
+interface KendalaHandphone {
+  id: string;
+  topikMasalah: string;
+  pergantianBarang: Array<{
+    id: string;
+    namaBarang: string;
+    harga: number;
+  }>;
+}
+
 interface Order {
   id: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   device: string;
-  problem: string;
+  problem: string; // String gabungan semua masalah
+  problems: string[]; // Array semua uraian masalah yang dipilih customer
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   serviceType: string;
   alamat: string | null;
@@ -26,6 +37,7 @@ interface Order {
   price: number;
   createdAt: string;
   updatedAt: string;
+  kendalaHandphone: KendalaHandphone[]; // Semua kendala yang dipilih customer
 }
 
 interface ServiceStats {
@@ -35,6 +47,10 @@ interface ServiceStats {
   completed: number;
   cancelled: number;
   totalRevenue: number;
+  popularProblems?: Array<{
+    problem: string;
+    count: number;
+  }>;
 }
 
 export default function AdminDashboard() {
@@ -264,7 +280,21 @@ export default function AdminDashboard() {
                           <div className="flex items-center space-x-4">
                             <div>
                               <p className="font-semibold text-white">{order.customerName}</p>
-                              <p className="text-sm text-gray-300">{order.device} - {order.problem}</p>
+                              <p className="text-sm text-gray-300">{order.device}</p>
+                              <div className="mt-1">
+                                <p className="text-sm text-gray-300 font-medium">Uraian Masalah:</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {order.problems && order.problems.length > 0 ? (
+                                    order.problems.map((problem, idx) => (
+                                      <span key={idx} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">
+                                        {problem}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-gray-400">-</span>
+                                  )}
+                                </div>
+                              </div>
                               {order.alamat && (
                                 <p className="text-xs text-gray-400 mt-1">📍 {order.alamat}</p>
                               )}
@@ -314,10 +344,9 @@ export default function AdminDashboard() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-white/20">
-                          <th className="px-6 py-4 text-left text-white font-semibold">ID Pesanan</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Pelanggan</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Perangkat</th>
-                          <th className="px-6 py-4 text-left text-white font-semibold">Masalah</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Uraian Masalah</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
                           <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
@@ -326,17 +355,34 @@ export default function AdminDashboard() {
                       <tbody>
                         {filteredOrders.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
+                            <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                               Tidak ada pesanan untuk filter ini
                             </td>
                           </tr>
                         ) : (
                           filteredOrders.map((order) => (
                             <tr key={order.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 text-blue-400 font-mono text-sm">{order.id.slice(0, 8)}...</td>
-                              <td className="px-6 py-4 text-white">{order.customerName}</td>
+                              <td className="px-6 py-4">
+                                <div>
+                                  <p className="text-white font-medium">{order.customerName}</p>
+                                  <p className="text-xs text-gray-400">{order.customerEmail}</p>
+                                  <p className="text-xs text-gray-400">{order.customerPhone}</p>
+                                </div>
+                              </td>
                               <td className="px-6 py-4 text-gray-300">{order.device}</td>
-                              <td className="px-6 py-4 text-gray-300">{order.problem}</td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-wrap gap-1 max-w-md">
+                                  {order.problems && order.problems.length > 0 ? (
+                                    order.problems.map((problem, idx) => (
+                                      <span key={idx} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">
+                                        {problem}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-gray-400 text-sm">-</span>
+                                  )}
+                                </div>
+                              </td>
                               <td className="px-6 py-4">
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
                                   {getStatusText(order.status)}
@@ -401,20 +447,18 @@ export default function AdminDashboard() {
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
                   <h3 className="text-xl font-bold text-white mb-6">Masalah Paling Sering</h3>
                   <div className="space-y-4">
-                    {Object.entries(
-                      orders.reduce((acc: any, order) => {
-                        acc[order.problem] = (acc[order.problem] || 0) + 1;
-                        return acc;
-                      }, {})
-                    )
-                      .sort(([,a]: any, [,b]: any) => b - a)
-                      .slice(0, 5)
-                      .map(([problem, count]: any) => (
-                        <div key={problem} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                          <span className="text-gray-300">{problem}</span>
-                          <span className="text-white font-semibold">{count}</span>
+                    {stats.popularProblems && stats.popularProblems.length > 0 ? (
+                      stats.popularProblems.map((item) => (
+                        <div key={item.problem} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                          <span className="text-gray-300">{item.problem}</span>
+                          <span className="text-white font-semibold">{item.count}</span>
                         </div>
-                      ))}
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-400">
+                        Belum ada data masalah
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
