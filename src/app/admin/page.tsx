@@ -10,7 +10,9 @@ import {
   ClockIcon, 
   WrenchScrewdriverIcon, 
   CurrencyDollarIcon,
-  PencilIcon
+  PencilIcon,
+  MagnifyingGlassIcon,
+  ArrowPathIcon
 } from '@/components/icons';
 
 // Types
@@ -71,11 +73,51 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string>("");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Search & Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+  const [brandFilter, setBrandFilter] = useState("all");
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Fetch all services
+  // Fetch brands on mount
   useEffect(() => {
-    fetchServices();
+    fetchBrands();
   }, []);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch services when filters change (only in orders tab)
+  useEffect(() => {
+    if (selectedTab === 'orders') {
+      fetchServices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab, debouncedSearch, statusFilter, searchDate, brandFilter]);
+
+  const fetchBrands = async () => {
+    try {
+      const response = await fetch("/api/handphone", {
+        credentials: "include",
+      });
+      const json = await response.json();
+      
+      if (json.status && json.content) {
+        const brands = Array.from(new Set(json.content.map((hp: any) => hp.brand))).sort() as string[];
+        setAvailableBrands(brands);
+      }
+    } catch (err) {
+      console.error("Error fetching brands:", err);
+    }
+  };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
@@ -96,19 +138,8 @@ export default function AdminDashboard() {
         throw new Error(json.message || "Gagal mengupdate status");
       }
 
-      // Update local state
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      ));
-
-      // Refresh stats
-      const statsResponse = await fetch("/api/service/getAllServices", {
-        credentials: "include",
-      });
-      const statsJson = await statsResponse.json();
-      if (statsJson.stats) {
-        setStats(statsJson.stats);
-      }
+      // Refresh data dengan filter yang sama
+      await fetchServices();
     } catch (err: unknown) {
       console.error("Update status error:", err);
       alert(
@@ -139,7 +170,31 @@ export default function AdminDashboard() {
       setLoading(true);
       setError("");
 
-      const response = await fetch("/api/service/getAllServices", {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') {
+        const statusMap: Record<string, string> = {
+          'pending': 'PENDING',
+          'in-progress': 'IN_PROGRESS',
+          'completed': 'COMPLETED',
+          'cancelled': 'CANCELLED',
+        };
+        params.append('status', statusMap[statusFilter]);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
+      if (searchDate) {
+        params.append('searchDate', searchDate);
+      }
+      if (brandFilter && brandFilter !== 'all') {
+        params.append('brand', brandFilter);
+      }
+
+      const queryString = params.toString();
+      const url = `/api/service/getAllServices${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url, {
         credentials: "include",
       });
 
@@ -168,6 +223,13 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setSearchDate("");
+    setBrandFilter("all");
+    setStatusFilter("all");
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
@@ -188,17 +250,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredOrders = statusFilter === 'all' 
-    ? orders 
-    : orders.filter(order => {
-        const statusMap: Record<string, string> = {
-          'pending': 'PENDING',
-          'in-progress': 'IN_PROGRESS',
-          'completed': 'COMPLETED',
-          'cancelled': 'CANCELLED',
-        };
-        return order.status === statusMap[statusFilter];
-      });
+  // Filtering sudah dilakukan di backend, tapi tetap filter di frontend untuk status sebagai fallback
+  // (karena status filter sudah dikirim ke backend, ini hanya untuk safety)
+  const filteredOrders = orders;
 
   const getTabTitle = () => {
     switch (selectedTab) {
@@ -321,7 +375,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
+                          <span className={`px-3 py-1 text-xs font-medium border ${getStatusColor(order.status)}`}>
                             {getStatusText(order.status)}
                           </span>
                           <p className="text-sm text-gray-300 mt-1">Rp {order.price.toLocaleString('id-ID')}</p>
@@ -337,19 +391,81 @@ export default function AdminDashboard() {
           {/* Orders Management Tab */}
           {selectedTab === 'orders' && (
             <div className="space-y-6">
-              {/* Filter */}
-              <div className="flex space-x-4">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                >
-                  <option value="all" className="bg-gray-800">Semua Status</option>
-                  <option value="pending" className="bg-gray-800">Menunggu</option>
-                  <option value="in-progress" className="bg-gray-800">Sedang Dikerjakan</option>
-                  <option value="completed" className="bg-gray-800">Selesai</option>
-                  <option value="cancelled" className="bg-gray-800">Dibatalkan</option>
-                </select>
+              {/* Search & Filter Section */}
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
+                <div className="space-y-4">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Cari berdasarkan nama, email, atau perangkat..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    />
+                  </div>
+
+                  {/* Filter Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Status Filter */}
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Status</label>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      >
+                        <option value="all" className="bg-gray-800">Semua Status</option>
+                        <option value="pending" className="bg-gray-800">Menunggu</option>
+                        <option value="in-progress" className="bg-gray-800">Sedang Dikerjakan</option>
+                        <option value="completed" className="bg-gray-800">Selesai</option>
+                        <option value="cancelled" className="bg-gray-800">Dibatalkan</option>
+                      </select>
+                    </div>
+
+                    {/* Brand Filter */}
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Brand</label>
+                      <select
+                        value={brandFilter}
+                        onChange={(e) => setBrandFilter(e.target.value)}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      >
+                        <option value="all" className="bg-gray-800">Semua Brand</option>
+                        {availableBrands.map((brand) => (
+                          <option key={brand} value={brand} className="bg-gray-800">
+                            {brand}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Search by Date */}
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-2">Cari Berdasarkan Tanggal</label>
+                      <input
+                        type="date"
+                        value={searchDate}
+                        onChange={(e) => setSearchDate(e.target.value)}
+                        className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                      />
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="flex items-end">
+                      <button
+                        onClick={handleResetFilters}
+                        className="w-full px-4 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-600/30 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <ArrowPathIcon className="w-5 h-5" />
+                        <span>Reset Filter</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Orders Table */}
@@ -404,7 +520,7 @@ export default function AdminDashboard() {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
+                                <span className={`px-3 py-1  text-xs font-medium border ${getStatusColor(order.status)}`}>
                                   {getStatusText(order.status)}
                                 </span>
                               </td>

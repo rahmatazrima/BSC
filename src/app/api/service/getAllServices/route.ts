@@ -54,6 +54,9 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
     const tempat = searchParams.get("tempat");
+    const search = searchParams.get("search"); // Search untuk nama, email, atau device
+    const searchDate = searchParams.get("searchDate"); // Search berdasarkan tanggal spesifik (YYYY-MM-DD)
+    const brand = searchParams.get("brand"); // Filter brand handphone
 
     // Build where condition
     const where: any = {};
@@ -70,6 +73,30 @@ export async function GET(request: NextRequest) {
       where.tempat = {
         contains: tempat,
         mode: "insensitive",
+      };
+    }
+
+    // Filter berdasarkan tanggal spesifik
+    if (searchDate) {
+      const searchDateObj = new Date(searchDate);
+      const startOfDay = new Date(searchDateObj);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(searchDateObj);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      where.tanggalPesan = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    }
+
+    // Filter berdasarkan brand handphone
+    if (brand) {
+      where.handphone = {
+        brand: {
+          contains: brand,
+          mode: "insensitive",
+        },
       };
     }
 
@@ -107,7 +134,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format data untuk admin dashboard
-    const formattedServices = services.map((service) => {
+    let formattedServices = services.map((service) => {
       // Ambil semua kendalaHandphone yang dipilih customer untuk service ini
       const selectedKendala = service.kendalaHandphone || [];
       
@@ -160,6 +187,19 @@ export async function GET(request: NextRequest) {
         })),
       };
     });
+
+    // Filter berdasarkan search (nama customer, email, atau device) - dilakukan di frontend karena perlu search di multiple fields
+    if (search) {
+      const searchLower = search.toLowerCase();
+      formattedServices = formattedServices.filter((service) => {
+        return (
+          service.customerName.toLowerCase().includes(searchLower) ||
+          service.customerEmail.toLowerCase().includes(searchLower) ||
+          service.device.toLowerCase().includes(searchLower) ||
+          service.customerPhone.includes(search)
+        );
+      });
+    }
 
     // Hitung statistik
     const stats = {
