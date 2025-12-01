@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
+import { sendEmail, createStatusNotificationTemplate } from '@/lib/email';
 
 // GET - Mengambil service berdasarkan ID
 export async function GET(
@@ -269,7 +270,8 @@ export async function PUT(
       alamat,
       tanggalPesan,
       handphoneId,
-      waktuId
+      waktuId,
+      sendNotification = false // Toggle untuk mengirim notifikasi email
     } = body;
 
     if (!id) {
@@ -482,6 +484,57 @@ export async function PUT(
 
       return service;
     });
+
+    // Kirim email notifikasi jika sendNotification = true dan status berubah
+    if (sendNotification && statusService && statusService !== existingService.statusService) {
+      try {
+        // Ambil data lengkap untuk email
+        const selectedKendala = updatedService.handphone?.kendalaHandphone || [];
+        const problems = selectedKendala.map((k: any) => k.topikMasalah);
+        const totalPrice = selectedKendala.reduce((total: number, kendala: any) => {
+          const kendalaPrice = kendala.pergantianBarang?.reduce(
+            (sum: number, item: any) => sum + item.harga,
+            0
+          ) ?? 0;
+          return total + kendalaPrice;
+        }, 0);
+
+        const scheduledDate = updatedService.tanggalPesan 
+          ? new Date(updatedService.tanggalPesan).toLocaleDateString('id-ID', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })
+          : undefined;
+
+        const scheduledTime = updatedService.waktu 
+          ? `${updatedService.waktu.jamMulai} - ${updatedService.waktu.jamSelesai} (${updatedService.waktu.namaShift})`
+          : undefined;
+
+        const emailHtml = createStatusNotificationTemplate({
+          userName: updatedService.user.name,
+          status: statusService,
+          oldStatus: existingService.statusService,
+          serviceId: updatedService.id,
+          device: `${updatedService.handphone?.brand || ''} ${updatedService.handphone?.tipe || ''}`.trim(),
+          scheduledDate,
+          scheduledTime,
+          problems: problems.length > 0 ? problems : undefined,
+          totalPrice: totalPrice > 0 ? totalPrice : undefined,
+        });
+
+        await sendEmail({
+          to: updatedService.user.email,
+          subject: `Update Status Pesanan - ${statusService === 'PENDING' ? 'Menunggu' : statusService === 'IN_PROGRESS' ? 'Sedang Dikerjakan' : statusService === 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}`,
+          html: emailHtml,
+        });
+      } catch (emailError) {
+        // Log error tapi jangan gagalkan update service
+        console.error('Error sending notification email:', emailError);
+        // Bisa juga return warning di response
+      }
+    }
 
     return NextResponse.json({
       message: 'Service updated successfully',

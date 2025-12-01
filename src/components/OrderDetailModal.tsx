@@ -74,6 +74,7 @@ export default function OrderDetailModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [sendNotification, setSendNotification] = useState(true); // Default: kirim notifikasi
 
   useEffect(() => {
     if (isOpen && orderId) {
@@ -129,6 +130,7 @@ export default function OrderDetailModal({
         credentials: "include",
         body: JSON.stringify({
           statusService: newStatus,
+          sendNotification: sendNotification,
         }),
       });
 
@@ -265,21 +267,35 @@ export default function OrderDetailModal({
           ) : service ? (
             <div className="space-y-6">
               {/* Status Badge */}
-              <div className="flex items-center justify-between">
-                <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(service.statusService)}`}>
-                  {getStatusText(service.statusService)}
-                </span>
-                <select
-                  value={service.statusService}
-                  onChange={(e) => handleStatusUpdate(e.target.value as ServiceDetail['statusService'])}
-                  disabled={updatingStatus}
-                  className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-blue-500/50 outline-none hover:bg-white/20 transition-colors disabled:opacity-50"
-                >
-                  <option value="PENDING" className="bg-gray-800">Menunggu</option>
-                  <option value="IN_PROGRESS" className="bg-gray-800">Sedang Dikerjakan</option>
-                  <option value="COMPLETED" className="bg-gray-800">Selesai</option>
-                  <option value="CANCELLED" className="bg-gray-800">Dibatalkan</option>
-                </select>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(service.statusService)}`}>
+                    {getStatusText(service.statusService)}
+                  </span>
+                  <select
+                    value={service.statusService}
+                    onChange={(e) => handleStatusUpdate(e.target.value as ServiceDetail['statusService'])}
+                    disabled={updatingStatus}
+                    className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-blue-500/50 outline-none hover:bg-white/20 transition-colors disabled:opacity-50"
+                  >
+                    <option value="PENDING" className="bg-gray-800">Menunggu</option>
+                    <option value="IN_PROGRESS" className="bg-gray-800">Sedang Dikerjakan</option>
+                    <option value="COMPLETED" className="bg-gray-800">Selesai</option>
+                    <option value="CANCELLED" className="bg-gray-800">Dibatalkan</option>
+                  </select>
+                </div>
+                <div className="flex items-center justify-end">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sendNotification}
+                      onChange={(e) => setSendNotification(e.target.checked)}
+                      disabled={updatingStatus}
+                      className="w-4 h-4 bg-white/10 border border-white/20 rounded text-blue-600 focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
+                    />
+                    <span className="text-sm text-gray-300">Kirim Notifikasi Email ke Customer</span>
+                  </label>
+                </div>
               </div>
 
               {/* Informasi Perangkat */}

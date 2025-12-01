@@ -119,7 +119,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status'], notify: boolean = true) => {
     try {
       const response = await fetch(`/api/service/${orderId}`, {
         method: "PUT",
@@ -129,6 +129,7 @@ export default function AdminDashboard() {
         credentials: "include",
         body: JSON.stringify({
           statusService: newStatus,
+          sendNotification: notify,
         }),
       });
 
@@ -528,7 +529,7 @@ export default function AdminDashboard() {
                               <td className="px-6 py-4">
                                 <select
                                   value={order.status}
-                                  onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                                  onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'], true)}
                                   className="px-3 py-1 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:border-blue-500/50 outline-none hover:bg-white/20 transition-colors"
                                 >
                                   <option value="PENDING" className="bg-gray-800">Menunggu</option>
