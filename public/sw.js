@@ -1,4 +1,6 @@
 // Service Worker untuk Bukhari Service Center PWA
+'use strict';
+
 const CACHE_NAME = 'bsc-v1';
 const RUNTIME_CACHE = 'bsc-runtime-v1';
 
@@ -6,21 +8,42 @@ const RUNTIME_CACHE = 'bsc-runtime-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/logoo.png',
-  '/logo.png',
 ];
 
 // Install event - cache assets penting
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing...');
+  
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
         console.log('[Service Worker] Precaching assets');
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(() => self.skipWaiting())
+        
+        // Cache assets dengan error handling
+        const cachePromises = PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const response = await fetch(url);
+            if (response && response.ok) {
+              await cache.put(url, response);
+              console.log(`[Service Worker] Cached: ${url}`);
+            } else {
+              console.warn(`[Service Worker] Failed to cache ${url}: ${response?.status || 'no response'}`);
+            }
+          } catch (error) {
+            console.warn(`[Service Worker] Failed to cache ${url}:`, error);
+          }
+        });
+        
+        await Promise.allSettled(cachePromises);
+        console.log('[Service Worker] Installation complete');
+        await self.skipWaiting();
+      } catch (error) {
+        console.error('[Service Worker] Installation failed:', error);
+        // Still skip waiting even if caching fails
+        await self.skipWaiting();
+      }
+    })()
   );
 });
 
@@ -55,40 +78,66 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip service worker and manifest requests
+  if (event.request.url.includes('/sw.js') || event.request.url.includes('/manifest.json')) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        // Return cached version if available
+    (async () => {
+      try {
+        // Try cache first
+        const cachedResponse = await caches.match(event.request);
         if (cachedResponse) {
           return cachedResponse;
         }
 
-        // Otherwise fetch from network
-        return fetch(event.request)
-          .then((response) => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            // Cache the response
-            caches.open(RUNTIME_CACHE)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
+        // Fetch from network
+        try {
+          const response = await fetch(event.request);
+          
+          // Don't cache non-successful responses or non-basic responses
+          if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
-          })
-          .catch(() => {
-            // If network fails, try to serve offline page
-            if (event.request.destination === 'document') {
-              return caches.match('/');
-            }
+          }
+
+          // Clone the response for caching
+          const responseToCache = response.clone();
+
+          // Cache the response (don't wait for it)
+          caches.open(RUNTIME_CACHE).then((cache) => {
+            cache.put(event.request, responseToCache).catch((err) => {
+              console.warn('[Service Worker] Failed to cache response:', err);
+            });
           });
-      })
+
+          return response;
+        } catch (fetchError) {
+          console.warn('[Service Worker] Network fetch failed:', fetchError);
+          
+          // If network fails and it's a document request, try to serve offline page
+          if (event.request.destination === 'document') {
+            const offlinePage = await caches.match('/');
+            if (offlinePage) {
+              return offlinePage;
+            }
+          }
+          
+          // Return error response
+          return new Response('Network error', { 
+            status: 408,
+            statusText: 'Request Timeout'
+          });
+        }
+      } catch (error) {
+        console.error('[Service Worker] Fetch handler error:', error);
+        // Return error response
+        return new Response('Service Worker error', { 
+          status: 500,
+          statusText: 'Internal Server Error'
+        });
+      }
+    })()
   );
 });
 

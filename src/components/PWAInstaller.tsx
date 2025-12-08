@@ -31,26 +31,67 @@ export default function PWAInstaller() {
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js', { scope: '/' })
-        .then((registration) => {
-          console.log('[PWA] Service Worker registered:', registration.scope);
+      // Only register in browser environment
+      if (typeof window !== 'undefined') {
+        navigator.serviceWorker
+          .register('/sw.js', { 
+            scope: '/',
+            updateViaCache: 'none' // Always check for updates
+          })
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered successfully:', registration.scope);
 
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[PWA] New service worker available');
-                }
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] New service worker available');
+                  }
+                });
+              }
+            });
+
+            // Periodically check for updates (every 5 minutes)
+            const updateInterval = setInterval(() => {
+              registration.update().catch((error) => {
+                console.warn('[PWA] Failed to check for service worker updates:', error);
+              });
+            }, 300000); // Check every 5 minutes
+
+            // Store interval ID for cleanup (optional)
+            return () => clearInterval(updateInterval);
+          })
+          .catch((error) => {
+            // Better error handling
+            const errorDetails: Record<string, unknown> = {
+              message: error?.message || 'Unknown error',
+              name: error?.name || 'Error',
+            };
+
+            // Only log stack in development (check if we're in dev mode)
+            const isDev = typeof window !== 'undefined' && 
+                         (window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1');
+            
+            if (isDev && error instanceof Error && error.stack) {
+              errorDetails.stack = error.stack;
+            }
+
+            console.error('[PWA] Service Worker registration failed:', errorDetails);
+            
+            // Log registration attempt details only in development
+            if (isDev) {
+              console.error('[PWA] Registration attempt details:', {
+                url: '/sw.js',
+                scope: '/',
+                userAgent: navigator.userAgent,
+                serviceWorkerSupported: 'serviceWorker' in navigator,
               });
             }
           });
-        })
-        .catch((error) => {
-          console.error('[PWA] Service Worker registration failed:', error);
-        });
+      }
 
       // Listen for service worker updates
       let refreshing = false;

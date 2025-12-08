@@ -12,14 +12,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Skip middleware for PWA files (service worker, manifest)
+  // Skip middleware for PWA files (service worker, manifest) - with proper headers
   const pwaFiles = ['/sw.js', '/manifest.json', '/service-worker.js']
   if (pwaFiles.includes(pathname)) {
-    return NextResponse.next()
+    const response = NextResponse.next()
+    // Set proper content type for service worker
+    if (pathname === '/sw.js' || pathname === '/service-worker.js') {
+      response.headers.set('Content-Type', 'application/javascript; charset=utf-8')
+      response.headers.set('Service-Worker-Allowed', '/')
+    }
+    return response
   }
 
-  // Public routes - Exact match only
-  const publicRoutes = ['/login', '/register', '/']
+  // Public routes - routes that don't require authentication (including landing page)
+  const publicRoutes = ['/', '/login', '/register']
   const isPublicRoute = publicRoutes.includes(pathname)
 
   // Protected routes untuk user biasa
@@ -30,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const adminRoutes = ['/admin']
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
 
-  // Jika tidak ada token dan bukan public route
+  // Jika tidak ada token dan bukan public route → redirect to login
   if (!token && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -60,6 +66,7 @@ export async function middleware(request: NextRequest) {
       }
 
       // Sudah login, akses login/register page → redirect sesuai role
+      // Landing page (/) tetap bisa diakses meskipun sudah login
       if (pathname === '/login' || pathname === '/register') {
         const redirectUrl = decoded.role === 'ADMIN' ? '/admin' : '/booking'
         return NextResponse.redirect(new URL(redirectUrl, request.url))
@@ -89,6 +96,15 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.json|service-worker.js|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - sw.js, manifest.json, service-worker.js (PWA files)
+     * - static file extensions
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|sw.js|manifest.json|service-worker.js|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot)).*)',
   ],
 }
