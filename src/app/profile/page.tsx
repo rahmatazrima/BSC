@@ -11,30 +11,171 @@ interface UserData {
   createdAt: string;
 }
 
+interface FormData {
+  name: string;
+  email: string;
+  phoneNumber: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+}
+
 export default function ProfilePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    phoneNumber: ''
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data.data.user);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUserData();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUserData(data.data.user);
+        setFormData({
+          name: data.data.user.name,
+          email: data.data.user.email,
+          phoneNumber: data.data.user.phoneNumber
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Validasi nama
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nama tidak boleh kosong';
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = 'Nama minimal 3 karakter';
+    }
+
+    // Validasi email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email tidak boleh kosong';
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Format email tidak valid';
+    }
+
+    // Validasi nomor telepon
+    const phoneRegex = /^[0-9]{10,15}$/;
+    const cleanPhone = formData.phoneNumber.replace(/[\s-]/g, '');
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Nomor telepon tidak boleh kosong';
+    } else if (!phoneRegex.test(cleanPhone)) {
+      newErrors.phoneNumber = 'Nomor telepon harus 10-15 digit angka';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error for this field
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
+    
+    // Clear success message when user starts editing
+    if (successMessage) {
+      setSuccessMessage('');
+    }
+  };
+
+  const handleSave = async () => {
+    // Validasi form
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSaving(true);
+    setErrors({});
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUserData(data.data.user);
+        setIsEditing(false);
+        setSuccessMessage('Profile berhasil diperbarui!');
+        
+        // Auto hide success message after 5 seconds
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 5000);
+      } else {
+        // Handle error dari server
+        if (data.message) {
+          if (data.message.includes('email')) {
+            setErrors({ email: data.message });
+          } else {
+            setErrors({ name: data.message });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      setErrors({ name: 'Gagal memperbarui profile. Silakan coba lagi.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (userData) {
+      setFormData({
+        name: userData.name,
+        email: userData.email,
+        phoneNumber: userData.phoneNumber
+      });
+    }
+    setErrors({});
+    setSuccessMessage('');
+    setIsEditing(false);
+  };
 
   if (isLoading) {
     return (
@@ -53,6 +194,16 @@ export default function ProfilePage() {
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold text-white mb-8">Profil Saya</h1>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-300 flex items-center gap-3">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            {successMessage}
+          </div>
+        )}
 
         {/* Profile Card */}
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8">
@@ -77,27 +228,100 @@ export default function ProfilePage() {
 
           {/* Profile Details */}
           <div className="space-y-6">
+            {/* Nama Lengkap */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Nama Lengkap</label>
-              <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
-                {userData?.name}
-              </div>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.name ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan nama lengkap"
+                  />
+                  {errors.name && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.name}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
+                  {userData?.name}
+                </div>
+              )}
             </div>
 
+            {/* Email */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Email</label>
-              <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
-                {userData?.email}
-              </div>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.email ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan email"
+                  />
+                  {errors.email && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
+                  {userData?.email}
+                </div>
+              )}
             </div>
 
+            {/* Nomor Telepon */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Nomor Telepon</label>
-              <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
-                {userData?.phoneNumber}
-              </div>
+              {isEditing ? (
+                <div>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.phoneNumber ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan nomor telepon"
+                  />
+                  {errors.phoneNumber && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.phoneNumber}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
+                  {userData?.phoneNumber}
+                </div>
+              )}
             </div>
 
+            {/* Bergabung Sejak */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Bergabung Sejak</label>
               <div className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white">
@@ -110,11 +334,48 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Edit Button (Optional) */}
+          {/* Action Buttons */}
           <div className="mt-8">
-            <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg">
-              Edit Profil
-            </button>
+            {isEditing ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Simpan Perubahan
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="flex-1 bg-white/10 text-white py-3 px-6 rounded-xl font-medium hover:bg-white/20 transition-all duration-300 border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Profil
+              </button>
+            )}
           </div>
         </div>
       </div>
