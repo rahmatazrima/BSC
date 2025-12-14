@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
     const { 
       namaBarang,
       harga,
+      jumlahStok,
       kendalaHandphoneId
     } = body;
 
@@ -214,6 +215,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validasi jumlahStok
+    const parsedStok = jumlahStok !== undefined ? parseInt(jumlahStok) : 0;
+    if (isNaN(parsedStok) || parsedStok < 0) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          message: 'Jumlah stok must be a positive number'
+        },
+        { status: 400 }
+      );
+    }
+
     // Cek apakah kendala handphone exists
     const existingKendala = await prisma.kendalaHandphone.findUnique({
       where: { id: kendalaHandphoneId }
@@ -234,6 +247,7 @@ export async function POST(request: NextRequest) {
       data: {
         namaBarang,
         harga: parsedHarga,
+        jumlahStok: parsedStok,
         kendalaHandphoneId
       },
       include: {
@@ -312,6 +326,7 @@ export async function PUT(request: NextRequest) {
       id,
       namaBarang,
       harga,
+      jumlahStok,
       kendalaHandphoneId
     } = body;
 
@@ -359,6 +374,20 @@ export async function PUT(request: NextRequest) {
         );
       }
       updateData.harga = parsedHarga;
+    }
+
+    if (jumlahStok !== undefined && jumlahStok !== null) {
+      const parsedStok = parseInt(jumlahStok);
+      if (isNaN(parsedStok) || parsedStok < 0) {
+        return NextResponse.json(
+          {
+            error: 'Validation failed',
+            message: 'Jumlah stok must be a positive number'
+          },
+          { status: 400 }
+        );
+      }
+      updateData.jumlahStok = parsedStok;
     }
 
     if (kendalaHandphoneId !== undefined) {

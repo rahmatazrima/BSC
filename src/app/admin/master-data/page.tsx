@@ -35,10 +35,18 @@ interface KendalaHandphone {
   updatedAt: string;
 }
 
+interface GroupedHandphone {
+  id: string;
+  brand: string;
+  tipe: string;
+  kendalaCount: number;
+}
+
 interface PergantianBarang {
   id: string;
   namaBarang: string;
   harga: number;
+  jumlahStok: number;
   kendalaHandphoneId: string;
   kendalaHandphone?: KendalaHandphone;
   createdAt: string;
@@ -68,6 +76,7 @@ export default function MasterDataPage() {
   // States for each entity
   const [handphoneList, setHandphoneList] = useState<Handphone[]>([]);
   const [kendalaList, setKendalaList] = useState<KendalaHandphone[]>([]);
+  const [groupedHandphones, setGroupedHandphones] = useState<GroupedHandphone[]>([]);
   const [sparepartList, setSparepartList] = useState<PergantianBarang[]>([]);
   const [waktuList, setWaktuList] = useState<Waktu[]>([]);
 
@@ -76,6 +85,11 @@ export default function MasterDataPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
+  
+  // Delete confirmation modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteInfo, setDeleteInfo] = useState<any>(null);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
   // Sync selectedTab with URL
   useEffect(() => {
@@ -98,9 +112,9 @@ export default function MasterDataPage() {
           if (handphoneData.status) setHandphoneList(handphoneData.content);
           break;
         case 'kendala':
-          const kendalaRes = await fetch('/api/kendala-handphone');
-          const kendalaData = await kendalaRes.json();
-          if (kendalaData.status) setKendalaList(kendalaData.content);
+          const groupedRes = await fetch('/api/kendala-handphone/grouped');
+          const groupedData = await groupedRes.json();
+          if (groupedData.status) setGroupedHandphones(groupedData.content);
           break;
         case 'sparepart':
           const sparepartRes = await fetch('/api/pergantian-barang');
@@ -195,6 +209,7 @@ export default function MasterDataPage() {
             id: modalMode === 'edit' ? selectedItem.id : undefined,
             namaBarang: formData.namaBarang,
             harga: parseFloat(formData.harga),
+            jumlahStok: parseInt(formData.jumlahStok) || 0,
             kendalaHandphoneId: formData.kendalaHandphoneId
           };
           break;
@@ -234,15 +249,35 @@ export default function MasterDataPage() {
   };
 
   const handleDelete = async (id: string) => {
+    // Untuk handphone, tampilkan modal konfirmasi dengan info cascade delete
+    if (selectedTab === 'handphone') {
+      setIsLoadingDelete(true);
+      try {
+        const res = await fetch(`/api/handphone/delete-info/${id}`);
+        const data = await res.json();
+        
+        if (data.status) {
+          setDeleteInfo(data.content);
+          setIsDeleteModalOpen(true);
+        } else {
+          alert(data.message || 'Gagal mendapatkan informasi handphone');
+        }
+      } catch (error) {
+        console.error('Error fetching delete info:', error);
+        alert('Gagal mendapatkan informasi handphone');
+      } finally {
+        setIsLoadingDelete(false);
+      }
+      return;
+    }
+
+    // Untuk tab lain, langsung konfirmasi biasa
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
 
     setLoading(true);
     try {
       let url = '';
       switch (selectedTab) {
-        case 'handphone':
-          url = `/api/handphone?id=${id}`;
-          break;
         case 'kendala':
           url = `/api/kendala-handphone?id=${id}`;
           break;
@@ -268,6 +303,38 @@ export default function MasterDataPage() {
       alert('Gagal menghapus data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteInfo) return;
+
+    if (!deleteInfo.canDelete) {
+      alert(`Tidak dapat menghapus handphone. Masih ada ${deleteInfo.activeServicesCount} service aktif yang menggunakan handphone ini.`);
+      setIsDeleteModalOpen(false);
+      return;
+    }
+
+    setIsLoadingDelete(true);
+    try {
+      const response = await fetch(`/api/handphone?id=${deleteInfo.id}`, { 
+        method: 'DELETE' 
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Handphone dan semua data terkait berhasil dihapus!');
+        setIsDeleteModalOpen(false);
+        setDeleteInfo(null);
+        fetchData();
+      } else {
+        alert(result.message || 'Gagal menghapus handphone');
+      }
+    } catch (error) {
+      console.error('Error deleting handphone:', error);
+      alert('Gagal menghapus handphone');
+    } finally {
+      setIsLoadingDelete(false);
     }
   };
 
@@ -368,9 +435,10 @@ export default function MasterDataPage() {
                 {/* Kendala Tab */}
                 {selectedTab === 'kendala' && (
                   <KendalaTable 
-                    data={kendalaList}
+                    groupedData={groupedHandphones}
                     onEdit={openEditModal}
                     onDelete={handleDelete}
+                    fetchData={fetchData}
                   />
                 )}
 
@@ -443,6 +511,130 @@ export default function MasterDataPage() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && deleteInfo && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setDeleteInfo(null);
+          }}
+          title="Konfirmasi Hapus Handphone"
+        >
+          <div className="space-y-4">
+            {/* Warning Message */}
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <svg className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-red-400 font-bold text-lg mb-2">Peringatan!</h3>
+                  <p className="text-white">
+                    Anda akan menghapus handphone <span className="font-bold">{deleteInfo.brand} {deleteInfo.tipe}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info yang akan dihapus */}
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+              <h4 className="text-white font-semibold mb-3">Data yang akan terhapus:</h4>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                  <div className="text-yellow-400 text-sm">Kendala HP</div>
+                  <div className="text-white text-2xl font-bold">{deleteInfo.kendalaCount}</div>
+                </div>
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+                  <div className="text-purple-400 text-sm">Sparepart</div>
+                  <div className="text-white text-2xl font-bold">{deleteInfo.sparepartCount}</div>
+                </div>
+              </div>
+
+              {deleteInfo.kendalaList && deleteInfo.kendalaList.length > 0 && (
+                <div className="mt-4">
+                  <div className="text-gray-400 text-sm mb-2">Daftar Kendala:</div>
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    {deleteInfo.kendalaList.map((kendala: any, idx: number) => (
+                      <div key={kendala.id} className="text-white text-sm bg-white/5 rounded px-3 py-2">
+                        {idx + 1}. {kendala.topikMasalah} ({kendala.sparepartCount} sparepart)
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cannot Delete Message */}
+            {!deleteInfo.canDelete && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <div>
+                    <div className="text-red-400 font-semibold mb-1">Tidak dapat dihapus!</div>
+                    <div className="text-white text-sm">
+                      Handphone ini masih digunakan oleh {deleteInfo.activeServicesCount} service aktif. 
+                      Selesaikan atau batalkan service terlebih dahulu.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-4">
+              {deleteInfo.canDelete ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={confirmDelete}
+                    disabled={isLoadingDelete}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-semibold transition-all disabled:opacity-50 flex items-center justify-center space-x-2"
+                  >
+                    {isLoadingDelete ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                        <span>Menghapus...</span>
+                      </>
+                    ) : (
+                      <>
+                        <TrashIcon className="w-5 h-5" />
+                        <span>Ya, Hapus Semua</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDeleteModalOpen(false);
+                      setDeleteInfo(null);
+                    }}
+                    disabled={isLoadingDelete}
+                    className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold transition-all border border-white/20 disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeleteInfo(null);
+                  }}
+                  className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold transition-all border border-white/20"
+                >
+                  Tutup
+                </button>
+              )}
+            </div>
+          </div>
         </Modal>
       )}
     </div>
@@ -565,17 +757,31 @@ function SparepartForm({ formData, setFormData, kendalaList }: any) {
           required
         />
       </div>
-      <div>
-        <label className="block text-white mb-2 font-medium">Harga (Rp)</label>
-        <input
-          type="number"
-          value={formData.harga || ''}
-          onChange={(e) => setFormData({ ...formData, harga: e.target.value })}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-          placeholder="2500000"
-          required
-          min="0"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-white mb-2 font-medium">Harga (Rp)</label>
+          <input
+            type="number"
+            value={formData.harga || ''}
+            onChange={(e) => setFormData({ ...formData, harga: e.target.value })}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            placeholder="2500000"
+            required
+            min="0"
+          />
+        </div>
+        <div>
+          <label className="block text-white mb-2 font-medium">Jumlah Stok</label>
+          <input
+            type="number"
+            value={formData.jumlahStok !== undefined ? formData.jumlahStok : ''}
+            onChange={(e) => setFormData({ ...formData, jumlahStok: parseInt(e.target.value) || 0 })}
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            placeholder="10"
+            required
+            min="0"
+          />
+        </div>
       </div>
     </>
   );
@@ -717,8 +923,12 @@ function HandphoneTable({ data, onEdit, onDelete }: any) {
   );
 }
 
-function KendalaTable({ data, onEdit, onDelete }: any) {
-  if (data.length === 0) {
+function KendalaTable({ groupedData, onEdit, onDelete, fetchData }: any) {
+  const [expandedHandphones, setExpandedHandphones] = useState<Set<string>>(new Set());
+  const [kendalaByHandphone, setKendalaByHandphone] = useState<Record<string, KendalaHandphone[]>>({});
+  const [loadingHandphone, setLoadingHandphone] = useState<string | null>(null);
+
+  if (!groupedData || groupedData.length === 0) {
     return (
       <div className="p-8 text-center text-gray-400">
         <p>Belum ada data kendala. Tambahkan handphone terlebih dahulu, lalu buat kendala.</p>
@@ -726,80 +936,230 @@ function KendalaTable({ data, onEdit, onDelete }: any) {
     );
   }
 
+  const toggleHandphone = async (handphoneId: string) => {
+    const newExpanded = new Set(expandedHandphones);
+    
+    if (newExpanded.has(handphoneId)) {
+      // Collapse
+      newExpanded.delete(handphoneId);
+      setExpandedHandphones(newExpanded);
+    } else {
+      // Expand - fetch kendala if not already loaded
+      newExpanded.add(handphoneId);
+      setExpandedHandphones(newExpanded);
+      
+      if (!kendalaByHandphone[handphoneId]) {
+        setLoadingHandphone(handphoneId);
+        try {
+          const res = await fetch(`/api/kendala-handphone/by-handphone?handphoneId=${handphoneId}`);
+          const data = await res.json();
+          if (data.status) {
+            setKendalaByHandphone(prev => ({
+              ...prev,
+              [handphoneId]: data.content
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching kendala:', error);
+        } finally {
+          setLoadingHandphone(null);
+        }
+      }
+    }
+  };
+
+  const handleDeleteKendala = async (kendalaId: string, handphoneId: string) => {
+    await onDelete(kendalaId);
+    // Refresh kendala for this handphone after delete
+    try {
+      const res = await fetch(`/api/kendala-handphone/by-handphone?handphoneId=${handphoneId}`);
+      const data = await res.json();
+      if (data.status) {
+        setKendalaByHandphone(prev => ({
+          ...prev,
+          [handphoneId]: data.content
+        }));
+      }
+      // Refresh grouped data to update counts
+      fetchData();
+    } catch (error) {
+      console.error('Error refreshing kendala:', error);
+    }
+  };
+
   return (
     <>
       {/* Mobile: Card Layout */}
-      <div className="sm:hidden p-4 space-y-4">
-        {data.map((item: KendalaHandphone) => (
-          <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <div className="mb-3">
-              <div className="text-blue-400 font-semibold text-sm">
-                {item.handphone?.brand} {item.handphone?.tipe}
-              </div>
-              <div className="text-white font-bold text-lg mt-1">{item.topikMasalah}</div>
-              <div className="text-green-400 text-xs mt-1">{item.pergantianBarang?.length || 0} sparepart tersedia</div>
-            </div>
-            <div className="flex gap-2">
+      <div className="sm:hidden p-4 space-y-3">
+        {groupedData.map((hp: GroupedHandphone) => {
+          const isExpanded = expandedHandphones.has(hp.id);
+          const kendalaList = kendalaByHandphone[hp.id] || [];
+          const isLoading = loadingHandphone === hp.id;
+
+          return (
+            <div key={hp.id} className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+              {/* Header - Handphone */}
               <button
-                onClick={() => onEdit(item)}
-                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                onClick={() => toggleHandphone(hp.id)}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
               >
-                <PencilIcon className="w-4 h-4" />
-                <span>Edit</span>
+                <div className="flex-1 text-left">
+                  <div className="text-blue-400 font-bold text-base">
+                    {hp.brand} {hp.tipe}
+                  </div>
+                  <div className="text-yellow-400 text-xs mt-1">
+                    {hp.kendalaCount} kendala terdaftar
+                  </div>
+                </div>
+                <svg 
+                  className={`w-5 h-5 text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-              <button
-                onClick={() => onDelete(item.id)}
-                className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-              >
-                <TrashIcon className="w-4 h-4" />
-                <span>Hapus</span>
-              </button>
+
+              {/* Expanded Content - Kendala List */}
+              {isExpanded && (
+                <div className="border-t border-white/10">
+                  {isLoading ? (
+                    <div className="p-4 text-center">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                    </div>
+                  ) : kendalaList.length === 0 ? (
+                    <div className="p-4 text-center text-gray-400 text-sm">
+                      Tidak ada kendala untuk handphone ini
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/10">
+                      {kendalaList.map((kendala: KendalaHandphone) => (
+                        <div key={kendala.id} className="p-4 bg-white/3">
+                          <div className="mb-3">
+                            <div className="text-white font-semibold">{kendala.topikMasalah}</div>
+                            <div className="text-green-400 text-xs mt-1">
+                              {kendala.pergantianBarang?.length || 0} sparepart tersedia
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => onEdit(kendala)}
+                              className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                            >
+                              <PencilIcon className="w-4 h-4" />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteKendala(kendala.id, hp.id)}
+                              className="flex items-center justify-center space-x-2 flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Desktop: Table Layout */}
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-white/20">
-              <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Topik Masalah</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Jumlah Sparepart</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item: KendalaHandphone) => (
-              <tr key={item.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                <td className="px-6 py-4 text-blue-400 font-semibold">
-                  {item.handphone?.brand} {item.handphone?.tipe}
-                </td>
-                <td className="px-6 py-4 text-white">{item.topikMasalah}</td>
-                <td className="px-6 py-4 text-green-400">{item.pergantianBarang?.length || 0} opsi</td>
-                <td className="px-6 py-4">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => onEdit(item)}
-                      className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      onClick={() => onDelete(item.id)}
-                      className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                      <span>Hapus</span>
-                    </button>
+      {/* Desktop: Accordion Layout */}
+      <div className="hidden sm:block">
+        {groupedData.map((hp: GroupedHandphone) => {
+          const isExpanded = expandedHandphones.has(hp.id);
+          const kendalaList = kendalaByHandphone[hp.id] || [];
+          const isLoading = loadingHandphone === hp.id;
+
+          return (
+            <div key={hp.id} className="border-b border-white/10 last:border-b-0">
+              {/* Header - Handphone */}
+              <button
+                onClick={() => toggleHandphone(hp.id)}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group"
+              >
+                <div className="flex items-center space-x-4">
+                  <svg 
+                    className={`w-5 h-5 text-gray-400 group-hover:text-white transition-all ${isExpanded ? 'rotate-90' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <div>
+                    <div className="text-blue-400 font-bold text-lg text-left">
+                      {hp.brand} {hp.tipe}
+                    </div>
+                    <div className="text-yellow-400 text-sm text-left">
+                      {hp.kendalaCount} kendala terdaftar
+                    </div>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+                <div className="text-gray-400 text-sm">
+                  {isExpanded ? 'Klik untuk collapse' : 'Klik untuk expand'}
+                </div>
+              </button>
+
+              {/* Expanded Content - Kendala Table */}
+              {isExpanded && (
+                <div className="bg-white/3">
+                  {isLoading ? (
+                    <div className="p-8 text-center">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-white border-t-transparent"></div>
+                      <p className="text-white mt-3">Memuat kendala...</p>
+                    </div>
+                  ) : kendalaList.length === 0 ? (
+                    <div className="p-8 text-center text-gray-400">
+                      Tidak ada kendala untuk handphone ini
+                    </div>
+                  ) : (
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/20 bg-white/5">
+                          <th className="px-6 py-3 text-left text-white font-semibold text-sm">Topik Masalah</th>
+                          <th className="px-6 py-3 text-left text-white font-semibold text-sm">Jumlah Sparepart</th>
+                          <th className="px-6 py-3 text-left text-white font-semibold text-sm">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kendalaList.map((kendala: KendalaHandphone) => (
+                          <tr key={kendala.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-4 text-white">{kendala.topikMasalah}</td>
+                            <td className="px-6 py-4 text-green-400">{kendala.pergantianBarang?.length || 0} opsi</td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => onEdit(kendala)}
+                                  className="flex items-center space-x-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-all"
+                                >
+                                  <PencilIcon className="w-4 h-4" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteKendala(kendala.id, hp.id)}
+                                  className="flex items-center space-x-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-all"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                  <span>Hapus</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </>
   );
@@ -822,8 +1182,17 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
           <div key={item.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
             <div className="mb-3">
               <div className="text-white font-bold text-lg">{item.namaBarang}</div>
-              <div className="text-green-400 font-semibold text-xl mt-1">
-                Rp {item.harga.toLocaleString('id-ID')}
+              <div className="flex items-center space-x-3 mt-2">
+                <div className="text-green-400 font-semibold text-xl">
+                  Rp {item.harga.toLocaleString('id-ID')}
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  item.jumlahStok > 0 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-red-500/20 text-red-400'
+                }`}>
+                  Stok: {item.jumlahStok}
+                </div>
               </div>
               <div className="mt-2 space-y-1">
                 <div className="text-yellow-400 text-sm">
@@ -863,6 +1232,7 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
               <th className="px-6 py-4 text-left text-white font-semibold">Untuk Kendala</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+              <th className="px-6 py-4 text-left text-white font-semibold">Stok</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
           </thead>
@@ -875,6 +1245,15 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
                   {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
                 </td>
                 <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    item.jumlahStok > 0 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}>
+                    {item.jumlahStok} unit
+                  </span>
+                </td>
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">
                     <button

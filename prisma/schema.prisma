@@ -44,7 +44,7 @@ model KendalaHandphone {
   id               String             @id @default(uuid())
   topikMasalah     String
   handphoneId      String
-  handphone        Handphone          @relation(fields: [handphoneId], references: [id])
+  handphone        Handphone          @relation(fields: [handphoneId], references: [id], onDelete: Cascade)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   pergantianBarang PergantianBarang[]
@@ -55,8 +55,9 @@ model PergantianBarang {
   id                 String           @id @default(uuid())
   namaBarang         String
   harga              Float
+  jumlahStok         Int              @default(0)
   kendalaHandphoneId String
-  kendalaHandphone   KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id])
+  kendalaHandphone   KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id], onDelete: Cascade)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 }

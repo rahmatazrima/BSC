@@ -220,25 +220,87 @@ export async function POST(request: NextRequest) {
     //   );
     // }
 
-    // Buat handphone baru
-    const newHandphone = await prisma.handphone.create({
-      data: {
-        brand,
-        tipe
+    // Template kendala yang akan di-generate otomatis
+    const kendalaTemplates = [
+      {
+        topikMasalah: "Ganti Baterai",
+        sparepartTemplate: `Baterai ${brand} ${tipe}`
       },
-      include: {
-        kendalaHandphone: {
-          include: {
-            pergantianBarang: true
+      {
+        topikMasalah: "Ganti LCD",
+        sparepartTemplate: `LCD ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Ganti Mic",
+        sparepartTemplate: `Mic ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Ganti Speaker",
+        sparepartTemplate: `Speaker ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Ganti Kamera",
+        sparepartTemplate: `Kamera ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Ganti Tombol Power dan Volume",
+        sparepartTemplate: `Tombol Power dan Volume ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Install Ulang",
+        sparepartTemplate: `Jasa Install Ulang ${brand} ${tipe}`
+      },
+      {
+        topikMasalah: "Handphone Tidak Bisa Menyala",
+        sparepartTemplate: `Jasa Service Mati Total ${brand} ${tipe}`
+      }
+    ];
+
+    // Buat handphone baru dengan kendala dan sparepart menggunakan transaction
+    const newHandphone = await prisma.$transaction(async (tx) => {
+      // 1. Create Handphone
+      const handphone = await tx.handphone.create({
+        data: {
+          brand,
+          tipe
+        }
+      });
+
+      // 2. Create Kendala dan Sparepart untuk setiap template
+      for (const template of kendalaTemplates) {
+        const kendala = await tx.kendalaHandphone.create({
+          data: {
+            topikMasalah: template.topikMasalah,
+            handphoneId: handphone.id,
+            pergantianBarang: {
+              create: {
+                namaBarang: template.sparepartTemplate,
+                harga: 0, // Admin akan input harga nanti
+                jumlahStok: 0 // Admin akan input stok nanti
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Return handphone dengan semua relasi
+      return await tx.handphone.findUnique({
+        where: { id: handphone.id },
+        include: {
+          kendalaHandphone: {
+            include: {
+              pergantianBarang: true
+            }
           }
         }
-      }
+      });
     });
 
     return NextResponse.json(
       {
-        message: 'Handphone created successfully',
-        data: newHandphone
+        message: 'Handphone created successfully with 8 default kendala and spareparts',
+        data: newHandphone,
+        info: 'Admin can now update prices and stock for each sparepart'
       },
       { status: 201 }
     );
@@ -428,12 +490,16 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Cek apakah handphone exists
+    // Cek apakah handphone exists dan ambil informasi lengkap untuk cascade delete
     const existingHandphone = await prisma.handphone.findUnique({
       where: { id },
       include: {
         services: true,
-        kendalaHandphone: true,
+        kendalaHandphone: {
+          include: {
+            pergantianBarang: true
+          }
+        },
         _count: {
           select: {
             services: true,
@@ -453,39 +519,40 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Cek apakah ada kendala yang terkait dengan handphone ini
-    if (existingHandphone._count.kendalaHandphone > 0) {
-      return NextResponse.json(
-        {
-          error: 'Conflict',
-          message: `Cannot delete handphone. It has ${existingHandphone._count.kendalaHandphone} kendala(s) associated with it. Please delete the kendala first.`
-        },
-        { status: 409 }
-      );
-    }
-
     // Cek apakah ada services yang menggunakan handphone ini
     if (existingHandphone._count.services > 0) {
       return NextResponse.json(
         {
           error: 'Conflict',
-          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} service(s). Please complete or cancel the services first.`
+          message: `Cannot delete handphone. It is being used by ${existingHandphone._count.services} active service(s). Please complete or cancel the services first.`
         },
         { status: 409 }
       );
     }
 
-    // Hapus handphone
+    // Hitung total sparepart yang akan terhapus
+    const totalSpareparts = existingHandphone.kendalaHandphone.reduce(
+      (total, kendala) => total + kendala.pergantianBarang.length, 
+      0
+    );
+
+    // Cascade delete: Hapus handphone beserta semua kendala dan sparepart
+    // Karena schema sudah menggunakan onDelete: Cascade, ini akan otomatis menghapus
+    // semua kendala dan sparepart terkait
     await prisma.handphone.delete({
       where: { id }
     });
 
     return NextResponse.json({
-      message: 'Handphone deleted successfully',
+      message: 'Handphone and all related data deleted successfully',
       data: { 
         id,
         brand: existingHandphone.brand,
-        tipe: existingHandphone.tipe
+        tipe: existingHandphone.tipe,
+        deletedCounts: {
+          kendala: existingHandphone._count.kendalaHandphone,
+          spareparts: totalSpareparts
+        }
       }
     });
 
