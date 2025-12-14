@@ -24,6 +24,11 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // Skip API routes completely
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
   // Public routes - routes that don't require authentication (including landing page)
   const publicRoutes = ['/', '/login', '/register']
   const isPublicRoute = publicRoutes.includes(pathname)
@@ -38,7 +43,8 @@ export async function middleware(request: NextRequest) {
 
   // Jika tidak ada token dan bukan public route → redirect to login
   if (!token && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const loginUrl = new URL('/login', request.url)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Jika ada token
