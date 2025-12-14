@@ -57,6 +57,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search"); // Search untuk nama, email, atau device
     const searchDate = searchParams.get("searchDate"); // Search berdasarkan tanggal spesifik (YYYY-MM-DD)
     const brand = searchParams.get("brand"); // Filter brand handphone
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = (page - 1) * limit;
 
     // Build where condition
     const where: any = {};
@@ -103,6 +106,8 @@ export async function GET(request: NextRequest) {
     // Ambil semua services dengan relasi lengkap
     const services = await prisma.service.findMany({
       where,
+      skip,
+      take: limit,
       include: {
         user: {
           select: {
@@ -132,6 +137,9 @@ export async function GET(request: NextRequest) {
         createdAt: "desc",
       },
     });
+
+    // Get total count for pagination
+    const totalCount = await prisma.service.count({ where });
 
     // Format data untuk admin dashboard
     let formattedServices = services.map((service) => {
@@ -202,14 +210,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Hitung statistik
+    const allServicesForStats = await prisma.service.findMany({
+      where,
+      select: {
+        statusService: true,
+        kendalaHandphone: {
+          select: {
+            topikMasalah: true,
+            pergantianBarang: {
+              select: {
+                harga: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
     const stats = {
-      total: services.length,
-      pending: services.filter((s) => s.statusService === "PENDING").length,
-      inProgress: services.filter((s) => s.statusService === "IN_PROGRESS")
+      total: totalCount,
+      pending: allServicesForStats.filter((s) => s.statusService === "PENDING").length,
+      inProgress: allServicesForStats.filter((s) => s.statusService === "IN_PROGRESS")
         .length,
-      completed: services.filter((s) => s.statusService === "COMPLETED")
+      completed: allServicesForStats.filter((s) => s.statusService === "COMPLETED")
         .length,
-      cancelled: services.filter((s) => s.statusService === "CANCELLED")
+      cancelled: allServicesForStats.filter((s) => s.statusService === "CANCELLED")
         .length,
       totalRevenue: formattedServices
         .filter((s) => s.status === "COMPLETED")
@@ -234,6 +259,12 @@ export async function GET(request: NextRequest) {
       content: formattedServices,
       count: formattedServices.length,
       stats: stats,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (error) {
     console.error("Error fetching all services:", error);

@@ -80,6 +80,12 @@ export default function AdminDashboard() {
   const [brandFilter, setBrandFilter] = useState("all");
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   // Fetch brands on mount
   useEffect(() => {
@@ -95,13 +101,21 @@ export default function AdminDashboard() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Fetch recent services on mount (untuk overview)
+  useEffect(() => {
+    fetchRecentServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Fetch services when filters change (only in orders tab)
   useEffect(() => {
     if (selectedTab === 'orders') {
       fetchServices();
+    } else if (selectedTab === 'overview') {
+      fetchRecentServices();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTab, debouncedSearch, statusFilter, searchDate, brandFilter]);
+  }, [selectedTab, debouncedSearch, statusFilter, searchDate, brandFilter, currentPage]);
 
   const fetchBrands = async () => {
     try {
@@ -166,6 +180,40 @@ export default function AdminDashboard() {
     fetchServices();
   };
 
+  const fetchRecentServices = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/service/recent", {
+        credentials: "include",
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json.message || "Gagal memuat data service");
+      }
+
+      if (json.status && json.content) {
+        setOrders(json.content);
+        if (json.stats) {
+          setStats(json.stats);
+        }
+      }
+    } catch (err: unknown) {
+      console.error("Fetch recent services error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memuat data service"
+      );
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchServices = async () => {
     try {
       setLoading(true);
@@ -192,6 +240,10 @@ export default function AdminDashboard() {
         params.append('brand', brandFilter);
       }
 
+      // Add pagination params
+      params.append('page', currentPage.toString());
+      params.append('limit', itemsPerPage.toString());
+
       const queryString = params.toString();
       const url = `/api/service/getAllServices${queryString ? `?${queryString}` : ''}`;
 
@@ -209,6 +261,10 @@ export default function AdminDashboard() {
         setOrders(json.content);
         if (json.stats) {
           setStats(json.stats);
+        }
+        if (json.pagination) {
+          setTotalPages(json.pagination.totalPages);
+          setTotalItems(json.pagination.total);
         }
       }
     } catch (err: unknown) {
@@ -229,6 +285,7 @@ export default function AdminDashboard() {
     setSearchDate("");
     setBrandFilter("all");
     setStatusFilter("all");
+    setCurrentPage(1);
   };
 
   const getStatusColor = (status: string) => {
@@ -476,7 +533,8 @@ export default function AdminDashboard() {
                 ) : error ? (
                   <div className="p-8 text-center text-red-400">{error}</div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <>
+                    <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-white/20">
@@ -553,6 +611,77 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="border-t border-white/10 px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        {/* Info */}
+                        <div className="text-sm text-gray-400">
+                          Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} pesanan
+                        </div>
+
+                        {/* Pagination Buttons */}
+                        <div className="flex items-center space-x-2">
+                          {/* Previous Button */}
+                          <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+
+                          {/* Page Numbers */}
+                          <div className="flex items-center space-x-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1)
+                              .filter(page => {
+                                // Show first page, last page, current page, and pages around current
+                                return page === 1 || 
+                                       page === totalPages || 
+                                       (page >= currentPage - 1 && page <= currentPage + 1);
+                              })
+                              .map((page, index, array) => {
+                                // Add ellipsis
+                                const showEllipsisBefore = index > 0 && page - array[index - 1] > 1;
+                                
+                                return (
+                                  <React.Fragment key={page}>
+                                    {showEllipsisBefore && (
+                                      <span className="px-3 py-2 text-gray-400">...</span>
+                                    )}
+                                    <button
+                                      onClick={() => setCurrentPage(page)}
+                                      className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                                        currentPage === page
+                                          ? 'bg-blue-600 text-white'
+                                          : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                                      }`}
+                                    >
+                                      {page}
+                                    </button>
+                                  </React.Fragment>
+                                );
+                              })}
+                          </div>
+
+                          {/* Next Button */}
+                          <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  </>
                 )}
               </div>
             </div>
