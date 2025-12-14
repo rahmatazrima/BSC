@@ -34,7 +34,7 @@ export default function PWAInstaller() {
       // Only register in browser environment
       if (typeof window !== 'undefined') {
         navigator.serviceWorker
-          .register('/sw.js', { 
+          .register('/api/service-worker', { 
             scope: '/',
             updateViaCache: 'none' // Always check for updates
           })
@@ -84,7 +84,7 @@ export default function PWAInstaller() {
             // Log registration attempt details only in development
             if (isDev) {
               console.error('[PWA] Registration attempt details:', {
-                url: '/sw.js',
+                url: '/api/service-worker',
                 scope: '/',
                 userAgent: navigator.userAgent,
                 serviceWorkerSupported: 'serviceWorker' in navigator,

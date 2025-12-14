@@ -393,7 +393,6 @@ export default function ProfilePage() {
             {isEditing && (
               <div className="pt-6 mt-6 border-t border-white/10">
                 <h3 className="text-lg font-semibold text-white mb-4">Ubah Password (Opsional)</h3>
-                <p className="text-sm text-gray-400 mb-4">Kosongkan jika tidak ingin mengubah password</p>
                 
                 {/* Password Lama */}
                 <div className="mb-4">

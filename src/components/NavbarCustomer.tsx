@@ -23,8 +23,10 @@ export default function NavbarCustomer() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // Tambahkan timestamp untuk force bypass cache
+        const timestamp = Date.now();
         // Gunakan cache: 'no-store' untuk mencegah browser cache response
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch(`/api/auth/me?_=${timestamp}`, {
           credentials: 'include',
           cache: 'no-store', // Prevent caching
           headers: {
@@ -66,38 +68,41 @@ export default function NavbarCustomer() {
 
   // Handle logout
   const handleLogout = async () => {
-    try {
-      // Clear semua state sebelum logout
-      setUserData(null);
-      setIsDropdownOpen(false);
-      
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store', // Prevent caching
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
-
-      if (response.ok) {
-        // Clear semua state setelah logout berhasil
-        setUserData(null);
-        
-        // Force hard navigation ke landing page untuk clear semua cache
-        // Gunakan window.location.href untuk hard navigation yang clear semua cache
-        window.location.href = '/';
-      } else {
-        console.error('Logout failed:', response.statusText);
+  try {
+    // Clear state immediately
+    setIsDropdownOpen(false);
+    setUserData(null);
+    
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
       }
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Even if error, try to redirect
-      window.location.href = '/';
+    });
+
+    if (response.ok) {
+      // Clear state again untuk memastikan
+      setUserData(null);
+      
+      // Tunggu lebih lama untuk memastikan cookie ter-clear sempurna
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Force hard reload dengan timestamp untuk bypass semua cache
+      window.location.href = '/?t=' + Date.now();
+    } else {
+      console.error('Logout failed');
+      setUserData(null);
+      window.location.href = '/?t=' + Date.now();
     }
-  };
+  } catch (error) {
+    console.error('Logout error:', error);
+    setUserData(null);
+    window.location.href = '/?t=' + Date.now();
+  }
+};
 
   // Check if link is active
   const isActive = (path: string) => {
