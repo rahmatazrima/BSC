@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   ChartBarIcon, 
   ClipboardDocumentListIcon, 
@@ -18,24 +18,43 @@ interface SidebarItem {
   id: string;
   label: string;
   icon: React.ReactNode;
-  href?: string;
+  href: string;
 }
 
 interface AdminSidebarProps {
-  selectedTab: string;
-  onTabChange: (tab: string) => void;
+  selectedTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const sidebarItems: SidebarItem[] = [
-  { id: 'overview', label: 'Overview', icon: <ChartBarIcon /> },
-  { id: 'orders', label: 'Kelola Pesanan', icon: <ClipboardDocumentListIcon /> },
-  { id: 'email', label: 'Kirim Email', icon: <EnvelopeIcon /> },
-  { id: 'analytics', label: 'Analitik', icon: <ChartPieIcon /> },
+  { id: 'overview', label: 'Overview', icon: <ChartBarIcon />, href: '/admin' },
+  { id: 'orders', label: 'Kelola Pesanan', icon: <ClipboardDocumentListIcon />, href: '/admin?tab=orders' },
+  { id: 'email', label: 'Kirim Email', icon: <EnvelopeIcon />, href: '/admin?tab=email' },
+  { id: 'analytics', label: 'Analitik', icon: <ChartPieIcon />, href: '/admin?tab=analytics' },
 ];
 
 export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Determine active tab from pathname if selectedTab not provided
+  const getActiveTab = () => {
+    if (selectedTab) return selectedTab;
+    
+    // Get tab from URL query params
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam) return tabParam;
+    }
+    
+    // Default to overview if no tab param
+    if (pathname === '/admin') return 'overview';
+    return 'overview';
+  };
+
+  const activeTab = getActiveTab();
 
   return (
     <>
@@ -92,12 +111,15 @@ export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarP
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {sidebarItems.map((item) => {
-              const isActive = selectedTab === item.id;
+              const isActive = activeTab === item.id;
               return (
-                <button
+                <Link
                   key={item.id}
+                  href={item.href}
                   onClick={() => {
-                    onTabChange(item.id);
+                    if (onTabChange) {
+                      onTabChange(item.id);
+                    }
                     setIsMobileOpen(false);
                   }}
                   className={`
@@ -114,7 +136,7 @@ export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarP
                     {item.icon}
                   </span>
                   <span className="font-medium">{item.label}</span>
-                </button>
+                </Link>
               );
             })}
           </nav>

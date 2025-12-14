@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import EmailSender from '@/components/EmailSender';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminHeader from '@/components/AdminHeader';
@@ -58,6 +59,12 @@ interface ServiceStats {
 }
 
 export default function AdminDashboard() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Get tab from URL or default to overview
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<ServiceStats>({
     total: 0,
@@ -67,7 +74,7 @@ export default function AdminDashboard() {
     cancelled: 0,
     totalRevenue: 0,
   });
-  const [selectedTab, setSelectedTab] = useState('overview');
+  const [selectedTab, setSelectedTab] = useState(tabFromUrl);
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -91,6 +98,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchBrands();
   }, []);
+
+  // Sync selectedTab with URL
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') || 'overview';
+    setSelectedTab(tabFromUrl);
+  }, [searchParams]);
 
   // Debounce search query
   useEffect(() => {
@@ -288,6 +301,14 @@ export default function AdminDashboard() {
     setCurrentPage(1);
   };
 
+  // Handler untuk tab change dengan update URL
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+    // Update URL without reload
+    const newUrl = tab === 'overview' ? '/admin' : `/admin?tab=${tab}`;
+    router.push(newUrl, { scroll: false });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
@@ -325,7 +346,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex">
       {/* Sidebar */}
-      <AdminSidebar selectedTab={selectedTab} onTabChange={setSelectedTab} />
+      <AdminSidebar selectedTab={selectedTab} onTabChange={handleTabChange} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">

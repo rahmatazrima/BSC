@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminHeader from '@/components/AdminHeader';
 import { 
@@ -55,7 +56,13 @@ interface Waktu {
 }
 
 export default function MasterDataPage() {
-  const [selectedTab, setSelectedTab] = useState<'handphone' | 'kendala' | 'sparepart' | 'waktu'>('handphone');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Get tab from URL or default to handphone
+  const tabFromUrl = (searchParams.get('tab') as 'handphone' | 'kendala' | 'sparepart' | 'waktu') || 'handphone';
+  
+  const [selectedTab, setSelectedTab] = useState<'handphone' | 'kendala' | 'sparepart' | 'waktu'>(tabFromUrl);
   const [loading, setLoading] = useState(false);
   
   // States for each entity
@@ -69,6 +76,12 @@ export default function MasterDataPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
+
+  // Sync selectedTab with URL
+  useEffect(() => {
+    const tabFromUrl = (searchParams.get('tab') as 'handphone' | 'kendala' | 'sparepart' | 'waktu') || 'handphone';
+    setSelectedTab(tabFromUrl);
+  }, [searchParams]);
 
   // Fetch data on mount and tab change
   useEffect(() => {
@@ -258,6 +271,13 @@ export default function MasterDataPage() {
     }
   };
 
+  // Handler untuk tab change dengan update URL
+  const handleTabChange = (tab: 'handphone' | 'kendala' | 'sparepart' | 'waktu') => {
+    setSelectedTab(tab);
+    // Update URL without reload
+    router.push(`/admin/master-data?tab=${tab}`, { scroll: false });
+  };
+
   const tabs = [
     { id: 'handphone' as const, label: 'Handphone', icon: DevicePhoneMobileIcon },
     { id: 'kendala' as const, label: 'Kendala HP', icon: ExclamationTriangleIcon },
@@ -283,7 +303,7 @@ export default function MasterDataPage() {
             <div className="sm:hidden mb-4">
               <select
                 value={selectedTab}
-                onChange={(e) => setSelectedTab(e.target.value as any)}
+                onChange={(e) => handleTabChange(e.target.value as any)}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
               >
                 {tabs.map((tab) => (
@@ -301,7 +321,7 @@ export default function MasterDataPage() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setSelectedTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`flex items-center space-x-2 flex-1 py-3 px-6 rounded-lg text-center transition-all duration-300 whitespace-nowrap ${
                       selectedTab === tab.id
                         ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/25'
