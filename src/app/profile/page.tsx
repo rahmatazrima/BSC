@@ -15,12 +15,18 @@ interface FormData {
   name: string;
   email: string;
   phoneNumber: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 interface FormErrors {
   name?: string;
   email?: string;
   phoneNumber?: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 export default function ProfilePage() {
@@ -31,7 +37,10 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -53,7 +62,10 @@ export default function ProfilePage() {
         setFormData({
           name: data.data.user.name,
           email: data.data.user.email,
-          phoneNumber: data.data.user.phoneNumber
+          phoneNumber: data.data.user.phoneNumber,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
         });
       }
     } catch (error) {
@@ -88,6 +100,25 @@ export default function ProfilePage() {
       newErrors.phoneNumber = 'Nomor telepon tidak boleh kosong';
     } else if (!phoneRegex.test(cleanPhone)) {
       newErrors.phoneNumber = 'Nomor telepon harus 10-15 digit angka';
+    }
+
+    // Validasi password (opsional - hanya jika user ingin mengubah password)
+    if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
+      if (!formData.currentPassword) {
+        newErrors.currentPassword = 'Password lama harus diisi';
+      }
+      
+      if (!formData.newPassword) {
+        newErrors.newPassword = 'Password baru harus diisi';
+      } else if (formData.newPassword.length < 6) {
+        newErrors.newPassword = 'Password baru minimal 6 karakter';
+      }
+      
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Konfirmasi password harus diisi';
+      } else if (formData.newPassword !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Konfirmasi password tidak cocok';
+      }
     }
 
     setErrors(newErrors);
@@ -126,13 +157,25 @@ export default function ProfilePage() {
     setSuccessMessage('');
 
     try {
+      // Prepare payload - only include password fields if they're filled
+      const payload: any = {
+        name: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber
+      };
+
+      if (formData.currentPassword && formData.newPassword) {
+        payload.currentPassword = formData.currentPassword;
+        payload.newPassword = formData.newPassword;
+      }
+
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -140,7 +183,15 @@ export default function ProfilePage() {
       if (response.ok) {
         setUserData(data.data.user);
         setIsEditing(false);
-        setSuccessMessage('Profile berhasil diperbarui!');
+        setSuccessMessage(data.data.passwordChanged ? 'Profile dan password berhasil diperbarui!' : 'Profile berhasil diperbarui!');
+        
+        // Reset password fields
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
         
         // Auto hide success message after 5 seconds
         setTimeout(() => {
@@ -151,6 +202,8 @@ export default function ProfilePage() {
         if (data.message) {
           if (data.message.includes('email')) {
             setErrors({ email: data.message });
+          } else if (data.message.includes('password') || data.message.includes('Password')) {
+            setErrors({ currentPassword: data.message });
           } else {
             setErrors({ name: data.message });
           }
@@ -169,7 +222,10 @@ export default function ProfilePage() {
       setFormData({
         name: userData.name,
         email: userData.email,
-        phoneNumber: userData.phoneNumber
+        phoneNumber: userData.phoneNumber,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
       });
     }
     setErrors({});
@@ -332,6 +388,83 @@ export default function ProfilePage() {
                 }) : '-'}
               </div>
             </div>
+
+            {/* Password Section (only in edit mode) */}
+            {isEditing && (
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-4">Ubah Password (Opsional)</h3>
+                <p className="text-sm text-gray-400 mb-4">Kosongkan jika tidak ingin mengubah password</p>
+                
+                {/* Password Lama */}
+                <div className="mb-4">
+                  <label className="block text-gray-400 text-sm mb-2">Password Lama</label>
+                  <input
+                    type="password"
+                    name="currentPassword"
+                    value={formData.currentPassword}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.currentPassword ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan password lama"
+                  />
+                  {errors.currentPassword && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.currentPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password Baru */}
+                <div className="mb-4">
+                  <label className="block text-gray-400 text-sm mb-2">Password Baru</label>
+                  <input
+                    type="password"
+                    name="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.newPassword ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan password baru (min. 6 karakter)"
+                  />
+                  {errors.newPassword && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.newPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Konfirmasi Password Baru */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Konfirmasi Password Baru</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 bg-white/5 border ${
+                      errors.confirmPassword ? 'border-red-500' : 'border-white/10'
+                    } rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                    placeholder="Masukkan ulang password baru"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

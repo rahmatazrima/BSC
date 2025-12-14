@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 // PUT - Update profile user yang sedang login
 export async function PUT(request: NextRequest) {
@@ -44,9 +45,9 @@ export async function PUT(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { name, email, phoneNumber } = body;
+    const { name, email, phoneNumber, currentPassword, newPassword } = body;
 
-    // Validasi input
+    // Validasi input dasar
     if (!name || !email || !phoneNumber) {
       return NextResponse.json(
         {
@@ -98,14 +99,72 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Validasi dan update password jika ada
+    let passwordChanged = false;
+    let hashedPassword: string | undefined;
+
+    if (currentPassword && newPassword) {
+      // Validasi panjang password baru
+      if (newPassword.length < 6) {
+        return NextResponse.json(
+          {
+            error: 'Validation Error',
+            message: 'Password baru minimal 6 karakter',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Get current user data with password
+      const currentUser = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { password: true }
+      });
+
+      if (!currentUser) {
+        return NextResponse.json(
+          {
+            error: 'Not Found',
+            message: 'User not found',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      
+      if (!isPasswordValid) {
+        return NextResponse.json(
+          {
+            error: 'Validation Error',
+            message: 'Password lama tidak sesuai',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Hash new password
+      hashedPassword = await bcrypt.hash(newPassword, 10);
+      passwordChanged = true;
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      phoneNumber: phoneNumber.replace(/[\s-]/g, ''),
+    };
+
+    // Add password to update if changed
+    if (hashedPassword) {
+      updateData.password = hashedPassword;
+    }
+
     // Update user data
     const updatedUser = await prisma.user.update({
       where: { id: decoded.userId },
-      data: {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        phoneNumber: phoneNumber.replace(/[\s-]/g, ''),
-      },
+      data: updateData,
       select: {
         id: true,
         email: true,
@@ -135,7 +194,8 @@ export async function PUT(request: NextRequest) {
         message: 'Profile updated successfully',
         data: {
           user: updatedUser,
-          tokenUpdated: true
+          tokenUpdated: true,
+          passwordChanged
         }
       });
 
@@ -156,7 +216,8 @@ export async function PUT(request: NextRequest) {
       message: 'Profile updated successfully',
       data: {
         user: updatedUser,
-        tokenUpdated: false
+        tokenUpdated: false,
+        passwordChanged
       }
     });
 
