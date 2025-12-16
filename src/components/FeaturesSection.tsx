@@ -1,26 +1,27 @@
 import React from 'react';
+import { WrenchScrewdriverIcon, ClockIcon, HomeIcon } from './icons';
 
 const features = [
   {
     title: 'Expert Repairs',
     desc: 'Berpengalaman dalam menangani berbagai kerusakan perangkat, kami merawat gadget Anda dengan sepenuh hati agar kembali seperti baru.',
     points: ['Teknisi Berpengalaman', 'Suku Cadang Berkualitas', 'Jaminan Kualitas'],
-    icon: '🛠️',
+    Icon: WrenchScrewdriverIcon,
     gradient: 'from-blue-600 to-blue-800',
   },
   {
     title: 'Real-time Updates',
     desc: 'Pantau perkembangan perbaikan perangkat Anda secara real-time melalui sistem pelacakan canggih dan portal pelanggan kami.',
     points: ['Update Status Real-Time', 'Progres Perbaikan', 'Transparansi Biaya'],
-    icon: '⏱️',
-    gradient: 'from-purple-600 to-blue-600',
+    Icon: ClockIcon,
+    gradient: 'from-blue-600 to-blue-800',
   },
   {
     title: 'On-side Service',
     desc: 'Nikmati layanan perbaikan langsung di lokasi Anda. Teknisi kami datang ke tempat Anda untuk solusi cepat, praktis, dan tanpa ribet.',
     points: ['Teknisi Datang ke Lokasi Anda', 'Perbaikan Langsung Tanpa Ribet', 'Hemat Waktu & Praktis'],
-    icon: '🚗',
-    gradient: 'from-cyan-600 to-blue-600',
+    Icon: HomeIcon,
+    gradient: 'from-blue-600 to-blue-800',
   },
 ];
 
@@ -57,8 +58,8 @@ export default function FeaturesSection() {
               {/* Card */}
               <div className="relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-8 hover:border-blue-500/50 transition-all duration-500 hover:transform hover:scale-105">
                 {/* Icon with gradient background */}
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r ${f.gradient} rounded-xl flex items-center justify-center text-xl sm:text-2xl mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  {f.icon}
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-r ${f.gradient} rounded-xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <f.Icon className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
                 </div>
                 
                 <h3 className="font-bold text-lg sm:text-xl text-white mb-3 sm:mb-4">{f.title}</h3>

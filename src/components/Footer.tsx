@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { MapPinIcon, PhoneIcon, EnvelopeIcon } from './icons';
 
 export default function Footer() {
   return (
@@ -89,32 +90,32 @@ export default function Footer() {
             </h3>
             <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
               <div className="flex items-start space-x-3">
-                <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center mt-0.5">
-                  <span className="text-blue-400 text-xs">📍</span>
+                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mt-0.5">
+                  <MapPinIcon className="w-4 h-4 text-blue-400" />
                 </div>
                 <div>
                   <p className="text-gray-300 leading-relaxed">
-                    Jln. Pootemarohoan, Lamteh<br />
-                    Banda Aceh, Indonesia
+                    Jl. Laksamana Malahayati, Baet<br />
+                    Aceh Besar, Aceh, Indonesia
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-blue-400 text-xs">📞</span>
+                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <PhoneIcon className="w-4 h-4 text-blue-400" />
                 </div>
-                <a href="tel:+6282219635738" className="text-gray-300 hover:text-white transition-colors">
-                  +62 822 1963 5738
+                <a href="tel:+6281361866731" className="text-gray-300 hover:text-white transition-colors">
+                  +62 813 6186 6731
                 </a>
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-blue-400 text-xs">✉️</span>
+                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <EnvelopeIcon className="w-4 h-4 text-blue-400" />
                 </div>
-                <a href="mailto:rahmatazirme@gmail.com" className="text-gray-300 hover:text-white transition-colors">
-                  rahmatazirme@gmail.com
+                <a href="mailto:bukhariservicec@gmail.com" className="text-gray-300 hover:text-white transition-colors">
+                  bukhariservicec@gmail.com
                 </a>
               </div>
             </div>
