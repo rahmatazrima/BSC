@@ -44,6 +44,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip service worker for same-origin navigation requests
+  // This allows Next.js to handle page navigation properly
+  if (request.mode === 'navigate' && url.origin === self.location.origin) {
+    return;
+  }
+
   // NEVER cache API routes - always fetch fresh
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
@@ -57,43 +63,48 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For non-API requests, use cache-first strategy
+  // Skip caching for Next.js internal files
+  if (url.pathname.startsWith('/_next/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // For static assets, use network-first strategy
   event.respondWith(
-    caches.match(request)
+    fetch(request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Clone the request
-        const fetchRequest = request.clone();
-
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
+        // Check if valid response
+        if (response && response.status === 200) {
           // Clone the response
           const responseToCache = response.clone();
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(request, responseToCache);
-            });
-
-          return response;
-        });
+          // Only cache static assets
+          if (request.destination === 'image' || 
+              request.destination === 'script' || 
+              request.destination === 'style' ||
+              url.pathname.endsWith('.json')) {
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(request, responseToCache);
+              });
+          }
+        }
+        return response;
       })
       .catch(() => {
-        // Fallback for offline - you can return a custom offline page here
-        return new Response('Offline - Please check your internet connection', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: new Headers({
-            'Content-Type': 'text/plain'
-          })
+        // Try to serve from cache only if network fails
+        return caches.match(request).then((response) => {
+          if (response) {
+            return response;
+          }
+          // Fallback for offline
+          return new Response('Offline - Please check your internet connection', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({
+              'Content-Type': 'text/plain'
+            })
+          });
         });
       })
   );

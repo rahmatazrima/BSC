@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function HeroSection() {
   return (
@@ -27,13 +28,13 @@ export default function HeroSection() {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
-          <a 
+          <Link 
             href="/booking"
             className="group relative bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 inline-block w-full sm:w-auto text-center"
           >
             <span className="relative z-10">Yuk, Servis Sekarang!</span>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </a>
+          </Link>
           
         </div>
       </div>
