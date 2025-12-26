@@ -26,8 +26,11 @@ export default function PWAInstaller() {
     setIsInstalled(standalone);
 
     if (standalone) {
+      console.log('[PWA] App is running in standalone mode');
       return;
     }
+
+    console.log('[PWA] Initializing PWA installer', { iOS, standalone });
 
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -121,17 +124,10 @@ export default function PWAInstaller() {
       setDeferredPrompt(null);
     });
 
-    // For iOS, show install instructions after a delay if prompt doesn't appear
+    // For iOS, show install instructions immediately if in browser
     if (iOS && !standalone) {
-      const timer = setTimeout(() => {
-        if (!deferredPrompt) {
-          setShowInstallButton(true);
-        }
-      }, 3000);
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      };
+      console.log('[PWA] iOS detected, showing install button');
+      setShowInstallButton(true);
     }
 
     return () => {
@@ -175,14 +171,17 @@ export default function PWAInstaller() {
   };
 
   // Don't render if already installed
-  if (isInstalled) {
+  if (isInstalled || isStandalone) {
     return null;
   }
 
   // Show install button if:
   // 1. We have a deferred prompt (Android/Chrome), OR
-  // 2. It's iOS and we want to show instructions
-  if (!showInstallButton && !isIOS) {
+  // 2. It's iOS and not in standalone mode, OR
+  // 3. showInstallButton is explicitly true
+  const shouldShow = showInstallButton || (isIOS && !isStandalone) || deferredPrompt !== null;
+  
+  if (!shouldShow) {
     return null;
   }
 
