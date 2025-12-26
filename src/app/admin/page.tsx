@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import EmailSender from '@/components/EmailSender';
 import AdminSidebar from '@/components/AdminSidebar';
@@ -58,7 +58,7 @@ interface ServiceStats {
   }>;
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -771,5 +771,28 @@ export default function AdminDashboard() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <AdminHeader />
+          <main className="flex-1 p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    }>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

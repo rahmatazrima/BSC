@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminHeader from '@/components/AdminHeader';
@@ -63,7 +63,7 @@ interface Waktu {
   updatedAt: string;
 }
 
-export default function MasterDataPage() {
+function MasterDataContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -1382,5 +1382,29 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
         </table>
       </div>
     </>
+  );
+}
+
+
+export default function MasterDataPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <AdminHeader />
+          <main className="flex-1 p-6">
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    }>
+      <MasterDataContent />
+    </Suspense>
   );
 }

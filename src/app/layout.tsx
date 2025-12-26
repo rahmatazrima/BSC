@@ -10,6 +10,7 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
+  fallback: ["system-ui", "arial"],
 });
 
 // Font untuk headings - Poppins memberikan karakter yang kuat dan menarik
@@ -18,6 +19,7 @@ const poppins = Poppins({
   variable: "--font-poppins",
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+  fallback: ["system-ui", "arial"],
 });
 
 export const metadata: Metadata = {
