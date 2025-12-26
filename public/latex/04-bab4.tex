@@ -1,0 +1,325 @@
+%-----------------------------------------------------------------------------%
+\chapter{\babEmpat}
+\thispagestyle{fancy}
+%-----------------------------------------------------------------------------%
+
+% Mengubah separator caption dari titik dua menjadi titik
+\captionsetup[figure]{labelsep=period}
+\captionsetup[table]{labelsep=period}
+
+%-----------------------------------------------------------------------------%
+\section{Perancangan Sistem}
+Perancangan sistem meliputi \textit{activity diagram}, \textit{Entity Relationship Diagram} (ERD), dan \textit{product backlog} yang didasarkan pada hasil analisis kebutuhan yang telah dijelaskan pada bab sebelumnya. Perancangan ini bertujuan untuk memvisualisasikan alur kerja, struktur data, dan daftar fitur yang akan diimplementasikan dalam sistem informasi pemesanan layanan servis \textit{handphone} berbasis \textit{Progressive Web App} (PWA) di Bukhari Service Center.
+
+\subsection{\textit{Activity Diagram}}
+\textit{Activity diagram} digunakan untuk memodelkan alur kerja atau aktivitas dalam sistem secara rinci, mencakup urutan kegiatan, pengambilan keputusan, serta aliran informasi. Berikut dijelaskan beberapa \textit{activity diagram} utama yang menggambarkan proses bisnis sistem informasi pemesanan layanan servis \textit{handphone} di Bukhari Service Center.
+
+\begin{enumerate}
+    \item \textbf{\textit{Activity Diagram Login}}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{assets/images/bab4/adLogin.pdf}
+        \caption{\textit{Activity Diagram Login}}
+        \label{fig:activity-login}
+    \end{figure}
+    
+    Gambar \ref{fig:activity-login} menggambarkan alur aktivitas proses \textit{login} yang dilakukan oleh pengguna sistem. Proses dimulai ketika pengguna membuka aplikasi, kemudian sistem menampilkan halaman \textit{login}. Pada halaman tersebut, pengguna mengisi formulir \textit{login} dengan memasukkan kredensial berupa alamat email dan \textit{password}. Setelah formulir diisi, sistem melakukan proses verifikasi dengan mencocokkan kredensial yang diinputkan terhadap data yang tersimpan pada \textit{database}. Terdapat dua kemungkinan hasil verifikasi: apabila kredensial tidak valid atau belum terdaftar, sistem akan mengarahkan pengguna kembali ke halaman \textit{login} untuk melakukan input ulang; sebaliknya, apabila kredensial valid dan sesuai dengan data yang tersimpan, sistem akan menampilkan halaman \textit{dashboard} dan proses \textit{login} selesai. Proses autentikasi ini memiliki peran penting dalam menjaga keamanan data dan memastikan bahwa hanya pengguna yang memiliki otorisasi yang dapat mengakses sistem.
+    
+    \item \textbf{\textit{Activity Diagram} Pemesanan Layanan}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{assets/images/bab4/adPemesananLayanan.pdf}
+        \caption{\textit{Activity Diagram} Pemesanan Layanan}
+        \label{fig:activity-pemesanan-layanan}
+    \end{figure}
+    
+    Gambar \ref{fig:activity-pemesanan-layanan} menggambarkan alur proses pemesanan layanan servis \textit{handphone} oleh pelanggan. Proses dimulai ketika pelanggan melakukan \textit{login} ke dalam sistem. Setelah berhasil \textit{login}, sistem menampilkan halaman \textit{dashboard}. Pelanggan kemudian memilih menu reservasi, dan sistem menampilkan halaman reservasi pemesanan layanan. Pada halaman tersebut, pelanggan melakukan serangkaian pemilihan secara berurutan, yaitu memilih jenis \textit{handphone} yang akan diservis, memilih kendala \textit{handphone} yang dialami, memilih jenis layanan yang diinginkan, dan memilih waktu serta tanggal untuk pelaksanaan layanan servis. Setelah semua informasi terisi, pelanggan melakukan \textit{submit} pemesanan. Sistem kemudian melakukan proses verifikasi terhadap data pemesanan yang diinputkan. Terdapat dua kemungkinan hasil verifikasi: apabila data tidak valid atau terdapat kesalahan, sistem akan mengarahkan pelanggan kembali ke halaman reservasi untuk melakukan perbaikan data; sebaliknya, apabila data valid, sistem akan menampilkan halaman \textit{tracking} yang memungkinkan pelanggan memantau status pemesanan layanan secara \textit{real-time}, dan proses pemesanan selesai.
+    
+    \item \textbf{\textit{Activity Diagram} Pelacakan Status Pemesanan}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{assets/images/bab4/adLacakStatus.pdf}
+        \caption{\textit{Activity Diagram} Pelacakan Status Pemesanan}
+        \label{fig:activity-verifikasi}
+    \end{figure}
+    
+    Gambar \ref{fig:activity-verifikasi} menggambarkan alur proses pelacakan status pemesanan layanan servis yang dilakukan oleh pelanggan. Proses dimulai ketika pelanggan melakukan \textit{login} ke dalam sistem. Setelah berhasil \textit{login}, sistem menampilkan halaman \textit{dashboard}. Pelanggan kemudian membuka halaman \textit{tracking}/\textit{history}, dan sistem menampilkan halaman \textit{tracking}/\textit{history} yang berisi daftar riwayat pemesanan. Pada halaman tersebut, pelanggan dapat melihat daftar seluruh pemesanan yang pernah dilakukan. Selanjutnya, pelanggan memilih pemesanan yang ingin dilacak statusnya. Sistem kemudian menampilkan detail status pemesanan secara \textit{real-time}, yang mencakup informasi seperti status terkini (Menunggu, Sedang Dikerjakan, Selesai, atau Ditolak), detail kendala dan tindakan perbaikan, serta estimasi atau total biaya servis. Proses pelacakan status ini memungkinkan pelanggan untuk memantau progres layanan servis tanpa harus menghubungi pihak \textit{service center} secara langsung.
+    
+    \item \textbf{\textit{Activity Diagram} Verifikasi Pemesanan oleh Admin}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{assets/images/bab4/adVerifPemesanan.pdf}
+        \caption{\textit{Activity Diagram} Verifikasi Pemesanan oleh Admin}
+        \label{fig:activity-tracking}
+    \end{figure}
+    
+    Gambar \ref{fig:activity-tracking} menggambarkan alur proses verifikasi pemesanan layanan servis yang dilakukan oleh admin. Proses dimulai ketika admin melakukan \textit{login} ke dalam sistem. Setelah berhasil \textit{login}, sistem menampilkan halaman \textit{dashboard} admin. Admin kemudian membuka menu kelola pesanan, dan sistem menampilkan daftar pemesanan yang masuk. Admin melihat daftar pemesanan dan memilih pemesanan yang akan diverifikasi. Sistem kemudian menampilkan detail pemesanan yang dipilih. Admin memeriksa detail pemesanan tersebut, yang mencakup informasi jenis \textit{handphone}, kendala yang dilaporkan, waktu yang diminta, dan jenis layanan. Setelah memeriksa, admin melakukan proses verifikasi dengan dua kemungkinan keputusan: apabila pemesanan ditolak, sistem akan mengubah status menjadi "Ditolak"; sebaliknya, apabila pemesanan diterima, sistem akan mengubah status menjadi "Sedang Dikerjakan". Setelah status diperbarui, sistem secara otomatis mengirimkan email notifikasi kepada pelanggan mengenai hasil verifikasi pemesanan, dan proses verifikasi selesai. Proses verifikasi ini memastikan bahwa setiap pemesanan telah diperiksa kelayakannya sebelum dilanjutkan ke tahap pengerjaan.
+    
+    \item \textbf{\textit{Activity Diagram} Pengelolaan \textit{Master Data} oleh Admin}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{assets/images/bab4/adKelolaMasterData.pdf}
+        \caption{\textit{Activity Diagram} Pengelolaan \textit{Master Data} oleh Admin}
+        \label{fig:activity-master-data}
+    \end{figure}
+    
+    Gambar \ref{fig:activity-master-data} menggambarkan alur proses pengelolaan \textit{master data} yang dilakukan oleh admin dalam sistem. Proses dimulai ketika admin melakukan \textit{login} ke dalam sistem. Setelah berhasil \textit{login}, sistem menampilkan halaman \textit{dashboard} admin. Admin kemudian membuka menu \textit{master data}, dan sistem menampilkan halaman \textit{master data}. Pada halaman tersebut, admin memilih jenis data yang akan dikelola, seperti data \textit{handphone} (merek, model, tipe), data kendala, data \textit{sparepart}, atau data waktu layanan. Sistem kemudian menampilkan data sesuai dengan jenis yang dipilih. Admin melakukan operasi CRUD (\textit{Create, Read, Update, Delete}) terhadap data tersebut, seperti menambah data baru, mengubah data yang sudah ada, atau menghapus data yang tidak relevan. Setelah operasi dilakukan, sistem melakukan proses validasi data untuk memastikan tidak ada duplikasi atau kesalahan format. Terdapat dua kemungkinan hasil validasi: apabila data tidak valid, sistem akan mengarahkan admin kembali ke operasi CRUD untuk melakukan perbaikan data; sebaliknya, apabila data valid, sistem akan menyimpan data ke \textit{database}, menampilkan pesan berhasil, dan memperbarui tampilan data, kemudian proses pengelolaan selesai. Fitur pengelolaan \textit{master data} ini sangat penting untuk menjaga akurasi dan konsistensi informasi yang digunakan dalam sistem pemesanan layanan.
+\end{enumerate}
+
+\subsection{\textit{Entity Relationship Diagram} (ERD)}
+\textit{Entity Relationship Diagram} (ERD) merupakan representasi visual yang digunakan untuk merancang struktur basis data dalam suatu sistem. Diagram ini menggambarkan entitas, atribut, serta relasi yang terjadi antar entitas secara sistematis. ERD menjadi acuan penting dalam implementasi \textit{database schema} menggunakan PostgreSQL dan ORM Prisma.
+
+% LETAKKAN GAMBAR DI SINI: Gambar 4.8 ERD
+% Path yang disarankan: assets/images/bab4/erd.png
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/erdFinal.png}
+    \caption{\textit{Entity Relationship Diagram} Sistem Informasi Pemesanan Layanan Servis}
+    \label{fig:erd-bab4}
+\end{figure}
+
+Gambar \ref{fig:erd-bab4} menampilkan \textit{Entity Relationship Diagram} (ERD) dari sistem informasi pemesanan layanan servis \textit{handphone} di Bukhari Service Center. ERD ini menggambarkan struktur \textit{database} yang terdiri dari enam entitas utama yang saling berelasi untuk mendukung proses bisnis pemesanan layanan servis. Setiap entitas dalam ERD ini memiliki atribut-atribut spesifik, seperti \texttt{id} sebagai \textit{primary key} bertipe UUID, serta atribut lain yang relevan dengan fungsi entitas tersebut. Sebagai contoh, entitas \texttt{User} memiliki atribut seperti \texttt{name}, \texttt{email}, \texttt{phoneNumber}, dan \texttt{role} untuk membedakan antara pelanggan dan administrator. Relasi antar entitas ditunjukkan dengan garis penghubung yang dilengkapi kardinalitas untuk menentukan jenis hubungan (\textit{one-to-one}, \textit{one-to-many}, atau \textit{many-to-many}). Sebagai contoh, entitas \texttt{User} memiliki hubungan \textit{one-to-many} dengan entitas \texttt{Service}, menunjukkan bahwa satu pengguna dapat memiliki banyak riwayat pemesanan layanan. Entitas \texttt{Service} berperan sebagai entitas inti yang menghubungkan berbagai entitas lainnya seperti \texttt{Handphone}, \texttt{Waktu}, dan \texttt{KendalaHandphone}, mencerminkan kompleksitas proses pemesanan yang melibatkan pemilihan perangkat, jadwal layanan, dan berbagai kendala yang dilaporkan. Relasi \textit{many-to-many} antara \texttt{Service} dan \texttt{KendalaHandphone} diimplementasikan melalui tabel perantara yang secara otomatis dibuat oleh Prisma ORM, memungkinkan satu pemesanan dapat memiliki beberapa kendala sekaligus. Selain itu, implementasi \textit{cascade delete} pada relasi \texttt{Handphone-KendalaHandphone} dan \texttt{KendalaHandphone-PergantianBarang} memastikan konsistensi data ketika terjadi operasi penghapusan. ERD ini menjadi dasar dalam perancangan basis data sistem informasi pemesanan layanan servis \textit{handphone}, memastikan bahwa semua entitas dan hubungan yang diperlukan telah dipertimbangkan dan diimplementasikan dengan benar menggunakan Prisma ORM dan PostgreSQL. 
+\subsection{\textit{Product Backlog}}
+\textit{Product backlog} merupakan daftar terurut dari semua fitur, fungsi, perbaikan, dan kebutuhan yang harus dikembangkan dalam sistem. Dalam pengembangan sistem informasi pemesanan layanan servis \textit{handphone} berbasis PWA di Bukhari Service Center, \textit{product backlog} disusun berdasarkan prioritas dan nilai bisnis yang diberikan kepada pengguna.
+
+% LETAKKAN TABEL PRODUCT BACKLOG DI SINI
+% Tabel berisi: No, User Story, Prioritas, Status
+
+\par \textit{Product backlog} ini disusun dengan menggunakan format \textit{user story} yang mengikuti pola "Sebagai [peran], saya ingin [fitur], sehingga [manfaat]". Berikut adalah \textit{product backlog} untuk sistem:
+
+\begin{enumerate}
+    \item \textbf{Autentikasi Pengguna}
+    \begin{itemize}
+        \item Sebagai pelanggan, saya ingin dapat mendaftar akun baru, sehingga saya dapat mengakses sistem pemesanan layanan.
+        \item Sebagai pengguna, saya ingin dapat melakukan \textit{login} menggunakan email dan \textit{password}, sehingga saya dapat mengakses fitur-fitur sistem sesuai peran saya.
+        \item Sebagai pengguna, saya ingin dapat \textit{logout} dari sistem, sehingga akun saya tetap aman.
+    \end{itemize}
+
+    \item \textbf{Pemesanan Layanan}
+    \begin{itemize}
+        \item Sebagai pelanggan, saya ingin dapat memilih jenis \textit{handphone} yang akan diservis, sehingga teknisi dapat mempersiapkan peralatan yang sesuai.
+        \item Sebagai pelanggan, saya ingin dapat memilih jenis kendala yang dialami perangkat, sehingga teknisi dapat memahami masalah yang terjadi.
+        \item Sebagai pelanggan, saya ingin dapat memilih jadwal layanan yang tersedia, sehingga saya dapat datang pada waktu yang sesuai dengan ketersediaan saya.
+        \item Sebagai pelanggan, saya ingin dapat memilih jenis layanan (datang ke \textit{service center} atau \textit{on-site}), sehingga layanan dapat disesuaikan dengan kebutuhan saya.
+        \item Sebagai pelanggan, saya ingin dapat melihat ringkasan pemesanan sebelum konfirmasi, sehingga saya dapat memastikan semua informasi sudah benar.
+    \end{itemize}
+
+    \item \textbf{Pelacakan Status Pemesanan}
+    \begin{itemize}
+        \item Sebagai pelanggan, saya ingin dapat melihat status pemesanan secara \textit{real-time}, sehingga saya dapat mengetahui progres perbaikan perangkat.
+        \item Sebagai pelanggan, saya ingin dapat melihat detail kendala dan tindakan perbaikan, sehingga saya memahami apa yang sedang dikerjakan oleh teknisi.
+        \item Sebagai pelanggan, saya ingin dapat melihat estimasi atau total biaya servis, sehingga saya dapat mempersiapkan pembayaran.
+    \end{itemize}
+
+    \item \textbf{Riwayat Pemesanan}
+    \begin{itemize}
+        \item Sebagai pelanggan, saya ingin dapat melihat riwayat seluruh pemesanan yang pernah dilakukan, sehingga saya dapat melacak layanan servis sebelumnya.
+        \item Sebagai pelanggan, saya ingin dapat melihat detail setiap riwayat pemesanan, sehingga saya dapat mengetahui informasi lengkap tentang layanan yang telah dilakukan.
+    \end{itemize}
+
+    \item \textbf{Notifikasi}
+    \begin{itemize}
+        \item Sebagai pelanggan, saya ingin menerima notifikasi email saat pemesanan berhasil dibuat, sehingga saya mendapat konfirmasi bahwa pemesanan telah diterima sistem.
+        \item Sebagai pelanggan, saya ingin menerima notifikasi email saat status pemesanan berubah, sehingga saya selalu mendapat informasi terkini tanpa harus membuka aplikasi.
+    \end{itemize}
+
+    \item \textbf{Verifikasi Pemesanan (Admin)}
+    \begin{itemize}
+        \item Sebagai admin, saya ingin dapat melihat daftar pemesanan yang masuk, sehingga saya dapat memverifikasi kelayakan setiap pemesanan.
+        \item Sebagai admin, saya ingin dapat menerima atau menolak pemesanan, sehingga hanya pemesanan yang valid yang akan diproses.
+        \item Sebagai admin, saya ingin dapat memperbarui status pemesanan, sehingga pelanggan mendapat informasi yang akurat tentang progres perbaikan.
+    \end{itemize}
+
+    \item \textbf{Pengelolaan \textit{Master Data} (Admin)}
+    \begin{itemize}
+        \item Sebagai admin, saya ingin dapat mengelola data \textit{handphone} (merek, model, tipe), sehingga pilihan yang tersedia selalu \textit{up-to-date}.
+        \item Sebagai admin, saya ingin dapat mengelola data kendala, sehingga pelanggan dapat memilih jenis masalah yang sesuai dengan kondisi perangkat mereka.
+        \item Sebagai admin, saya ingin dapat mengelola data \textit{sparepart} dan harga, sehingga perhitungan biaya servis dapat dilakukan dengan akurat.
+        \item Sebagai admin, saya ingin dapat mengelola jadwal layanan yang tersedia, sehingga slot waktu dapat disesuaikan dengan kapasitas teknisi.
+    \end{itemize}
+
+    \item \textbf{\textit{Dashboard} Admin}
+    \begin{itemize}
+        \item Sebagai admin, saya ingin dapat melihat ringkasan statistik pemesanan, sehingga saya dapat memantau aktivitas sistem secara keseluruhan.
+        \item Sebagai admin, saya ingin dapat melihat grafik tren pemesanan, sehingga saya dapat menganalisis pola penggunaan layanan.
+    \end{itemize}
+
+    \item \textbf{Fitur PWA}
+    \begin{itemize}
+        \item Sebagai pengguna, saya ingin dapat menginstal aplikasi di perangkat saya, sehingga saya dapat mengaksesnya seperti aplikasi \textit{native}.
+        \item Sebagai pengguna, saya ingin aplikasi dapat dimuat dengan cepat, sehingga saya tidak perlu menunggu lama saat membuka aplikasi.
+        \item Sebagai pengguna, saya ingin aplikasi dapat diakses secara \textit{offline} untuk tampilan data yang sudah di-\textit{cache}, sehingga saya tetap dapat melihat informasi meskipun koneksi internet terputus.
+    \end{itemize}
+\end{enumerate}
+
+\par \textit{Product backlog} ini menjadi acuan dalam proses pengembangan sistem menggunakan metodologi \textit{Agile} dengan pendekatan \textit{Scrum}. Setiap \textit{user story} akan diimplementasikan secara bertahap dalam setiap \textit{sprint}, dengan prioritas tertinggi dikerjakan terlebih dahulu untuk memberikan nilai bisnis maksimal kepada pengguna.
+
+%-----------------------------------------------------------------------------%
+\section{Pengembangan Sistem}
+Pengembangan sistem merupakan tahap realisasi dari perancangan yang telah dibuat sebelumnya. Proses pengembangan sistem informasi pemesanan layanan servis \textit{handphone} berbasis \textit{Progressive Web App} (PWA) di Bukhari Service Center dilakukan menggunakan metodologi \textit{Agile} dengan pendekatan \textit{Scrum}, yang dibagi menjadi empat \textit{sprint}. Setiap \textit{sprint} memiliki durasi tiga minggu dan fokus pada implementasi fitur-fitur tertentu sesuai dengan prioritas yang telah ditetapkan dalam \textit{product backlog}. Pengembangan sistem ini mencakup implementasi \textit{full-stack}, meliputi \textit{database}, \textit{backend}, dan \textit{frontend}, serta integrasi seluruh komponen sistem.
+
+\subsection{\textit{Sprint} Pertama}
+Pada \textit{sprint} pertama, fokus utama pembangunan sistem diarahkan pada tahap inisialisasi proyek, konfigurasi \textit{database}, serta pembuatan fitur autentikasi pengguna. Kegiatan pada tahap ini meliputi \textit{setup} struktur proyek \textit{full-stack}, konfigurasi Prisma ORM untuk manajemen \textit{database}, pembuatan \textit{schema database}, serta implementasi sistem autentikasi yang terintegrasi antara \textit{frontend} dan \textit{backend}. Durasi pengerjaan berlangsung selama tiga minggu. Adapun \textit{product backlog} pada \textit{sprint} pertama meliputi:
+
+\begin{enumerate}
+    \item Melakukan \textit{setup} proyek menggunakan \textit{framework} Next.js dengan bahasa pemrograman TypeScript dan arsitektur \textit{App Router}.
+    \item Menyusun struktur folder proyek yang mencakup direktori untuk komponen (\texttt{components}), halaman aplikasi (\texttt{app}), utilitas (\texttt{lib}), \textit{API routes} (\texttt{app/api}), dan tipe data (\texttt{types}).
+    \item Menginstal dan mengkonfigurasi \textit{dependencies} yang diperlukan, seperti Prisma ORM untuk manajemen \textit{database}, NextAuth.js untuk autentikasi, Tailwind CSS untuk \textit{styling}, serta \textit{library} lainnya seperti \textit{shadcn/ui} untuk komponen UI, \textit{react-hook-form} untuk manajemen formulir, dan \textit{zod} untuk validasi data.
+    \item Mengkonfigurasi PostgreSQL sebagai sistem manajemen basis data dan menghubungkannya dengan aplikasi melalui Prisma ORM.
+    \item Membuat \textit{schema database} menggunakan Prisma yang mencakup entitas-entitas utama seperti \texttt{User}, \texttt{Handphone}, \texttt{KendalaHandphone}, \texttt{PergantianBarang}, \texttt{Waktu}, dan \texttt{Service} beserta relasi antar entitas.
+    \item Melakukan migrasi \textit{database} untuk membuat tabel-tabel sesuai dengan \textit{schema} yang telah didefinisikan, serta menghasilkan Prisma Client untuk operasi \textit{database}.
+    \item Membuat \textit{seed script} untuk mengisi data awal (\textit{master data}) ke dalam \textit{database}, seperti data \textit{handphone}, kendala, \textit{sparepart}, dan jadwal waktu layanan.
+    \item Mengimplementasikan sistem autentikasi menggunakan NextAuth.js yang mencakup konfigurasi \textit{providers}, \textit{callbacks}, dan strategi \textit{session}.
+    \item Membuat \textit{API routes} untuk autentikasi, meliputi \textit{endpoint} untuk registrasi pengguna baru dengan validasi data dan enkripsi \textit{password} menggunakan \textit{bcrypt}.
+    \item Membuat halaman \textit{login} yang dilengkapi dengan formulir input kredensial (email dan \textit{password}), validasi \textit{client-side}, dan integrasi dengan \textit{backend} untuk proses autentikasi.
+    \item Membuat halaman registrasi yang memungkinkan pengguna baru untuk mendaftar dengan mengisi data diri seperti nama, email, nomor telepon, dan \textit{password}, dilengkapi dengan validasi data.
+    \item Mengimplementasikan \textit{middleware} untuk proteksi rute berdasarkan status autentikasi dan peran pengguna (pelanggan atau admin).
+    \item Membuat halaman \textit{homepage} yang menampilkan informasi tentang Bukhari Service Center, layanan yang tersedia, serta fitur-fitur utama sistem.
+    \item Membuat komponen \texttt{Navbar} dan \texttt{Footer} yang responsif dan dapat digunakan di seluruh halaman aplikasi, dengan navigasi yang berbeda untuk pengguna yang sudah \textit{login} dan yang belum.
+    \item Melakukan pengujian integrasi antara \textit{frontend} dan \textit{backend} untuk memastikan proses autentikasi berjalan dengan baik dan data tersimpan dengan benar di \textit{database}.
+\end{enumerate}
+
+\subsection{\textit{Sprint} Kedua}
+Pada \textit{sprint} kedua, fokus pembangunan sistem diarahkan pada implementasi fitur pemesanan layanan untuk pelanggan dan fitur pengelolaan \textit{master data} untuk admin. Tahap ini mencakup pembuatan \textit{API routes} untuk operasi CRUD pada \textit{master data}, implementasi halaman pemesanan dengan \textit{multi-step form}, serta integrasi \textit{frontend} dan \textit{backend} untuk proses pemesanan layanan. Durasi pengerjaan berlangsung selama tiga minggu. Adapun \textit{product backlog} pada \textit{sprint} kedua meliputi:
+
+\begin{enumerate}
+    \item Membuat \textit{API routes} untuk manajemen data \textit{handphone}, yang mencakup operasi CRUD (\textit{Create, Read, Update, Delete}) untuk menambah, menampilkan, mengubah, dan menghapus data merek dan tipe \textit{handphone}.
+    \item Membuat \textit{API routes} untuk manajemen data kendala \textit{handphone}, yang memungkinkan admin mengelola berbagai jenis kendala atau kerusakan yang dapat terjadi pada setiap jenis \textit{handphone}.
+    \item Membuat \textit{API routes} untuk manajemen data \textit{sparepart} atau pergantian barang, termasuk informasi nama barang, harga, dan jumlah stok yang tersedia.
+    \item Membuat \textit{API routes} untuk manajemen jadwal waktu layanan, yang memungkinkan admin mengatur slot waktu yang tersedia untuk pemesanan, termasuk status ketersediaan setiap slot.
+    \item Membuat halaman \textit{master data} untuk admin yang menampilkan empat tab untuk mengelola data \textit{handphone}, kendala, \textit{sparepart}, dan waktu layanan.
+    \item Mengimplementasikan tabel data pada halaman \textit{master data} yang menampilkan seluruh data dalam format tabel dengan fitur pencarian, pengurutan, dan paginasi.
+    \item Membuat komponen modal atau form untuk menambah data baru pada setiap jenis \textit{master data}, dilengkapi dengan validasi input.
+    \item Membuat komponen modal atau form untuk mengedit data yang sudah ada pada setiap jenis \textit{master data}, dengan fitur \textit{pre-fill} data yang akan diedit.
+    \item Menambahkan fitur hapus data pada setiap jenis \textit{master data} dengan konfirmasi sebelum penghapusan untuk mencegah penghapusan tidak sengaja.
+    \item Mengintegrasikan halaman \textit{master data} dengan \textit{API routes backend} untuk mendukung operasi CRUD secara \textit{real-time}.
+    \item Membuat halaman pemesanan layanan (\textit{booking}) untuk pelanggan yang dapat diakses setelah \textit{login}.
+    \item Mengimplementasikan \textit{multi-step form} untuk proses pemesanan dengan lima tahap: pemilihan \textit{handphone}, pemilihan kendala, pemilihan tempat dan alamat (jika \textit{home service}), pemilihan waktu layanan, dan konfirmasi pemesanan.
+    \item Membuat komponen untuk setiap tahap pemesanan dengan validasi data pada setiap langkah sebelum melanjutkan ke tahap berikutnya.
+    \item Mengimplementasikan logika untuk menampilkan daftar kendala yang sesuai berdasarkan \textit{handphone} yang dipilih.
+    \item Mengimplementasikan logika untuk menampilkan slot waktu yang tersedia dan menonaktifkan slot yang sudah dibooking.
+    \item Membuat halaman konfirmasi pemesanan yang menampilkan ringkasan seluruh data yang telah diinputkan sebelum \textit{submit}.
+    \item Membuat \textit{API routes} untuk menyimpan data pemesanan ke \textit{database} dengan status awal "PENDING" dan melakukan relasi dengan entitas terkait.
+    \item Mengimplementasikan validasi \textit{backend} untuk memastikan data pemesanan yang diterima lengkap dan sesuai dengan aturan bisnis.
+    \item Melakukan pengujian \textit{end-to-end} untuk proses pemesanan, dari pemilihan data hingga penyimpanan ke \textit{database}.
+\end{enumerate}
+
+\subsection{\textit{Sprint} Ketiga}
+Pada \textit{sprint} ketiga, fokus pembangunan sistem diarahkan pada implementasi fitur verifikasi pemesanan untuk admin, sistem notifikasi email, serta fitur pelacakan status dan riwayat pemesanan untuk pelanggan. Tahap ini mencakup pembuatan \textit{dashboard} admin dengan statistik, halaman kelola pemesanan dengan fitur verifikasi, serta implementasi sistem email otomatis. Durasi pengerjaan berlangsung selama tiga minggu. Adapun \textit{product backlog} pada \textit{sprint} ketiga meliputi:
+
+\begin{enumerate}
+    \item Membuat halaman \textit{dashboard} admin yang menampilkan statistik ringkasan seperti total pemesanan, pemesanan pending, pemesanan yang sedang diproses, pemesanan selesai, dan pemesanan dibatalkan.
+    \item Mengimplementasikan grafik atau visualisasi data pada \textit{dashboard} untuk menampilkan tren pemesanan berdasarkan waktu, jenis \textit{handphone} yang paling sering diservis, dan kendala yang paling sering dilaporkan.
+    \item Membuat \textit{API routes} untuk mengambil data statistik dari \textit{database} dengan agregasi data menggunakan Prisma.
+    \item Membuat halaman kelola pesanan untuk admin yang menampilkan seluruh pemesanan yang masuk dalam format tabel dengan informasi lengkap.
+    \item Mengimplementasikan fitur filter dan pencarian pada halaman kelola pesanan berdasarkan status, tanggal, nama pelanggan, atau jenis \textit{handphone}.
+    \item Membuat komponen detail pemesanan yang menampilkan informasi lengkap tentang pemesanan, termasuk data pelanggan, \textit{handphone}, kendala yang dilaporkan, waktu layanan, dan tempat servis.
+    \item Menambahkan fitur untuk mengubah status pemesanan dari "PENDING" menjadi "IN\_PROGRESS" (diterima) atau "CANCELLED" (ditolak) pada halaman detail pemesanan.
+    \item Membuat \textit{API routes} untuk memperbarui status pemesanan di \textit{database} dengan validasi bahwa hanya admin yang dapat melakukan operasi ini.
+    \item Mengimplementasikan sistem notifikasi email menggunakan layanan SMTP (seperti Nodemailer dengan Gmail atau layanan email lainnya).
+    \item Membuat template email HTML yang responsif untuk berbagai jenis notifikasi seperti konfirmasi pemesanan, pemesanan diterima, pemesanan ditolak, dan status pemesanan selesai.
+    \item Membuat \textit{API routes} atau \textit{server action} untuk mengirim email secara otomatis setiap kali terjadi perubahan status pemesanan.
+    \item Mengintegrasikan sistem email dengan fitur verifikasi pemesanan sehingga email otomatis terkirim setelah admin mengubah status.
+    \item Membuat halaman \textit{tracking} atau pelacakan status untuk pelanggan yang menampilkan status terkini dari pemesanan yang aktif.
+    \item Mengimplementasikan \textit{timeline} visual pada halaman \textit{tracking} yang menunjukkan progres pemesanan dari tahap pemesanan dibuat, diverifikasi, sedang diproses, hingga selesai.
+    \item Menampilkan informasi detail pada halaman \textit{tracking} seperti estimasi waktu penyelesaian, kendala yang sedang ditangani, dan \textit{sparepart} yang digunakan (jika ada).
+    \item Membuat halaman riwayat pemesanan (\textit{history}) untuk pelanggan yang menampilkan seluruh pemesanan yang pernah dilakukan dalam format tabel atau kartu.
+    \item Mengimplementasikan fitur untuk melihat detail setiap riwayat pemesanan dengan informasi lengkap termasuk total biaya (jika tersedia).
+    \item Membuat \textit{API routes} untuk mengambil data pemesanan berdasarkan user yang sedang \textit{login}, dengan filter berdasarkan status atau tanggal.
+    \item Melakukan pengujian sistem notifikasi email untuk memastikan email terkirim dengan benar dan template ditampilkan dengan baik di berbagai \textit{email client}.
+\end{enumerate}
+
+\subsection{\textit{Sprint} Keempat}
+Pada \textit{sprint} keempat, pembangunan sistem difokuskan pada implementasi fitur \textit{Progressive Web App} (PWA), optimasi performa aplikasi, serta penyempurnaan tampilan responsif untuk semua halaman. Tahap ini juga mencakup penambahan fitur-fitur tambahan, pengujian menyeluruh, dan persiapan untuk \textit{deployment}. Durasi pengerjaan berlangsung selama tiga minggu. Adapun \textit{product backlog} pada \textit{sprint} keempat meliputi:
+
+\begin{enumerate}
+    \item Membuat \textit{Web App Manifest} (\texttt{manifest.json}) yang berisi konfigurasi PWA seperti nama aplikasi, ikon, warna tema, dan orientasi tampilan.
+    \item Mendesain dan membuat ikon aplikasi dalam berbagai ukuran (192x192, 512x512) untuk keperluan instalasi PWA di berbagai perangkat.
+    \item Mengimplementasikan \textit{Service Worker} (\texttt{sw.js}) untuk mendukung fitur \textit{caching} aset statis dan strategi \textit{cache-first} untuk mempercepat waktu loading.
+    \item Mengonfigurasi \textit{Service Worker} untuk mendukung \textit{offline fallback}, sehingga aplikasi dapat menampilkan halaman tertentu ketika tidak ada koneksi internet.
+    \item Membuat komponen \texttt{PWAInstaller} yang mendeteksi apakah aplikasi sudah terinstal dan menampilkan prompt instalasi kepada pengguna.
+    \item Mengintegrasikan \textit{Service Worker} dengan Next.js dan memastikan \textit{Service Worker} terdaftar dengan benar saat aplikasi dimuat.
+    \item Melakukan optimasi performa aplikasi dengan menerapkan \textit{code splitting}, \textit{lazy loading} untuk komponen yang tidak segera dibutuhkan, dan optimasi gambar.
+    \item Menambahkan fitur untuk admin agar dapat mengubah status pemesanan menjadi "COMPLETED" (selesai) setelah proses perbaikan selesai dilakukan.
+    \item Membuat halaman profil pengguna yang memungkinkan pelanggan melihat dan mengedit informasi pribadi seperti nama, nomor telepon, dan \textit{password}.
+    \item Membuat \textit{API routes} untuk memperbarui data profil pengguna dengan validasi dan enkripsi \textit{password} jika ada perubahan.
+    \item Menambahkan fitur untuk pelanggan agar dapat membatalkan pemesanan yang masih berstatus "PENDING" sebelum diverifikasi oleh admin.
+    \item Membuat komponen konfirmasi pembatalan dengan alasan pembatalan agar admin dapat mengetahui alasan pembatalan dari pelanggan.
+    \item Melakukan pengecekan ulang responsivitas seluruh halaman aplikasi untuk memastikan tampilan optimal di berbagai ukuran layar (mobile, tablet, desktop).
+    \item Menambahkan animasi dan transisi yang halus pada komponen UI untuk meningkatkan pengalaman pengguna (\textit{user experience}).
+    \item Melakukan pengujian \textit{cross-browser} untuk memastikan aplikasi berfungsi dengan baik di berbagai browser seperti Chrome, Firefox, Safari, dan Edge.
+    \item Melakukan pengujian fungsional menyeluruh dengan metode \textit{black-box testing} untuk memverifikasi semua fitur berjalan sesuai spesifikasi.
+    \item Melakukan pengujian \textit{user acceptance} dengan melibatkan calon pengguna untuk mendapatkan \textit{feedback} mengenai pengalaman penggunaan aplikasi.
+    \item Memperbaiki \textit{bug} dan masalah yang ditemukan selama proses pengujian.
+    \item Melakukan optimasi SEO (\textit{Search Engine Optimization}) dengan menambahkan meta tag, deskripsi halaman, dan struktur URL yang SEO-\textit{friendly}.
+    \item Menyiapkan dokumentasi teknis dan panduan pengguna untuk memudahkan \textit{maintenance} sistem di masa depan.
+\end{enumerate}
+
+\subsection{Tampilan Aplikasi}
+Tampilan aplikasi dirancang dengan prinsip \textit{user-centered design} yang mengutamakan kemudahan penggunaan, responsivitas, dan estetika visual. Antarmuka pengguna dibangun menggunakan Next.js dengan React sebagai \textit{framework} utama, Tailwind CSS untuk \textit{styling}, dan komponen UI dari \textit{shadcn/ui} untuk memastikan konsistensi desain. Sistem ini diimplementasikan sebagai \textit{Progressive Web App} (PWA) sehingga dapat diakses dengan baik di berbagai perangkat dan dapat diinstal seperti aplikasi \textit{native}. Berikut adalah penjelasan tampilan aplikasi untuk setiap peran pengguna:
+
+% LETAKKAN SCREENSHOT-SCREENSHOT TAMPILAN APLIKASI DI SINI
+% Sertakan screenshot untuk:
+% 1. Halaman Homepage
+% 2. Halaman Login dan Registrasi
+% 3. Halaman Booking/Pemesanan (Customer)
+% 4. Halaman Tracking (Customer)
+% 5. Halaman History (Customer)
+% 6. Dashboard Admin
+% 7. Halaman Master Data (Admin)
+% 8. Halaman Kelola Pesanan (Admin)
+% 9. Tampilan PWA Install Prompt
+% 10. Tampilan Mobile Responsive
+
+%-----------------------------------------------------------------------------%
+\section{Pengujian dan Evaluasi}
+Tahap pengujian dan evaluasi dilakukan untuk memastikan bahwa sistem yang telah diimplementasikan berfungsi dengan baik sesuai dengan kebutuhan dan dapat memberikan pengalaman pengguna yang memuaskan. Pengujian dilakukan dalam dua aspek utama, yaitu pengujian fungsional untuk memverifikasi fitur-fitur sistem dan pengujian \textit{User Experience} menggunakan kuesioner UEQ (\textit{User Experience Questionnaire}).
+
+\subsection{Pengujian Fungsional}
+Pengujian fungsional dilakukan untuk memverifikasi bahwa setiap fitur sistem bekerja sesuai dengan spesifikasi yang telah ditentukan. Pengujian dilakukan dengan metode \textit{black-box testing}, di mana setiap fungsi diuji tanpa memperhatikan struktur internal kode. Berikut adalah hasil pengujian fungsional:
+
+% LETAKKAN TABEL HASIL PENGUJIAN FUNGSIONAL DI SINI
+% Tabel berisi: No, Fitur, Skenario Pengujian, Hasil yang Diharapkan, Hasil Pengujian, Status
+
+\subsection{Pengujian \textit{User Experience} (UEQ)}
+Pengujian \textit{User Experience} dilakukan menggunakan \textit{User Experience Questionnaire} (UEQ) untuk mengukur kualitas pengalaman pengguna terhadap sistem yang telah dikembangkan. UEQ terdiri dari 26 item pertanyaan yang menilai enam aspek, yaitu:
+\begin{enumerate}
+    \item \textbf{\textit{Attractiveness}} (Daya Tarik): Kesan umum pengguna terhadap sistem
+    \item \textbf{\textit{Perspicuity}} (Kejelasan): Kemudahan pengguna dalam memahami dan menggunakan sistem
+    \item \textbf{\textit{Efficiency}} (Efisiensi): Kecepatan pengguna dalam menyelesaikan tugas
+    \item \textbf{\textit{Dependability}} (Ketergantungan): Tingkat kepercayaan pengguna terhadap sistem
+    \item \textbf{\textit{Stimulation}} (Stimulasi): Tingkat ketertarikan dan motivasi pengguna dalam menggunakan sistem
+    \item \textbf{\textit{Novelty}} (Kebaruan): Persepsi pengguna terhadap inovasi dan kreativitas sistem
+\end{enumerate}
+
+\subsubsection{Responden Pengujian}
+Pengujian UEQ melibatkan [JUMLAH] responden yang terdiri dari:
+\begin{itemize}
+    \item Pelanggan Bukhari Service Center yang telah menggunakan sistem
+    \item Calon pengguna potensial yang memiliki kebutuhan serupa
+    \item Admin yang mengelola sistem di Bukhari Service Center
+\end{itemize}
+
+\subsubsection{Hasil Pengujian UEQ}
+Hasil pengujian UEQ dihitung berdasarkan rata-rata nilai dari setiap aspek dengan skala -3 (sangat buruk) hingga +3 (sangat baik). Berikut adalah hasil pengujian:
+
+% LETAKKAN TABEL HASIL UEQ DI SINI
+% Tabel berisi: Aspek, Nilai Rata-rata, Interpretasi
+
+\subsubsection{Analisis Hasil Pengujian}
+Berdasarkan hasil pengujian UEQ, dapat dianalisis bahwa:
+\begin{itemize}
+    \item [Analisis aspek Attractiveness]
+    \item [Analisis aspek Perspicuity]
+    \item [Analisis aspek Efficiency]
+    \item [Analisis aspek Dependability]
+    \item [Analisis aspek Stimulation]
+    \item [Analisis aspek Novelty]
+\end{itemize}
+
+\par Secara keseluruhan, hasil pengujian menunjukkan bahwa sistem informasi pemesanan layanan servis \textit{handphone} berbasis PWA di Bukhari Service Center telah memenuhi kebutuhan pengguna dan memberikan pengalaman yang positif. [Tambahkan kesimpulan lebih detail berdasarkan hasil pengujian aktual]

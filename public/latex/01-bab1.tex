@@ -1,0 +1,44 @@
+%-----------------------------------------------------------------------------%
+\chapter{\babSatu}
+\thispagestyle{fancy}
+%-----------------------------------------------------------------------------%
+
+%-----------------------------------------------------------------------------%
+
+\section{Latar Belakang}
+Perkembangan teknologi informasi telah mengubah cara bisnis beroperasi, termasuk dalam industri layanan \textit{service handphone}. Saat ini, konsumen menginginkan kemudahan, kecepatan, dan transparansi dalam setiap layanan yang mereka gunakan \parencite{Breuer2020}. Namun, banyak bengkel \textit{service handphone} masih mengandalkan sistem manual, seperti pencatatan data pelanggan dan status perbaikan secara konvensional. Hal ini sering menyebabkan ketidakefisienan, seperti lamanya waktu pelayanan, kesalahan pencatatan, dan kurangnya transparansi bagi pelanggan.
+
+Kesenjangan antara kebutuhan konsumen dan layanan yang tersedia semakin terlihat jelas. Misalnya, pelanggan sering kali harus datang langsung ke bengkel untuk mengetahui status perbaikan \textit{handphone} mereka, yang memakan waktu dan tenaga \parencite{Rahman2023}. Selain itu, kurangnya sistem terintegrasi menyebabkan kesulitan dalam pelacakan riwayat \textit{service} dan manajemen inventori \textit{spare part}. Dampaknya, kepuasan pelanggan menurun, dan bisnis kehilangan peluang untuk meningkatkan loyalitas pelanggan.
+
+Perkembangan terbaru dalam industri ini adalah adopsi sistem informasi berbasis web yang memungkinkan pelanggan memantau status perbaikan secara \textit{real-time} dan melakukan pemesanan layanan secara \textit{online} \parencite{Ardhianto2020}. Sistem berbasis web modern kini dapat dilengkapi dengan berbagai fitur untuk meningkatkan pengalaman pengguna, seperti sistem pemesanan layanan dengan input detail kerusakan perangkat, pemilihan jadwal \textit{service} yang fleksibel, notifikasi otomatis melalui email untuk setiap perubahan status perbaikan, pelacakan status perbaikan secara \textit{real-time}, transparansi biaya \textit{service} dan harga \textit{sparepart}, serta riwayat layanan yang dapat diakses kapan saja. Fitur-fitur seperti ini telah terbukti meningkatkan efisiensi operasional dan kepuasan pelanggan di berbagai sektor, termasuk \textit{service handphone} \parencite{Purwanti2025}.
+
+Untuk memaksimalkan potensi aplikasi web dan memberikan pengalaman pengguna yang setara dengan aplikasi \textit{native}, teknologi \textit{Progressive Web App} (PWA) menjadi solusi yang tepat. PWA merupakan pendekatan pengembangan web modern yang menggabungkan kelebihan aplikasi web dan aplikasi \textit{mobile native}. Melalui PWA, aplikasi web dapat diinstal langsung ke \textit{home screen} perangkat pengguna tanpa melalui \textit{app store}, dapat berjalan secara \textit{offline} atau dengan koneksi internet yang tidak stabil melalui teknologi \textit{service worker}, memberikan notifikasi \textit{push} untuk pembaruan status perbaikan secara \textit{real-time}, serta memiliki waktu \textit{loading} yang cepat dan performa yang responsif layaknya aplikasi \textit{native} \parencite{Apriyanti2025PWA_PRODI_TI}. Dengan karakteristik tersebut, PWA sangat cocok diterapkan pada sistem informasi \textit{service handphone} karena memungkinkan pelanggan untuk mengakses layanan dengan mudah dari perangkat apapun, kapanpun, dan dimanapun, bahkan dalam kondisi jaringan internet yang terbatas.
+
+Di Banda Aceh, minimnya layanan \textit{service handphone} yang terintegrasi dengan teknologi informasi menyebabkan pelanggan harus mengunjungi langsung \textit{service center}, yang seringkali memakan waktu dan biaya transportasi tambahan. Selain itu, biaya \textit{service} yang tinggi menjadi penghambat bagi sebagian besar pelanggan, terutama di tengah kondisi ekonomi yang belum stabil pasca-pandemi. Bukhari Service Center, sebagai salah satu penyedia jasa \textit{service handphone} di Banda Aceh, menghadapi tantangan serupa dalam memberikan layanan yang efisien dan transparan kepada pelanggan. Oleh karena itu, diperlukan sistem informasi pemesanan berbasis web dengan pendekatan PWA yang dilengkapi fitur-fitur seperti pemesanan layanan dengan input detail kerusakan dan pemilihan tipe \textit{service} (datang ke toko atau teknisi datang ke lokasi pelanggan), penjadwalan layanan yang fleksibel dengan pemilihan waktu kedatangan teknisi, pelacakan status perbaikan secara \textit{real-time} mulai dari tahap verifikasi hingga penyelesaian, notifikasi email otomatis untuk setiap pembaruan status dan rincian biaya, transparansi biaya \textit{service} dan harga \textit{sparepart} yang dapat dilihat sebelum konfirmasi pemesanan, serta riwayat layanan lengkap yang dapat diakses kapan saja oleh pelanggan. Sistem ini dirancang untuk dapat diakses dari berbagai perangkat dan dapat diinstal sebagai aplikasi PWA, sehingga meningkatkan aksesibilitas dan kenyamanan pengguna.
+
+Topik ini layak untuk dibahas karena menggabungkan kebutuhan praktis masyarakat dengan perkembangan teknologi terkini. Selain itu, implementasi sistem ini dapat menjadi model bagi bengkel \textit{service handphone} lainnya di Banda Aceh untuk meningkatkan kualitas layanan dan daya saing bisnis. Dengan menggunakan teknologi modern seperti TypeScript, Next.js, dan PostgreSQL, serta menerapkan pendekatan PWA, sistem ini dirancang untuk menjadi solusi yang \textit{scalable}, mudah diadaptasi, dan memberikan pengalaman pengguna yang optimal baik melalui browser maupun sebagai aplikasi yang terinstal di perangkat pengguna.
+
+ \section{Rumusan Masalah}
+ Berdasarkan latar belakang yang telah diuraikan, permasalahan dalam penelitian ini dapat dirumuskan sebagai berikut:
+ \begin{enumerate}
+		 \item{Dibutuhkan perancangan dan pembangunan sistem informasi pemesanan servis \textit{handphone} berbasis \textit{website} dengan pendekatan \textit{Progressive Web App} (PWA) untuk mendukung proses layanan di Bukhari Service Center.}
+		 \item{Dibutuhkannya suatu fitur pemantauan status perbaikan \textit{handphone} secara \textit{real-time} yang dapat diakses pelanggan melalui sistem berbasis \textit{online}.}   
+	 \item{Dibutuhkan evaluasi terhadap fungsionalitas sistem menggunakan metode \textit{Black Box Testing} dan penilaian pengalaman pengguna menggunakan \textit{User Experience Questionnaire} (UEQ) untuk memastikan sistem memenuhi kebutuhan pengguna dan berjalan sesuai spesifikasi.}
+ \end{enumerate}
+ 
+ \section{Tujuan Penelitian}
+ Adapun tujuan dari penelitian ini adalah sebagai berikut:
+ \begin{enumerate}
+	 \item{Merancang dan membangun sistem informasi pemesanan servis \textit{handphone} berbasis \textit{website} dengan pendekatan \textit{Progressive Web App} (PWA) menggunakan TypeScript, Next.js, dan PostgreSQL pada Bukhari Service Center.}
+	 \item{Mengimplementasikan fitur pemantauan status perbaikan \textit{handphone} secara \textit{real-time} yang dapat diakses pelanggan melalui sistem berbasis \textit{online}.}
+	 \item{Mengevaluasi fungsionalitas sistem menggunakan metode \textit{Black Box Testing} dan menilai pengalaman pengguna menggunakan \textit{User Experience Questionnaire} (UEQ) untuk memastikan sistem memenuhi kebutuhan pengguna dan berjalan sesuai spesifikasi.}
+ \end{enumerate}
+ 
+ \section{Manfaat Penelitian}
+ Adapun manfaat dari penelitian ini adalah sebagai berikut:
+ \begin{enumerate}
+	 \item {Memberikan kemudahan bagi pelanggan dalam mengakses layanan pemesanan secara \textit{online} serta memperoleh informasi terkait status dan biaya perbaikan secara lebih terbuka.}
+	 \item {Mendukung Bukhari Service Center dalam menyusun proses operasional dan pengelolaan data layanan yang lebih tertata melalui pemanfaatan sistem informasi.}
+	 \item {Menjadi contoh penerapan sistem informasi pemesanan layanan berbasis web dengan pendekatan \textit{Progressive Web App} (PWA) yang dapat diadaptasi oleh penyedia jasa serupa di bidang servis \textit{handphone}.}
+ \end{enumerate}
+
