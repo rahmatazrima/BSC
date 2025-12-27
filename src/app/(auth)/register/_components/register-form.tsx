@@ -141,16 +141,19 @@ export default function RegisterForm() {
       <div className="flex w-full max-w-md flex-col gap-6">
         {/* Logo and Title */}
         <div className="flex flex-col items-center gap-2 text-center">
-          <div className="relative h-20 w-20">
-            <Image
-              src="/logoo.png"
-              alt="Logo"
-              fill
-              className="object-contain"
-              priority
-              unoptimized={true}
-            />
-          </div>
+          <Link href="/" className="group cursor-pointer">
+            <div className="relative h-20 w-20 transition-transform duration-300 group-hover:scale-110">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              <Image
+                src="/logoo.png"
+                alt="Logo"
+                fill
+                className="object-contain relative z-10"
+                priority
+                unoptimized={true}
+              />
+            </div>
+          </Link>
           <h1 className="text-3xl font-bold text-white">Buat Akun</h1>
           <p className="text-sm text-gray-400">
             Bergabunglah dengan kami dan mulai kelola perbaikan Anda
@@ -380,18 +383,7 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          {/* Terms */}
-          <p className="text-center text-xs text-gray-500">
-            Dengan membuat akun, Anda menyetujui{" "}
-            <Link href="#" className="text-blue-400 hover:underline">
-              Syarat Layanan
-            </Link>{" "}
-            dan{" "}
-            <Link href="#" className="text-blue-400 hover:underline">
-              Kebijakan Privasi
-            </Link>{" "}
-            kami
-          </p>
+
         </div>
       </div>
     </div>

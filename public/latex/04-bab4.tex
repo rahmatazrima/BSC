@@ -163,7 +163,7 @@ Gambar \ref{fig:erd-bab4} menampilkan \textit{Entity Relationship Diagram} (ERD)
 \section{Pengembangan Sistem}
 Pengembangan sistem merupakan tahap realisasi dari perancangan yang telah dibuat sebelumnya. Proses pengembangan sistem informasi pemesanan layanan servis \textit{handphone} berbasis \textit{Progressive Web App} (PWA) di Bukhari Service Center dilakukan menggunakan metodologi \textit{Agile} dengan pendekatan \textit{Scrum}, yang dibagi menjadi empat \textit{sprint}. Setiap \textit{sprint} memiliki durasi tiga minggu dan fokus pada implementasi fitur-fitur tertentu sesuai dengan prioritas yang telah ditetapkan dalam \textit{product backlog}. Pengembangan sistem ini mencakup implementasi \textit{full-stack}, meliputi \textit{database}, \textit{backend}, dan \textit{frontend}, serta integrasi seluruh komponen sistem.
 
-\subsection{\textit{Sprint} Pertama}
+\subsection{\textit{Sprint} Pertama} 
 Pada \textit{sprint} pertama, fokus utama pembangunan sistem diarahkan pada tahap inisialisasi proyek, konfigurasi \textit{database}, serta pembuatan fitur autentikasi pengguna. Kegiatan pada tahap ini meliputi \textit{setup} struktur proyek \textit{full-stack}, konfigurasi Prisma ORM untuk manajemen \textit{database}, pembuatan \textit{schema database}, serta implementasi sistem autentikasi yang terintegrasi antara \textit{frontend} dan \textit{backend}. Durasi pengerjaan berlangsung selama tiga minggu. Adapun \textit{product backlog} pada \textit{sprint} pertama meliputi:
 
 \begin{enumerate}
@@ -261,12 +261,43 @@ Pada \textit{sprint} keempat, pembangunan sistem difokuskan pada implementasi fi
 \end{enumerate}
 
 \subsection{Tampilan Aplikasi}
-Tampilan aplikasi dirancang dengan prinsip \textit{user-centered design} yang mengutamakan kemudahan penggunaan, responsivitas, dan estetika visual. Antarmuka pengguna dibangun menggunakan Next.js dengan React sebagai \textit{framework} utama, Tailwind CSS untuk \textit{styling}, dan komponen UI dari \textit{shadcn/ui} untuk memastikan konsistensi desain. Sistem ini diimplementasikan sebagai \textit{Progressive Web App} (PWA) sehingga dapat diakses dengan baik di berbagai perangkat dan dapat diinstal seperti aplikasi \textit{native}. Berikut adalah penjelasan tampilan aplikasi untuk setiap peran pengguna:
+Tampilan aplikasi dirancang dengan prinsip \textit{user-centered design} yang mengutamakan kemudahan penggunaan dan responsivitas. Antarmuka pengguna dibangun menggunakan Next.js dengan React dan Tailwind CSS untuk \textit{styling}.
 
-% LETAKKAN SCREENSHOT-SCREENSHOT TAMPILAN APLIKASI DI SINI
+\subsubsection{Halaman \textit{Homepage}}
+Halaman \textit{homepage} adalah halaman utama yang pertama kali dilihat ketika pengguna mengakses aplikasi. Halaman ini berisi informasi tentang Bukhari Service Center, layanan perbaikan \textit{handphone} yang tersedia, serta fitur-fitur utama sistem seperti kemudahan pemesanan, pelacakan status servis secara \textit{real-time}, dan transparansi biaya. Halaman ini juga dilengkapi dengan tombol navigasi untuk memulai pemesanan bagi pelanggan yang sudah \textit{login} atau mengarahkan ke halaman \textit{login}/registrasi bagi pengunjung baru. Tampilan \textit{homepage} dirancang responsif sehingga dapat diakses dengan optimal di berbagai perangkat, baik \textit{desktop} maupun \textit{mobile}. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR HOMEPAGE DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-homepage.png}
+    \caption{Tampilan Halaman \textit{Homepage}}
+    \label{fig:screenshot-homepage}
+\end{figure}
+
+\subsubsection{Halaman Registrasi}
+Halaman registrasi berfungsi untuk memungkinkan pengguna baru mendaftarkan akun ke dalam sistem. Halaman ini menampilkan formulir pendaftaran yang terdiri dari beberapa \textit{input field}, yaitu nama lengkap, alamat email, nomor telepon, \textit{password}, dan konfirmasi \textit{password}. Setiap \textit{field} dilengkapi dengan validasi data untuk memastikan informasi yang dimasukkan sesuai dengan format yang ditentukan. Sistem akan melakukan pengecekan apakah email yang didaftarkan belum pernah terdaftar sebelumnya untuk mencegah duplikasi akun. Setelah formulir diisi dengan lengkap dan valid, pengguna dapat menekan tombol "Daftar" untuk menyelesaikan proses registrasi. Jika berhasil, sistem akan mengarahkan pengguna ke halaman \textit{login} untuk melakukan autentikasi. Halaman registrasi juga menyediakan tautan untuk menuju halaman \textit{login} bagi pengguna yang sudah memiliki akun. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR REGISTRASI DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-register.png}
+    \caption{Tampilan Halaman Registrasi}
+    \label{fig:screenshot-register}
+\end{figure}
+
+\subsubsection{Halaman \textit{Login}}
+Halaman \textit{login} merupakan halaman autentikasi yang berfungsi untuk memverifikasi identitas pengguna sebelum dapat mengakses sistem. Halaman ini menampilkan formulir \textit{login} yang terdiri dari dua \textit{input field} utama, yaitu alamat email dan \textit{password}. Pengguna memasukkan kredensial yang telah terdaftar pada saat registrasi, kemudian sistem akan melakukan proses verifikasi terhadap data yang tersimpan di \textit{database}. Jika kredensial yang dimasukkan valid, sistem akan mengarahkan pengguna ke halaman \textit{dashboard} sesuai dengan peran pengguna (pelanggan atau admin). Halaman \textit{login} juga dilengkapi dengan validasi \textit{input} untuk memastikan format data yang dimasukkan benar, serta menampilkan pesan kesalahan jika kredensial tidak valid. Terdapat tautan menuju halaman registrasi bagi pengguna yang belum memiliki akun. Proses autentikasi ini menggunakan enkripsi \textit{password} dengan \textit{bcrypt} untuk menjaga keamanan data pengguna. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR LOGIN DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-login.png}
+    \caption{Tampilan Halaman \textit{Login}}
+    \label{fig:screenshot-login}
+\end{figure}
+
+% LETAKKAN SCREENSHOT-SCREENSHOT TAMPILAN APLIKASI LAINNYA DI SINI
 % Sertakan screenshot untuk:
-% 1. Halaman Homepage
-% 2. Halaman Login dan Registrasi
 % 3. Halaman Booking/Pemesanan (Customer)
 % 4. Halaman Tracking (Customer)
 % 5. Halaman History (Customer)

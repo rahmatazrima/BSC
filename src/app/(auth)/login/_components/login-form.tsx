@@ -67,10 +67,10 @@ export default function LoginForm() {
       </div>
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <Link href="/" className="block text-center mb-8 group cursor-pointer">
           <div className="flex items-center justify-center mb-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-lg opacity-30"></div>
+            <div className="relative transition-transform duration-300 group-hover:scale-110">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
               <Image
                 src="/logoo.png"
                 alt="Bukhari Service Center"
@@ -81,11 +81,11 @@ export default function LoginForm() {
               />
             </div>
           </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent group-hover:from-blue-400 group-hover:to-cyan-400 transition-all duration-300">
             Bukhari Service Center
           </h1>
           <p className="text-gray-400 mt-2">Masuk ke akun Anda</p>
-        </div>
+        </Link>
 
         {/* Error Alert */}
         {error && (
@@ -180,31 +180,13 @@ export default function LoginForm() {
                 )}
               />
 
-              {/* Remember me and Forgot password */}
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/20 bg-white/10 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-300">
-                    Ingat saya
-                  </span>
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Lupa Kata Sandi?
-                </Link>
-              </div>
-
               {/* Login Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="group relative w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
                 <span className="relative z-10">
                   {isLoading ? "Sedang Masuk..." : "Masuk"}
                 </span>
@@ -215,6 +197,7 @@ export default function LoginForm() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-cyan-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
+            </div>
             </form>
 
             {/* Divider */}
