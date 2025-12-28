@@ -170,6 +170,7 @@ export async function GET(request: NextRequest) {
         status: service.statusService,
         serviceType: service.tempat,
         alamat: service.alamat, // Alamat lengkap pelanggan (opsional)
+        googleMapsLink: service.googleMapsLink, // Link Google Maps (opsional)
         scheduledDate: service.tanggalPesan,
         price: totalPrice,
         createdAt: service.createdAt,

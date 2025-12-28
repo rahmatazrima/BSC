@@ -38,6 +38,7 @@ interface Order {
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   serviceType: string;
   alamat: string | null;
+  googleMapsLink: string | null;
   scheduledDate: string;
   price: number;
   createdAt: string;
@@ -416,51 +417,73 @@ function AdminDashboardContent() {
               </div>
 
               {/* Recent Orders */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <h3 className="text-xl font-bold text-white mb-6">Pesanan Terbaru</h3>
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/20">
+                  <h3 className="text-xl font-bold text-white">Pesanan Terbaru</h3>
+                </div>
                 {loading ? (
-                  <div className="text-center py-8 text-gray-400">Memuat data...</div>
+                  <div className="p-8 text-center text-gray-400">Memuat data...</div>
                 ) : error ? (
-                  <div className="text-center py-8 text-red-400">{error}</div>
+                  <div className="p-8 text-center text-red-400">{error}</div>
                 ) : orders.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">Belum ada pesanan</div>
+                  <div className="p-8 text-center text-gray-400">Belum ada pesanan</div>
                 ) : (
-                  <div className="space-y-4">
-                    {orders.slice(0, 5).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <p className="font-semibold text-white">{order.customerName}</p>
-                              <p className="text-sm text-gray-300">{order.device}</p>
-                              <div className="mt-1">
-                                <p className="text-sm text-gray-300 font-medium">Uraian Masalah:</p>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {order.problems && order.problems.length > 0 ? (
-                                    order.problems.map((problem, idx) => (
-                                      <span key={idx} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">
-                                        {problem}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="text-xs text-gray-400">-</span>
-                                  )}
-                                </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/20">
+                          <th className="px-6 py-4 text-left text-white font-semibold">Pelanggan</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Perangkat</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Uraian Masalah</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Alamat</th>
+                          <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map((order) => (
+                          <tr key={order.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-4">
+                              <div>
+                                <p className="text-white font-medium">{order.customerName}</p>
+                                <p className="text-xs text-gray-400">{order.customerEmail}</p>
                               </div>
-                              {order.alamat && (
-                                <p className="text-xs text-gray-400 mt-1">📍 {order.alamat}</p>
+                            </td>
+                            <td className="px-6 py-4 text-gray-300">{order.device}</td>
+                            <td className="px-6 py-4">
+                              <div className="flex flex-wrap gap-1 max-w-md">
+                                {order.problems && order.problems.length > 0 ? (
+                                  order.problems.map((problem, idx) => (
+                                    <span key={idx} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">
+                                      {problem}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-gray-400 text-sm">-</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {order.serviceType === 'Mekanik datang ke lokasi Anda' && order.googleMapsLink ? (
+                                <a
+                                  href={order.googleMapsLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded bg-blue-600/20 px-2 py-0.5 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                                >
+                                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                  </svg>
+                                  Lokasi Maps
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 text-sm">-</span>
                               )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className={`px-3 py-1 text-xs font-medium border ${getStatusColor(order.status)}`}>
-                            {getStatusText(order.status)}
-                          </span>
-                          <p className="text-sm text-gray-300 mt-1">Rp {order.price.toLocaleString('id-ID')}</p>
-                        </div>
-                      </div>
-                    ))}
+                            </td>
+                            <td className="px-6 py-4 text-gray-300">Rp {order.price.toLocaleString('id-ID')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
@@ -583,6 +606,19 @@ function AdminDashboardContent() {
                                   <p className="text-white font-medium">{order.customerName}</p>
                                   <p className="text-xs text-gray-400">{order.customerEmail}</p>
                                   <p className="text-xs text-gray-400">{order.customerPhone}</p>
+                                  {order.serviceType === 'Mekanik datang ke lokasi Anda' && order.googleMapsLink && (
+                                    <a
+                                      href={order.googleMapsLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 mt-1 rounded bg-blue-600/20 px-2 py-0.5 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                                    >
+                                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                      </svg>
+                                      Lokasi Maps
+                                    </a>
+                                  )}
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-gray-300">{order.device}</td>

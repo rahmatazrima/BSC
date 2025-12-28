@@ -18,6 +18,7 @@ interface ServiceDetail {
   statusService: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   tempat: string;
   alamat: string | null;
+  googleMapsLink: string | null;
   tanggalPesan: string;
   createdAt: string;
   updatedAt: string;
@@ -336,6 +337,22 @@ export default function OrderDetailModal({
                     <div>
                       <p className="text-gray-400 text-sm mb-1">Alamat</p>
                       <p className="text-white font-medium">{service.alamat}</p>
+                    </div>
+                  )}
+                  {service.googleMapsLink && service.tempat === 'Mekanik datang ke lokasi Anda' && (
+                    <div className="md:col-span-2">
+                      <p className="text-gray-400 text-sm mb-2">Lokasi Google Maps</p>
+                      <a
+                        href={service.googleMapsLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600/20 border border-blue-500/30 px-4 py-2 text-sm font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                      >
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        Buka Lokasi di Google Maps
+                      </a>
                     </div>
                   )}
                 </div>
