@@ -85,6 +85,7 @@ model Service {
   statusService    StatusService      @default(PENDING)
   tempat           String
   alamat           String?
+  googleMapsLink   String?
   tanggalPesan     DateTime
   userId           String
   user             User               @relation(fields: [userId], references: [id])

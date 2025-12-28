@@ -151,17 +151,7 @@ export default function Footer() {
             <div className="text-gray-400 text-xs sm:text-sm text-center lg:text-left">
               © 2025 Bukhari Service Center. All rights reserved.
             </div>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                Terms of Service
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                Cookie Policy
-              </a>
-            </div>
+            
           </div>
         </div>
       </div>

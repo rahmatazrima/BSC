@@ -21,6 +21,7 @@ interface TrackingEntry {
   status: StatusService;
   tempat: string;
   alamat: string | null; // Alamat lengkap pelanggan (opsional)
+  googleMapsLink: string | null; // Link Google Maps (opsional)
   tanggalPesan: string;
   createdAt: string;
   updatedAt: string;
@@ -283,10 +284,42 @@ function TrackingContent() {
                   <div>
                     <h4 className="mb-1 text-sm text-gray-400">Lokasi Layanan</h4>
                     <p className="text-white">{selectedEntry.tempat}</p>
+                    {selectedEntry.tempat === 'Datang ke Bukhari Service Center' && (
+                      <>
+                        <h4 className="mb-1 text-sm text-gray-400 mt-3">Lokasi</h4>
+                        <a
+                          href="https://maps.app.goo.gl/ZGDKjYW3BULaM4nV7?g_st=ipc"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                        >
+                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          Buka Google Maps
+                        </a>
+                      </>
+                    )}
                     {selectedEntry.alamat && (
                       <>
                         <h4 className="mb-1 text-sm text-gray-400 mt-3">Alamat Lengkap</h4>
                         <p className="text-white break-words">{selectedEntry.alamat}</p>
+                      </>
+                    )}
+                    {selectedEntry.googleMapsLink && (
+                      <>
+                        <h4 className="mb-1 text-sm text-gray-400 mt-3">Lokasi</h4>
+                        <a
+                          href={selectedEntry.googleMapsLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                        >
+                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          Buka di Google Maps
+                        </a>
                       </>
                     )}
                   </div>

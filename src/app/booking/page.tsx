@@ -54,6 +54,7 @@ interface ServiceData {
     name: string;
     phone: string;
     address: string;
+    googleMapsLink: string;
   };
 }
 
@@ -71,7 +72,7 @@ export default function BookingPage() {
     kendalaIds: [],
     schedule: { date: '', waktuId: '' },
     serviceType: '',
-    customerInfo: { name: '', phone: '', address: '' }
+    customerInfo: { name: '', phone: '', address: '', googleMapsLink: '' }
   });
   
   // Master data states
@@ -185,6 +186,7 @@ export default function BookingPage() {
         body: JSON.stringify({
           tempat: serviceData.serviceType,
           alamat: serviceData.customerInfo.address || null, // Alamat lengkap pelanggan (opsional)
+          googleMapsLink: serviceData.customerInfo.googleMapsLink || null, // Link Google Maps (opsional)
           tanggalPesan: serviceData.schedule.date,
           handphoneId: serviceData.handphoneId,
           waktuId: serviceData.schedule.waktuId,
@@ -579,6 +581,8 @@ const Step3 = ({ serviceData, updateServiceData, waktuList }: any) => {
 
 // Step 4: Service Type
 const Step4 = ({ serviceData, updateServiceData }: any) => {
+  const BUKHARI_MAPS_LINK = "https://maps.app.goo.gl/ZGDKjYW3BULaM4nV7?g_st=ipc";
+  
   const serviceTypes = [
     {
       name: "Datang ke Bukhari Service Center",
@@ -611,16 +615,56 @@ const Step4 = ({ serviceData, updateServiceData }: any) => {
         ))}
       </div>
 
+      {serviceData.serviceType === "Datang ke Bukhari Service Center" && (
+        <div className="mt-5 sm:mt-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <svg className="h-6 w-6 flex-shrink-0 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-white font-semibold mb-1">Lokasi Bukhari Service Center</h4>
+              <p className="text-gray-300 text-sm mb-3">Klik tombol di bawah untuk melihat lokasi kami di Google Maps</p>
+              <a
+                href={BUKHARI_MAPS_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:bg-blue-700"
+              >
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                Buka di Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {serviceData.serviceType === "Mekanik datang ke lokasi Anda" && (
-        <div className="mt-5 sm:mt-6">
-          <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Alamat Lengkap</label>
-          <textarea
-            value={serviceData.customerInfo.address}
-            onChange={(e) => updateServiceData('customerInfo', { ...serviceData.customerInfo, address: e.target.value })}
-            placeholder="Masukkan alamat detail atau link Google Maps, contoh: Warkop Plut Kupie, Lampineung"
-            rows={4}
-            className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base"
-          />
+        <div className="mt-5 sm:mt-6 space-y-4">
+          <div>
+            <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">Alamat Lengkap</label>
+            <textarea
+              value={serviceData.customerInfo.address}
+              onChange={(e) => updateServiceData('customerInfo', { ...serviceData.customerInfo, address: e.target.value })}
+              placeholder="Masukkan alamat detail, contoh: Warkop Plut Kupie, Lampineung"
+              rows={3}
+              className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-300 text-base sm:text-lg font-medium mb-2 sm:mb-3">
+              Link Google Maps <span className="text-gray-400 text-sm font-normal">(Opsional)</span>
+            </label>
+            <input
+              type="url"
+              value={serviceData.customerInfo.googleMapsLink}
+              onChange={(e) => updateServiceData('customerInfo', { ...serviceData.customerInfo, googleMapsLink: e.target.value })}
+              placeholder="https://maps.google.com/?q=..."
+              className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all backdrop-blur-sm text-sm sm:text-base"
+            />
+            <p className="text-xs text-gray-400 mt-2">Salin link lokasi dari Google Maps untuk memudahkan mekanik menemukan lokasi Anda</p>
+          </div>
         </div>
       )}
     </div>
@@ -705,10 +749,42 @@ const Step5 = ({ serviceData, price, handphones, kendalas, waktuList }: any) => 
                 <span className="text-gray-400">Layanan:</span>
                 <span className="text-white ml-2 break-words">{serviceData.serviceType || '-'}</span>
               </div>
+              {serviceData.serviceType === 'Datang ke Bukhari Service Center' && (
+                <div>
+                  <span className="text-gray-400">Lokasi:</span>
+                  <a
+                    href="https://maps.app.goo.gl/ZGDKjYW3BULaM4nV7?g_st=ipc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 inline-flex items-center gap-1 rounded-lg bg-blue-600/20 px-2 py-1 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                  >
+                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Bukhari Service Center
+                  </a>
+                </div>
+              )}
               {serviceData.serviceType === 'Mekanik datang ke lokasi Anda' && serviceData.customerInfo.address && (
                 <div>
                   <span className="text-gray-400">Alamat:</span>
                   <span className="text-white ml-2 break-words">{serviceData.customerInfo.address}</span>
+                </div>
+              )}
+              {serviceData.serviceType === 'Mekanik datang ke lokasi Anda' && serviceData.customerInfo.googleMapsLink && (
+                <div>
+                  <span className="text-gray-400">Lokasi:</span>
+                  <a
+                    href={serviceData.customerInfo.googleMapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 inline-flex items-center gap-1 rounded-lg bg-blue-600/20 px-2 py-1 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                  >
+                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Google Maps
+                  </a>
                 </div>
               )}
             </div>

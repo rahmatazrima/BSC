@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
         status: service.statusService,
         tempat: service.tempat,
         alamat: service.alamat, // Alamat lengkap pelanggan (opsional)
+        googleMapsLink: service.googleMapsLink, // Link Google Maps (opsional)
         tanggalPesan: service.tanggalPesan,
         createdAt: service.createdAt,
         updatedAt: service.updatedAt,

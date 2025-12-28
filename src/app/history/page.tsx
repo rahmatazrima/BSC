@@ -12,6 +12,7 @@ interface HistoryOrder {
   status: StatusService;
   tempat: string;
   alamat: string | null; // Alamat lengkap pelanggan (opsional)
+  googleMapsLink: string | null; // Link Google Maps (opsional)
   tanggalPesan: string;
   createdAt: string;
   updatedAt: string;
@@ -289,12 +290,44 @@ export default function HistoryPage() {
                     {order.tempat}
                   </span>
                 </div>
+                {order.tempat === 'Datang ke Bukhari Service Center' && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Lokasi Maps:</span>
+                    <a
+                      href="https://maps.app.goo.gl/ZGDKjYW3BULaM4nV7?g_st=ipc"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg bg-blue-600/20 px-2 py-1 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                    >
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      Buka
+                    </a>
+                  </div>
+                )}
                 {order.alamat && (
                   <div className="flex justify-between">
                     <span className="text-gray-400">Alamat Lengkap:</span>
                     <span className="text-right text-sm text-white break-words max-w-[60%]">
                       {order.alamat}
                     </span>
+                  </div>
+                )}
+                {order.googleMapsLink && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Lokasi Maps:</span>
+                    <a
+                      href={order.googleMapsLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg bg-blue-600/20 px-2 py-1 text-xs font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                    >
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      Buka
+                    </a>
                   </div>
                 )}
                 <div className="border-t border-white/10 pt-3 space-y-2">
@@ -470,6 +503,22 @@ export default function HistoryPage() {
                 <div>
                   <span className="text-gray-400">Alamat Lengkap:</span>
                   <span className="ml-2 text-white break-words">{selectedOrder.alamat}</span>
+                </div>
+              )}
+              {selectedOrder.googleMapsLink && (
+                <div>
+                  <span className="text-gray-400">Lokasi:</span>
+                  <a
+                    href={selectedOrder.googleMapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 inline-flex items-center gap-2 rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-400 transition-all duration-300 hover:bg-blue-600/30 hover:text-blue-300"
+                  >
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Buka di Google Maps
+                  </a>
                 </div>
               )}
               <div>

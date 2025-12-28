@@ -209,6 +209,7 @@ export async function POST(request: NextRequest) {
       statusService = 'PENDING',
       tempat,
       alamat,
+      googleMapsLink,
       tanggalPesan,
       handphoneId,
       waktuId,
@@ -403,6 +404,7 @@ export async function POST(request: NextRequest) {
           statusService,
           tempat,
           alamat: alamat || null, // Alamat lengkap pelanggan (opsional)
+          googleMapsLink: googleMapsLink || null, // Link Google Maps (opsional)
           tanggalPesan: parsedDate,
           userId,
           handphoneId,
