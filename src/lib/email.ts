@@ -200,8 +200,8 @@ export function createStatusNotificationTemplate({
                     Email ini dikirim dari sistem Bukhari Service Center
                   </p>
                   <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                    Jln. Pootemarohoan, Lamteh, Banda Aceh, Indonesia<br>
-                    Telp: +62 822 1963 5738 | Email: rahmatazirme@gmail.com
+                    Jl. Laksamana Malahayati, Baet, Aceh Besar, Indonesia<br>
+                    Telp: +62 813 6186 6731 | Email: bukhariservicec@gmail.com
                   </p>
                 </td>
               </tr>
@@ -286,8 +286,8 @@ export function createEmailTemplate({
                     Email ini dikirim dari sistem Bukhari Service Center
                   </p>
                   <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                    Jln. Pootemarohoan, Lamteh, Banda Aceh, Indonesia<br>
-                    Telp: +62 822 1963 5738 | Email: rahmatazirme@gmail.com
+                    Jl. Laksamana Malahayati, Baet, Aceh Besar, Indonesia<br>
+                    Telp: +62 813 6186 6731 | Email: bukhariservicec@gmail.com
                   </p>
                 </td>
               </tr>
