@@ -63,7 +63,7 @@ const DIAGNOSTIC_PROBLEMS = new Set([
   "Handphone Tidak Bisa Menyala"
 ]);
 
-const SERVICE_FEE = 50000;
+const SERVICE_FEE = 38000;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);

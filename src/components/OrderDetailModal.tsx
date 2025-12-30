@@ -63,7 +63,7 @@ interface OrderDetailModalProps {
   onStatusUpdate?: () => void;
 }
 
-const SERVICE_FEE = 50000;
+const SERVICE_FEE = 38000;
 
 export default function OrderDetailModal({ 
   orderId, 
@@ -186,9 +186,7 @@ export default function OrderDetailModal({
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   };
 

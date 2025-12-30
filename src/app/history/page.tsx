@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import NavbarCustomer from "@/components/NavbarCustomer";
-import Image from "next/image";
 import Link from "next/link";
+import { DevicePhoneMobileIcon } from "@/components/icons";
 
 type StatusService = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
@@ -46,7 +46,7 @@ const STATUS_FILTERS = [
   { value: "cancelled", label: "Dibatalkan" },
 ] as const;
 
-const SERVICE_FEE = 50000; // Biaya jasa per transaksi
+const SERVICE_FEE = 38000; // Biaya jasa per transaksi
 
 // Daftar uraian masalah yang memerlukan styling khusus untuk harga
 const DIAGNOSTIC_PROBLEMS = [
@@ -213,7 +213,7 @@ export default function HistoryPage() {
             >
               <div className="mb-6 flex items-center space-x-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/10">
-                  <span className="text-2xl">📱</span>
+                  <DevicePhoneMobileIcon className="w-8 h-8 text-blue-400" />
                 </div>
                 <div className="flex-1">
                   <h3 className="mb-1 text-lg font-bold text-white">
@@ -277,7 +277,17 @@ export default function HistoryPage() {
                   )}
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Shift:</span>
+                  <span className="text-gray-400">Tanggal Pemesanan:</span>
+                  <span className="text-right text-white">
+                    {new Date(order.tanggalPesan).toLocaleDateString('id-ID', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Waktu Service:</span>
                   <span className="text-right text-white">
                     {order.waktu
                       ? `${order.waktu.namaShift} (${order.waktu.jamMulai} - ${order.waktu.jamSelesai})`
@@ -484,6 +494,24 @@ export default function HistoryPage() {
                 </span>
               </div>
               <div>
+                <span className="text-gray-400">Tanggal Pemesanan:</span>
+                <span className="ml-2 text-white">
+                  {new Date(selectedOrder.tanggalPesan).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-400">Waktu Service:</span>
+                <span className="ml-2 text-white">
+                  {selectedOrder.waktu
+                    ? `${selectedOrder.waktu.namaShift} (${selectedOrder.waktu.jamMulai} - ${selectedOrder.waktu.jamSelesai})`
+                    : "-"}
+                </span>
+              </div>
+              <div>
                 <span className="text-gray-400">Tanggal Dibuat:</span>
                 <span className="ml-2 text-white">
                   {formatDateTime(selectedOrder.createdAt)}
@@ -521,14 +549,6 @@ export default function HistoryPage() {
                   </a>
                 </div>
               )}
-              <div>
-                <span className="text-gray-400">Shift:</span>
-                <span className="ml-2 text-white">
-                  {selectedOrder.waktu
-                    ? `${selectedOrder.waktu.namaShift} (${selectedOrder.waktu.jamMulai} - ${selectedOrder.waktu.jamSelesai})`
-                    : "-"}
-                </span>
-              </div>
               <div className="border-t border-white/10 pt-3 space-y-2">
                 <div>
                   <span className="text-gray-400">Biaya Perbaikan:</span>

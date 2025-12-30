@@ -95,8 +95,8 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-gray-300 leading-relaxed">
-                    Jl. Laksamana Malahayati, Baet<br />
-                    Aceh Besar, Aceh, Indonesia
+                    Jl. Laksamana Malahayati, <br />Baet<br />
+                    Aceh Besar, Indonesia
                   </p>
                 </div>
               </div>

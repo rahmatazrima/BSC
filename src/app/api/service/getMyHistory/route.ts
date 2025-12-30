@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
+const SERVICE_FEE = 38000; // Biaya jasa service
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("auth-token");

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
+const SERVICE_FEE = 38000; // Biaya jasa service
+
 // GET - Mengambil semua service untuk admin
 export async function GET(request: NextRequest) {
   try {
@@ -147,13 +149,17 @@ export async function GET(request: NextRequest) {
       const selectedKendala = service.kendalaHandphone || [];
       
       // Hitung total harga dari semua pergantianBarang dari semua kendala yang dipilih
-      const totalPrice = selectedKendala.reduce((total, kendala) => {
+      // Hitung total harga sparepart
+      const sparepartPrice = selectedKendala.reduce((total, kendala) => {
         const kendalaPrice = kendala.pergantianBarang?.reduce(
           (sum, item) => sum + item.harga,
           0
         ) ?? 0;
         return total + kendalaPrice;
       }, 0);
+
+      // Total price = sparepart price + service fee
+      const totalPrice = sparepartPrice + SERVICE_FEE;
 
       // Format semua uraian masalah yang dipilih customer
       const problems = selectedKendala.map(k => k.topikMasalah);

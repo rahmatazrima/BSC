@@ -2,9 +2,9 @@
 
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import NavbarCustomer from "@/components/NavbarCustomer";
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { DevicePhoneMobileIcon, WrenchScrewdriverIcon } from "@/components/icons";
 
 type StatusService = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
@@ -226,14 +226,7 @@ function TrackingContent() {
             <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-8 backdrop-blur-md">
               <div className="flex items-center space-x-6">
                 <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10">
-                  <Image
-                    src="/galaksi.png"
-                    alt="Device"
-                    width={80}
-                    height={80}
-                    className="opacity-70"
-                    unoptimized={true}
-                  />
+                  <DevicePhoneMobileIcon className="w-16 h-16 text-blue-400" />
                 </div>
 
                 <div className="flex-1">
@@ -241,7 +234,7 @@ function TrackingContent() {
                     {selectedEntry.handphone.brand} {selectedEntry.handphone.tipe}
                   </h2>
                   <div className="mb-4 flex items-center space-x-3">
-                    <span className="text-lg text-blue-400">🔧</span>
+                    <WrenchScrewdriverIcon className="w-5 h-5 text-blue-400" />
                     <span
                       className={`border px-3 py-1 text-sm font-medium ${statusBadge(selectedEntry.status).className}`}
                     >
@@ -268,7 +261,11 @@ function TrackingContent() {
                     )}
                   </div>
                   <div>
-                    <h4 className="mb-1 text-sm text-gray-400">Shift</h4>
+                    <h4 className="mb-1 text-sm text-gray-400">Tanggal Pemesanan</h4>
+                    <p className="text-white">{formatDate(selectedEntry.tanggalPesan)}</p>
+                  </div>
+                  <div>
+                    <h4 className="mb-1 text-sm text-gray-400">Waktu Service</h4>
                     <p className="text-white">
                       {selectedEntry.waktu
                         ? `${selectedEntry.waktu.namaShift} (${selectedEntry.waktu.jamMulai} - ${selectedEntry.waktu.jamSelesai})`
@@ -278,11 +275,7 @@ function TrackingContent() {
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="mb-1 text-sm text-gray-400">Waktu Pemesanan</h4>
-                    <p className="text-white">{formatDate(selectedEntry.tanggalPesan)}</p>
-                  </div>
-                  <div>
-                    <h4 className="mb-1 text-sm text-gray-400">Lokasi Layanan</h4>
+                    <h4 className="mb-1 text-sm text-gray-400">Jenis Layanan</h4>
                     <p className="text-white">{selectedEntry.tempat}</p>
                     {selectedEntry.tempat === 'Datang ke Bukhari Service Center' && (
                       <>
@@ -332,20 +325,27 @@ function TrackingContent() {
 
               <div className="space-y-8">
                 {selectedEntry.steps.map((step, index) => {
+                  // Jika status CANCELLED, semua step dianggap completed
+                  const isCompleted = selectedEntry.status === "CANCELLED" ? true : step.completed;
                   const isCurrent = index === currentStepIndex;
+                  const isCancelledStep = step.title.toLowerCase().includes("dibatalkan");
+                  const isLastStep = index === selectedEntry.steps.length - 1;
+                  
                   return (
                     <div key={step.id} className="flex items-start space-x-6">
                       <div className="flex flex-col items-center">
                         <div
                           className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                            step.completed
-                              ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                            isCompleted
+                              ? isCancelledStep
+                                ? "border-red-400 bg-red-400 text-white shadow-lg"
+                                : "border-blue-600 bg-blue-600 text-white shadow-lg"
                               : isCurrent
                               ? "border-blue-500 bg-blue-500/20 text-blue-400 animate-pulse"
                               : "border-gray-600 bg-gray-700 text-gray-400"
                           }`}
                         >
-                          {step.completed ? (
+                          {isCompleted ? (
                             <span className="text-lg">✓</span>
                           ) : isCurrent ? (
                             <div className="h-3 w-3 rounded-full bg-blue-400 animate-pulse" />
@@ -357,7 +357,11 @@ function TrackingContent() {
                         {index < selectedEntry.steps.length - 1 && (
                           <div
                             className={`mt-4 h-16 w-0.5 transition-colors duration-300 ${
-                              step.completed ? "bg-blue-600" : "bg-gray-700"
+                              isCompleted 
+                                ? isCancelledStep 
+                                  ? "bg-red-400" 
+                                  : "bg-blue-600" 
+                                : "bg-gray-700"
                             }`}
                           />
                         )}
@@ -367,7 +371,9 @@ function TrackingContent() {
                         <div className="mb-2 flex items-center justify-between">
                           <h4
                             className={`text-lg font-semibold ${
-                              step.completed
+                              isCancelledStep && selectedEntry.status === "CANCELLED"
+                                ? "text-red-400"
+                                : isCompleted
                                 ? "text-white"
                                 : isCurrent
                                 ? "text-blue-400"
@@ -376,15 +382,18 @@ function TrackingContent() {
                           >
                             {step.title}
                           </h4>
-                          {step.timestamp && (
+                          {/* Tampilkan timestamp atau updatedAt untuk step yang dibatalkan */}
+                          {(step.timestamp || (isCancelledStep && isLastStep && selectedEntry.status === "CANCELLED")) && (
                             <span className="text-sm text-gray-400">
-                              {formatDateTime(step.timestamp)}
+                              {step.timestamp 
+                                ? formatDateTime(step.timestamp)
+                                : formatDateTime(selectedEntry.updatedAt)}
                             </span>
                           )}
                         </div>
                         <p
                           className={`text-sm ${
-                            step.completed
+                            isCompleted
                               ? "text-gray-300"
                               : isCurrent
                               ? "text-gray-300"
@@ -417,7 +426,7 @@ function TrackingContent() {
           !error && (
             <div className="flex min-h-[60vh] flex-col items-center justify-center text-center text-gray-300">
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/10">
-                <span className="text-3xl">📱</span>
+                <DevicePhoneMobileIcon className="w-10 h-10 text-gray-400" />
               </div>
               <h2 className="mb-2 text-xl font-semibold text-white">
                 Belum ada pesanan yang bisa dilacak
