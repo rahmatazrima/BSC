@@ -200,9 +200,12 @@ export async function PUT(request: NextRequest) {
       });
 
       // Set new cookie
+      const isProduction = process.env.NODE_ENV === 'production';
+      const isHTTPS = request.url.startsWith('https://');
+      
       response.cookies.set('auth-token', newToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction && isHTTPS,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/',

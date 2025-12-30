@@ -144,10 +144,13 @@ export async function POST(request: NextRequest) {
 
     // Set HTTP-only cookie
     const cookieStore = await cookies();
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHTTPS = request.url.startsWith('https://');
+    
     cookieStore.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction && isHTTPS,
+      sameSite: isProduction ? 'lax' : 'strict',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/'
     });

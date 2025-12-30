@@ -103,10 +103,15 @@ export async function POST(request: NextRequest) {
 
     // Set HTTP-only cookie
     const cookieStore = await cookies();
+    
+    // Untuk production tanpa HTTPS, set secure: false
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHTTPS = request.url.startsWith('https://');
+    
     cookieStore.set('auth-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction && isHTTPS, // Only secure if production AND using HTTPS
+      sameSite: isProduction ? 'lax' : 'strict', // 'lax' lebih compatible untuk production
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/'
     });

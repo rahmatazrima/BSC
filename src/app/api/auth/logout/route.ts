@@ -19,10 +19,13 @@ export async function POST(request: NextRequest) {
 
     // Pastikan cookie dihapus dengan path yang sama dan semua opsi yang sama
     // Gunakan semua opsi yang sama seperti saat set cookie di login
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHTTPS = request.url.startsWith('https://');
+    
     response.cookies.set('auth-token', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction && isHTTPS, // Only secure if production AND using HTTPS
+      sameSite: isProduction ? 'lax' : 'strict', // 'lax' lebih compatible untuk production
       maxAge: 0, // Expire immediately
       path: '/',
       expires: new Date(0) // Set expired date to epoch
@@ -63,10 +66,13 @@ export async function GET(request: NextRequest) {
     });
 
     // Pastikan cookie dihapus dengan path yang sama dan semua opsi yang sama
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHTTPS = request.url.startsWith('https://');
+    
     response.cookies.set('auth-token', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction && isHTTPS,
+      sameSite: isProduction ? 'lax' : 'strict',
       maxAge: 0,
       path: '/',
       expires: new Date(0)
