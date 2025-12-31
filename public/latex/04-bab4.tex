@@ -261,51 +261,99 @@ Pada \textit{sprint} keempat, pembangunan sistem difokuskan pada implementasi fi
 \end{enumerate}
 
 \subsection{Tampilan Aplikasi}
-Tampilan aplikasi dirancang dengan prinsip \textit{user-centered design} yang mengutamakan kemudahan penggunaan dan responsivitas. Antarmuka pengguna dibangun menggunakan Next.js dengan React dan Tailwind CSS untuk \textit{styling}.
 
-\subsubsection{Halaman \textit{Homepage}}
-Halaman \textit{homepage} adalah halaman utama yang pertama kali dilihat ketika pengguna mengakses aplikasi. Halaman ini berisi informasi tentang Bukhari Service Center, layanan perbaikan \textit{handphone} yang tersedia, serta fitur-fitur utama sistem seperti kemudahan pemesanan, pelacakan status servis secara \textit{real-time}, dan transparansi biaya. Halaman ini juga dilengkapi dengan tombol navigasi untuk memulai pemesanan bagi pelanggan yang sudah \textit{login} atau mengarahkan ke halaman \textit{login}/registrasi bagi pengunjung baru. Tampilan \textit{homepage} dirancang responsif sehingga dapat diakses dengan optimal di berbagai perangkat, baik \textit{desktop} maupun \textit{mobile}. Halaman ini dapat dilihat pada Gambar 4.X.
+\begin{enumerate}
+    \item Halaman \textit{Homepage}
+    
+    Halaman \textit{homepage} adalah halaman utama ketika pengguna mengakses aplikasi. Halaman ini berisi informasi tentang Bukhari Service Center dan layanan yang disediakan. Halaman ini dapat dilihat pada Gambar \ref{fig:homepage}.
 
-% LETAKKAN GAMBAR HOMEPAGE DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-homepage.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/homepage.png}
     \caption{Tampilan Halaman \textit{Homepage}}
-    \label{fig:screenshot-homepage}
+    \label{fig:homepage}
 \end{figure}
-
-\subsubsection{Halaman Registrasi}
-Halaman registrasi berfungsi untuk memungkinkan pengguna baru mendaftarkan akun ke dalam sistem. Halaman ini menampilkan formulir pendaftaran yang terdiri dari beberapa \textit{input field}, yaitu nama lengkap, alamat email, nomor telepon, \textit{password}, dan konfirmasi \textit{password}. Setiap \textit{field} dilengkapi dengan validasi data untuk memastikan informasi yang dimasukkan sesuai dengan format yang ditentukan. Sistem akan melakukan pengecekan apakah email yang didaftarkan belum pernah terdaftar sebelumnya untuk mencegah duplikasi akun. Setelah formulir diisi dengan lengkap dan valid, pengguna dapat menekan tombol "Daftar" untuk menyelesaikan proses registrasi. Jika berhasil, sistem akan mengarahkan pengguna ke halaman \textit{login} untuk melakukan autentikasi. Halaman registrasi juga menyediakan tautan untuk menuju halaman \textit{login} bagi pengguna yang sudah memiliki akun. Halaman ini dapat dilihat pada Gambar 4.X.
+    
+    \item Halaman Registrasi
+    
+    Halaman registrasi berfungsi untuk mendaftarkan akun pengguna baru ke dalam sistem. Halaman ini menampilkan formulir yang terdiri dari \textit{input field} nama lengkap, email, nomor telepon, \textit{password}, dan konfirmasi \textit{password} dengan validasi data. Halaman ini dapat dilihat pada Gambar \ref{fig:register}.
 
 % LETAKKAN GAMBAR REGISTRASI DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-register.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/registerpage.png}
     \caption{Tampilan Halaman Registrasi}
-    \label{fig:screenshot-register}
+    \label{fig:register}
 \end{figure}
-
-\subsubsection{Halaman \textit{Login}}
-Halaman \textit{login} merupakan halaman autentikasi yang berfungsi untuk memverifikasi identitas pengguna sebelum dapat mengakses sistem. Halaman ini menampilkan formulir \textit{login} yang terdiri dari dua \textit{input field} utama, yaitu alamat email dan \textit{password}. Pengguna memasukkan kredensial yang telah terdaftar pada saat registrasi, kemudian sistem akan melakukan proses verifikasi terhadap data yang tersimpan di \textit{database}. Jika kredensial yang dimasukkan valid, sistem akan mengarahkan pengguna ke halaman \textit{dashboard} sesuai dengan peran pengguna (pelanggan atau admin). Halaman \textit{login} juga dilengkapi dengan validasi \textit{input} untuk memastikan format data yang dimasukkan benar, serta menampilkan pesan kesalahan jika kredensial tidak valid. Terdapat tautan menuju halaman registrasi bagi pengguna yang belum memiliki akun. Proses autentikasi ini menggunakan enkripsi \textit{password} dengan \textit{bcrypt} untuk menjaga keamanan data pengguna. Halaman ini dapat dilihat pada Gambar 4.X.
+    
+    \item Halaman \textit{Login}
+    
+    Halaman \textit{login} berfungsi untuk autentikasi pengguna dengan memasukkan email dan \textit{password}. Sistem akan memverifikasi kredensial dan mengarahkan pengguna ke halaman \textit{dashboard} sesuai peran (pelanggan atau admin). Halaman ini dapat dilihat pada Gambar \ref{fig:login}.
 
 % LETAKKAN GAMBAR LOGIN DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-login.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/loginpage.png}
     \caption{Tampilan Halaman \textit{Login}}
-    \label{fig:screenshot-login}
+    \label{fig:login}
+\end{figure}
+    
+    \item Halaman Pemesanan Layanan (\textit{Booking})
+    
+    Halaman pemesanan layanan merupakan fitur utama yang memungkinkan pelanggan untuk memesan layanan servis \textit{handphone} secara \textit{online}. Halaman ini mengimplementasikan \textit{multi-step form} dengan lima tahap untuk memudahkan pelanggan dalam mengisi informasi pemesanan secara bertahap. Tahap pertama adalah pemilihan merek dan tipe \textit{handphone} yang akan diservis melalui \textit{dropdown menu}. Tahap kedua memungkinkan pelanggan memilih jenis kendala atau kerusakan yang dialami perangkat, dengan pilihan kendala yang ditampilkan disesuaikan berdasarkan jenis \textit{handphone} yang dipilih sebelumnya. Tahap ketiga adalah pemilihan tempat layanan, di mana pelanggan dapat memilih untuk datang ke \textit{service center} atau memilih layanan \textit{home service} dengan mengisi alamat lengkap. Tahap keempat memungkinkan pelanggan memilih jadwal waktu layanan yang tersedia, dengan sistem menampilkan hanya slot waktu yang belum dibooking. Tahap kelima menampilkan ringkasan seluruh informasi pemesanan untuk dikonfirmasi sebelum \textit{submit}. Setiap tahap dilengkapi dengan indikator progres di bagian atas halaman dan tombol navigasi untuk berpindah antar tahap. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR BOOKING DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-booking.png}
+    \caption{Tampilan Halaman Pemesanan Layanan}
+    \label{fig:screenshot-booking}
+\end{figure}
+    
+    \item Halaman Pelacakan Status (\textit{Tracking})
+    
+    Halaman pelacakan status berfungsi untuk memungkinkan pelanggan memantau progres pemesanan layanan servis secara \textit{real-time}. Halaman ini menampilkan informasi detail tentang pemesanan yang sedang aktif, termasuk status terkini (Menunggu Verifikasi, Sedang Dikerjakan, Selesai, atau Dibatalkan), informasi \textit{handphone} yang diservis, jenis kendala yang dilaporkan, jadwal layanan, dan tempat servis. Terdapat \textit{timeline} visual yang menunjukkan tahapan progres pemesanan dari pemesanan dibuat, diverifikasi oleh admin, sedang dalam proses perbaikan, hingga selesai. Setiap tahapan dilengkapi dengan \textit{timestamp} untuk memberikan transparansi waktu kepada pelanggan. Halaman ini juga menampilkan informasi teknisi yang menangani, estimasi waktu penyelesaian, serta detail \textit{sparepart} yang digunakan jika ada pergantian komponen. Pelanggan dapat dengan mudah melihat status pemesanan mereka tanpa harus menghubungi pihak \textit{service center} secara langsung. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR TRACKING DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-tracking.png}
+    \caption{Tampilan Halaman Pelacakan Status}
+    \label{fig:screenshot-tracking}
+\end{figure}
+    
+    \item Halaman Riwayat Pemesanan (\textit{History})
+    
+    Halaman riwayat pemesanan menampilkan daftar lengkap seluruh pemesanan layanan servis yang pernah dilakukan oleh pelanggan. Halaman ini menyajikan informasi dalam format tabel atau kartu yang mencakup tanggal pemesanan, jenis \textit{handphone}, kendala yang dilaporkan, status pemesanan, dan tanggal selesai (jika sudah selesai). Pelanggan dapat melakukan pencarian berdasarkan tanggal atau status pemesanan untuk memudahkan dalam menemukan riwayat tertentu. Setiap entri pemesanan dilengkapi dengan tombol untuk melihat detail lengkap, yang akan menampilkan informasi komprehensif seperti detail kendala, \textit{sparepart} yang digunakan, biaya servis, dan catatan dari teknisi. Halaman ini berguna bagi pelanggan untuk melacak riwayat perawatan perangkat mereka dan sebagai referensi untuk pemesanan di masa mendatang. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR HISTORY DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-history.png}
+    \caption{Tampilan Halaman Riwayat Pemesanan}
+    \label{fig:screenshot-history}
+\end{figure}
+    
+    \item Halaman Profil Pengguna
+    
+    Halaman profil pengguna memungkinkan pelanggan untuk melihat dan mengelola informasi akun mereka. Halaman ini menampilkan informasi pribadi yang terdiri dari nama lengkap, alamat email, nomor telepon, serta tanggal pendaftaran akun. Pelanggan dapat melakukan pembaruan terhadap informasi profil seperti mengubah nama, nomor telepon, atau \textit{password} akun. Proses perubahan \textit{password} memerlukan verifikasi dengan memasukkan \textit{password} lama terlebih dahulu untuk menjaga keamanan akun. Halaman ini juga menampilkan ringkasan statistik seperti jumlah total pemesanan yang pernah dilakukan dan jumlah pemesanan yang sedang aktif. Terdapat fitur \textit{logout} yang memungkinkan pengguna keluar dari sistem dengan aman. Setiap perubahan data dilengkapi dengan validasi untuk memastikan informasi yang dimasukkan sesuai dengan format yang ditentukan. Halaman ini dapat dilihat pada Gambar 4.X.
+
+% LETAKKAN GAMBAR PROFILE DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-profile.png}
+    \caption{Tampilan Halaman Profil Pengguna}
+    \label{fig:screenshot-profile}
 \end{figure}
 
 % LETAKKAN SCREENSHOT-SCREENSHOT TAMPILAN APLIKASI LAINNYA DI SINI
 % Sertakan screenshot untuk:
-% 3. Halaman Booking/Pemesanan (Customer)
-% 4. Halaman Tracking (Customer)
-% 5. Halaman History (Customer)
-% 6. Dashboard Admin
-% 7. Halaman Master Data (Admin)
-% 8. Halaman Kelola Pesanan (Admin)
-% 9. Tampilan PWA Install Prompt
-% 10. Tampilan Mobile Responsive
+% 8. Dashboard Admin
+% 9. Halaman Master Data (Admin)
+% 10. Halaman Kelola Pesanan (Admin)
+% 11. Tampilan PWA Install Prompt
+% 12. Tampilan Mobile Responsive
+\end{enumerate}
 
 %-----------------------------------------------------------------------------%
 \section{Pengujian dan Evaluasi}

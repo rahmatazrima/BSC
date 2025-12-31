@@ -46,7 +46,6 @@ interface PergantianBarang {
   id: string;
   namaBarang: string;
   harga: number;
-  jumlahStok: number;
   kendalaHandphoneId: string;
   kendalaHandphone?: KendalaHandphone;
   createdAt: string;
@@ -209,7 +208,6 @@ function MasterDataContent() {
             id: modalMode === 'edit' ? selectedItem.id : undefined,
             namaBarang: formData.namaBarang,
             harga: parseFloat(formData.harga),
-            jumlahStok: parseInt(formData.jumlahStok) || 0,
             kendalaHandphoneId: formData.kendalaHandphoneId
           };
           break;
@@ -770,18 +768,7 @@ function SparepartForm({ formData, setFormData, kendalaList }: any) {
             min="0"
           />
         </div>
-        <div>
-          <label className="block text-white mb-2 font-medium">Jumlah Stok</label>
-          <input
-            type="number"
-            value={formData.jumlahStok !== undefined ? formData.jumlahStok : ''}
-            onChange={(e) => setFormData({ ...formData, jumlahStok: parseInt(e.target.value) || 0 })}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
-            placeholder="10"
-            required
-            min="0"
-          />
-        </div>
+
       </div>
     </>
   );
@@ -1186,13 +1173,6 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
                 <div className="text-green-400 font-semibold text-xl">
                   Rp {item.harga.toLocaleString('id-ID')}
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  item.jumlahStok > 0 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
-                }`}>
-                  Stok: {item.jumlahStok}
-                </div>
               </div>
               <div className="mt-2 space-y-1">
                 <div className="text-yellow-400 text-sm">
@@ -1232,7 +1212,6 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
               <th className="px-6 py-4 text-left text-white font-semibold">Untuk Kendala</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Handphone</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Harga</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Stok</th>
               <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
             </tr>
           </thead>
@@ -1245,15 +1224,6 @@ function SparepartTable({ data, onEdit, onDelete }: any) {
                   {item.kendalaHandphone?.handphone?.brand} {item.kendalaHandphone?.handphone?.tipe}
                 </td>
                 <td className="px-6 py-4 text-green-400 font-semibold">Rp {item.harga.toLocaleString('id-ID')}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    item.jumlahStok > 0 
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}>
-                    {item.jumlahStok} unit
-                  </span>
-                </td>
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">
                     <button

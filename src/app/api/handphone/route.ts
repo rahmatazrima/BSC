@@ -275,8 +275,7 @@ export async function POST(request: NextRequest) {
             pergantianBarang: {
               create: {
                 namaBarang: template.sparepartTemplate,
-                harga: 0, // Admin akan input harga nanti
-                jumlahStok: 0 // Admin akan input stok nanti
+                harga: 0 // Admin akan input harga nanti
               }
             }
           }

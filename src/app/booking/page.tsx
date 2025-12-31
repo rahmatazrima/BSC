@@ -23,7 +23,6 @@ interface PergantianBarang {
   id: string;
   namaBarang: string;
   harga: number;
-  jumlahStok?: number;
   kendalaHandphoneId: string;
 }
 
@@ -286,13 +285,31 @@ export default function BookingPage() {
 const Step1 = ({ serviceData, updateServiceData, handphones }: any) => {
   const [selectedBrand, setSelectedBrand] = React.useState('');
   
-  // Get unique brands
-  const brands = Array.from(new Set(handphones.map((h: Handphone) => h.brand))) as string[];
+  // Get unique brands (menghilangkan duplikat)
+  const brands = React.useMemo(() => {
+    const uniqueBrands = new Set<string>(handphones.map((h: Handphone) => h.brand));
+    return Array.from(uniqueBrands).sort() as string[];
+  }, [handphones]);
   
-  // Get models for selected brand
-  const models = selectedBrand 
-    ? handphones.filter((h: Handphone) => h.brand === selectedBrand)
-    : [];
+  // Get unique models for selected brand (menghilangkan duplikat tipe)
+  const models = React.useMemo(() => {
+    if (!selectedBrand) return [] as Handphone[];
+    
+    // Filter handphones by brand dan ambil tipe yang unik
+    const filteredPhones = handphones.filter((h: Handphone) => h.brand === selectedBrand);
+    
+    // Buat map untuk menyimpan tipe unik dengan ID-nya
+    const uniqueModels = new Map<string, Handphone>();
+    
+    filteredPhones.forEach((phone: Handphone) => {
+      if (!uniqueModels.has(phone.tipe)) {
+        uniqueModels.set(phone.tipe, phone);
+      }
+    });
+    
+    // Convert map ke array dan sort berdasarkan tipe
+    return Array.from(uniqueModels.values()).sort((a, b) => a.tipe.localeCompare(b.tipe)) as Handphone[];
+  }, [selectedBrand, handphones]);
   
   // Set initial brand if handphoneId exists
   React.useEffect(() => {
@@ -408,8 +425,8 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
     );
   };
   
-  // Check if kendala has stock available (untuk masalah yang bukan diagnostic)
-  const hasStockAvailable = (kendala: KendalaHandphone | null | undefined) => {
+  // Check if kendala is available for selected handphone
+  const isKendalaAvailable = (kendala: KendalaHandphone | null | undefined) => {
     if (!kendala) return false;
     
     // Jika masalah adalah diagnostic (Install Ulang atau Mati Total), selalu available
@@ -417,12 +434,12 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
       return true;
     }
     
-    // Untuk masalah lainnya, cek apakah ada sparepart dengan stok > 0
+    // Untuk masalah lainnya, cek apakah ada sparepart
     if (!kendala.pergantianBarang || kendala.pergantianBarang.length === 0) {
       return false;
     }
     
-    return kendala.pergantianBarang.some((sparepart) => sparepart.jumlahStok && sparepart.jumlahStok > 0);
+    return true;
   };
 
   return (
@@ -440,10 +457,10 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
             {staticProblems.map((problemName, idx) => {
               const kendala = getKendalaForProblem(problemName);
               const available = kendala !== null && kendala !== undefined;
-              const hasStock = hasStockAvailable(kendala);
+              const isAvailable = isKendalaAvailable(kendala);
               const isSelected = kendala && serviceData.kendalaIds.includes(kendala.id);
               const showNote = DIAGNOSTIC_PROBLEMS.has(problemName);
-              const canSelect = available && hasStock;
+              const canSelect = available && isAvailable;
               
               return (
                 <button
@@ -462,11 +479,6 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
                   {available && !showNote && kendala && kendala.pergantianBarang && kendala.pergantianBarang.length > 0 && (
                     <div className="text-xs mt-1 text-gray-400">
                       {kendala.pergantianBarang[0].namaBarang} - Rp {kendala.pergantianBarang[0].harga.toLocaleString('id-ID')}
-                      {kendala.pergantianBarang[0].jumlahStok !== undefined && (
-                        <span className={`ml-2 ${kendala.pergantianBarang[0].jumlahStok > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          (Stok: {kendala.pergantianBarang[0].jumlahStok})
-                        </span>
-                      )}
                     </div>
                   )}
                   {showNote && (
@@ -474,11 +486,7 @@ const Step2 = ({ serviceData, updateServiceData, kendalas }: any) => {
                       Harga muncul setelah didiagnosa oleh mekanik
                     </div>
                   )}
-                  {available && !hasStock && !showNote && (
-                    <div className="text-xs mt-1 text-red-400">
-                      Stok habis - tidak tersedia
-                    </div>
-                  )}
+
                 </button>
               );
             })}

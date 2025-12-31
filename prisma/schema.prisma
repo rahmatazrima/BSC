@@ -55,7 +55,6 @@ model PergantianBarang {
   id                 String           @id @default(uuid())
   namaBarang         String
   harga              Float
-  jumlahStok         Int              @default(0)
   kendalaHandphoneId String
   kendalaHandphone   KendalaHandphone @relation(fields: [kendalaHandphoneId], references: [id], onDelete: Cascade)
   createdAt          DateTime         @default(now())
