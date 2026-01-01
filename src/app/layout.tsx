@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 // @ts-ignore
 import "./globals.css";
 import PWAInstaller from "@/components/PWAInstaller";
+import AuthTimeoutProvider from "@/components/AuthTimeoutProvider";
 
 // Font utama untuk body text - Inter sangat mudah dibaca dan modern
 const inter = Inter({
@@ -76,8 +77,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${poppins.variable} font-sans antialiased`}
       >
-        {children}
-        <PWAInstaller />
+        <AuthTimeoutProvider>
+          {children}
+          <PWAInstaller />
+        </AuthTimeoutProvider>
       </body>
     </html>
   );

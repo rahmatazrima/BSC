@@ -12,10 +12,10 @@ async function main() {
 
     // Create Admin User
     const adminUser = await prisma.user.upsert({
-      where: { email: 'admin@bukhariservicecenter.com' },
+      where: { email: 'bukhariservicec@gmail.com' },
       update: {},
       create: {
-        email: 'admin@bukhariservicecenter.com',
+        email: 'bukhariservicec@gmail.com',
         name: 'Bukhari Admin',
         password: hashedPassword,
         phoneNumber: '+62812-3456-7890',
@@ -76,7 +76,7 @@ async function main() {
     console.log(`- Customer users: ${customerUsers.length}`)
     console.log('')
     console.log('🔐 Login credentials:')
-    console.log('Admin: admin@bukhariservicecenter.com / admin123')
+    console.log('Admin: bukhariservicec@gmail.com / admin123')
     console.log('Customer: john.doe@example.com / customer123')
 
   } catch (error) {

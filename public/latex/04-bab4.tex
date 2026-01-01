@@ -300,57 +300,144 @@ Pada \textit{sprint} keempat, pembangunan sistem difokuskan pada implementasi fi
     
     \item Halaman Pemesanan Layanan (\textit{Booking})
     
-    Halaman pemesanan layanan merupakan fitur utama yang memungkinkan pelanggan untuk memesan layanan servis \textit{handphone} secara \textit{online}. Halaman ini mengimplementasikan \textit{multi-step form} dengan lima tahap untuk memudahkan pelanggan dalam mengisi informasi pemesanan secara bertahap. Tahap pertama adalah pemilihan merek dan tipe \textit{handphone} yang akan diservis melalui \textit{dropdown menu}. Tahap kedua memungkinkan pelanggan memilih jenis kendala atau kerusakan yang dialami perangkat, dengan pilihan kendala yang ditampilkan disesuaikan berdasarkan jenis \textit{handphone} yang dipilih sebelumnya. Tahap ketiga adalah pemilihan tempat layanan, di mana pelanggan dapat memilih untuk datang ke \textit{service center} atau memilih layanan \textit{home service} dengan mengisi alamat lengkap. Tahap keempat memungkinkan pelanggan memilih jadwal waktu layanan yang tersedia, dengan sistem menampilkan hanya slot waktu yang belum dibooking. Tahap kelima menampilkan ringkasan seluruh informasi pemesanan untuk dikonfirmasi sebelum \textit{submit}. Setiap tahap dilengkapi dengan indikator progres di bagian atas halaman dan tombol navigasi untuk berpindah antar tahap. Halaman ini dapat dilihat pada Gambar 4.X.
+    Halaman pemesanan layanan merupakan halaman yang digunakan oleh pelanggan untuk melakukan proses reservasi layanan servis \textit{handphone}. Proses pemesanan pada halaman ini dibagi menjadi lima tahap.
+    
+    Tahap pertama menampilkan formulir pemilihan merek dan tipe \textit{handphone} melalui \textit{dropdown menu}, dilengkapi dengan indikator progres di bagian atas. Halaman ini dapat dilihat pada Gambar \ref{fig:booking1}.
 
 % LETAKKAN GAMBAR BOOKING DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-booking.png}
-    \caption{Tampilan Halaman Pemesanan Layanan}
-    \label{fig:screenshot-booking}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/booking1.png}    
+    \caption{Tampilan Halaman Pemesanan Layanan - Tahap 1}
+    \label{fig:booking1}
+\end{figure}
+
+Tahap kedua adalah pemilihan kendala perangkat. Pada tahap ini, pelanggan memilih jenis kendala atau masalah yang dialami perangkat dari daftar yang ditampilkan dalam bentuk kartu. Setiap kartu menampilkan nama kendala beserta estimasi harga perbaikan untuk memberikan transparansi biaya sejak awal. Pelanggan dapat memilih lebih dari satu kendala sesuai dengan kondisi perangkat, sehingga teknisi dapat mempersiapkan \textit{sparepart} dan estimasi waktu pengerjaan yang akurat. Halaman ini dapat dilihat pada Gambar \ref{fig:booking2}.
+
+% LETAKKAN GAMBAR BOOKING TAHAP 2 DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/booking2.png}    
+    \caption{Tampilan Halaman Pemesanan Layanan - Tahap 2}
+    \label{fig:booking2}
+\end{figure}
+    
+    Tahap ketiga merupakan halaman penjadwalan layanan yang memungkinkan pelanggan memilih tanggal dan \textit{shift} waktu untuk pelaksanaan servis. Pelanggan dapat memilih tanggal melalui \textit{date picker} dan memilih \textit{shift} waktu yang tersedia melalui \textit{dropdown menu}. Sistem hanya menampilkan slot waktu yang masih tersedia dan menonaktifkan slot yang sudah penuh. Halaman ini dapat dilihat pada Gambar \ref{fig:booking3}.
+
+% LETAKKAN GAMBAR BOOKING TAHAP 3 DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/booking3.png}    
+    \caption{Tampilan Halaman Pemesanan Layanan - Tahap 3}
+    \label{fig:booking3}
+\end{figure}
+    
+    Tahap keempat menampilkan halaman pemilihan jenis layanan, di mana pelanggan dapat memilih antara datang langsung ke \textit{service center} atau menggunakan layanan \textit{home service}. Jika pelanggan memilih layanan \textit{home service}, akan muncul \textit{input field} untuk mengisi alamat lengkap dan \textit{input field} opsional untuk \textit{link Google Maps} yang memudahkan teknisi menemukan lokasi. Pemilihan jenis layanan ini memberikan fleksibilitas bagi pelanggan dalam menentukan cara pelaksanaan servis yang paling sesuai dengan kebutuhan mereka. Halaman ini dapat dilihat pada Gambar \ref{fig:booking4}.
+
+% LETAKKAN GAMBAR BOOKING TAHAP 4 DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/booking4.png}    
+    \caption{Tampilan Halaman Pemesanan Layanan - Tahap 4}
+    \label{fig:booking4}
+\end{figure}
+    
+    Tahap kelima adalah halaman konfirmasi pemesanan yang menampilkan ringkasan lengkap seluruh informasi, mencakup detail perangkat, daftar masalah beserta estimasi biaya, jadwal layanan, jenis layanan, dan alamat. Pelanggan dapat meninjau kembali dan menggunakan tombol "Kembali" untuk melakukan perubahan atau menekan tombol "Konfirmasi Pesanan" untuk menyelesaikan proses pemesanan. Halaman ini dapat dilihat pada Gambar \ref{fig:booking5}.
+
+% LETAKKAN GAMBAR BOOKING TAHAP 5 DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/booking5.png}    
+    \caption{Tampilan Halaman Pemesanan Layanan - Tahap 5}
+    \label{fig:booking5}
 \end{figure}
     
     \item Halaman Pelacakan Status (\textit{Tracking})
     
-    Halaman pelacakan status berfungsi untuk memungkinkan pelanggan memantau progres pemesanan layanan servis secara \textit{real-time}. Halaman ini menampilkan informasi detail tentang pemesanan yang sedang aktif, termasuk status terkini (Menunggu Verifikasi, Sedang Dikerjakan, Selesai, atau Dibatalkan), informasi \textit{handphone} yang diservis, jenis kendala yang dilaporkan, jadwal layanan, dan tempat servis. Terdapat \textit{timeline} visual yang menunjukkan tahapan progres pemesanan dari pemesanan dibuat, diverifikasi oleh admin, sedang dalam proses perbaikan, hingga selesai. Setiap tahapan dilengkapi dengan \textit{timestamp} untuk memberikan transparansi waktu kepada pelanggan. Halaman ini juga menampilkan informasi teknisi yang menangani, estimasi waktu penyelesaian, serta detail \textit{sparepart} yang digunakan jika ada pergantian komponen. Pelanggan dapat dengan mudah melihat status pemesanan mereka tanpa harus menghubungi pihak \textit{service center} secara langsung. Halaman ini dapat dilihat pada Gambar 4.X.
+    Halaman pelacakan status menampilkan informasi detail pemesanan yang sedang aktif, termasuk jenis perangkat, daftar kendala yang dipilih, jadwal layanan, dan jenis layanan yang digunakan. Terdapat \textit{timeline} visual dengan tiga tahapan status yaitu "Belum dikerjakan", "Sedang dikerjakan", dan "Selesai", yang dilengkapi dengan \textit{timestamp} untuk memberikan transparansi progres kepada pelanggan. Pelanggan dapat melihat riwayat lengkap pemesanan dan informasi terakhir kali data diperbarui. Halaman ini dapat dilihat pada Gambar \ref{fig:tracking}.
 
 % LETAKKAN GAMBAR TRACKING DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-tracking.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/lacak.png}
     \caption{Tampilan Halaman Pelacakan Status}
-    \label{fig:screenshot-tracking}
+    \label{fig:tracking}
 \end{figure}
+
     
     \item Halaman Riwayat Pemesanan (\textit{History})
     
-    Halaman riwayat pemesanan menampilkan daftar lengkap seluruh pemesanan layanan servis yang pernah dilakukan oleh pelanggan. Halaman ini menyajikan informasi dalam format tabel atau kartu yang mencakup tanggal pemesanan, jenis \textit{handphone}, kendala yang dilaporkan, status pemesanan, dan tanggal selesai (jika sudah selesai). Pelanggan dapat melakukan pencarian berdasarkan tanggal atau status pemesanan untuk memudahkan dalam menemukan riwayat tertentu. Setiap entri pemesanan dilengkapi dengan tombol untuk melihat detail lengkap, yang akan menampilkan informasi komprehensif seperti detail kendala, \textit{sparepart} yang digunakan, biaya servis, dan catatan dari teknisi. Halaman ini berguna bagi pelanggan untuk melacak riwayat perawatan perangkat mereka dan sebagai referensi untuk pemesanan di masa mendatang. Halaman ini dapat dilihat pada Gambar 4.X.
+    Halaman riwayat pemesanan menampilkan daftar seluruh pemesanan yang pernah dilakukan pelanggan dalam bentuk kartu yang mencakup jenis perangkat, daftar kendala, tanggal pemesanan, waktu servis, lokasi layanan, dan status pemesanan (Menunggu, Sedang Dikerjakan, Selesai, atau Dibatalkan). Tersedia fitur \textit{filter} berdasarkan status dan kategori untuk memudahkan pencarian riwayat tertentu. Setiap kartu pemesanan dilengkapi tombol "Detail" untuk melihat informasi lengkap termasuk estimasi biaya dan \textit{sparepart} yang digunakan. Halaman ini dapat dilihat pada Gambar \ref{fig:history}.
 
 % LETAKKAN GAMBAR HISTORY DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-history.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/riwayat.png}
     \caption{Tampilan Halaman Riwayat Pemesanan}
-    \label{fig:screenshot-history}
+    \label{fig:history}
+\end{figure}
+
+Ketika pelanggan menekan tombol "Detail" pada salah satu kartu riwayat pemesanan, sistem akan menampilkan halaman detail yang memuat informasi lengkap mencakup ID pemesanan, perangkat yang diservis, daftar kendala beserta harga perbaikan, status pemesanan, jadwal servis, jenis dan lokasi layanan, serta alamat lengkap. Di bagian bawah halaman ditampilkan rincian biaya yang mencakup total biaya perbaikan, biaya jasa, dan total estimasi biaya keseluruhan. Halaman ini dapat dilihat pada Gambar \ref{fig:detail-riwayat}.
+
+% LETAKKAN GAMBAR DETAIL RIWAYAT DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/riwayat-detail.png}
+    \caption{Tampilan Detail Riwayat Pemesanan}
+    \label{fig:detail-riwayat}
 \end{figure}
     
     \item Halaman Profil Pengguna
     
-    Halaman profil pengguna memungkinkan pelanggan untuk melihat dan mengelola informasi akun mereka. Halaman ini menampilkan informasi pribadi yang terdiri dari nama lengkap, alamat email, nomor telepon, serta tanggal pendaftaran akun. Pelanggan dapat melakukan pembaruan terhadap informasi profil seperti mengubah nama, nomor telepon, atau \textit{password} akun. Proses perubahan \textit{password} memerlukan verifikasi dengan memasukkan \textit{password} lama terlebih dahulu untuk menjaga keamanan akun. Halaman ini juga menampilkan ringkasan statistik seperti jumlah total pemesanan yang pernah dilakukan dan jumlah pemesanan yang sedang aktif. Terdapat fitur \textit{logout} yang memungkinkan pengguna keluar dari sistem dengan aman. Setiap perubahan data dilengkapi dengan validasi untuk memastikan informasi yang dimasukkan sesuai dengan format yang ditentukan. Halaman ini dapat dilihat pada Gambar 4.X.
+    Halaman profil pengguna menampilkan informasi akun pelanggan yang terdiri dari nama lengkap, alamat email, nomor telepon, dan tanggal bergabung. Pelanggan dapat melakukan pembaruan informasi profil melalui tombol "Edit Profil" yang tersedia. Halaman ini dapat dilihat pada Gambar \ref{fig:profile}.
 
 % LETAKKAN GAMBAR PROFILE DI SINI
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{assets/images/bab4/screenshot-profile.png}
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/profile-pelanggan.png}
     \caption{Tampilan Halaman Profil Pengguna}
-    \label{fig:screenshot-profile}
+    \label{fig:profile}
+\end{figure}
+
+    Ketika pelanggan menekan tombol "Edit Profil", sistem menampilkan halaman edit profil dengan formulir untuk memperbarui informasi akun seperti nama lengkap, email, nomor telepon, dan opsi mengubah \textit{password}. Terdapat tombol "Simpan Perubahan" untuk menyimpan data dan tombol "Batal" untuk membatalkan perubahan. Halaman ini dapat dilihat pada Gambar \ref{fig:edit-profile}.
+
+    \item Halaman Dashboard Admin
+
+% LETAKKAN GAMBAR EDIT PROFILE DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/edit-profile-pelanggan.png}
+    \caption{Tampilan Halaman Edit Profil Pengguna}
+    \label{fig:edit-profile}
+\end{figure}
+
+    \item Halaman Dashboard Admin
+    
+    Halaman \textit{dashboard} admin merupakan halaman utama setelah admin berhasil \textit{login}, menampilkan ringkasan statistik pemesanan dalam bentuk kartu yang mencakup total pesanan, jumlah pesanan menunggu verifikasi, pesanan yang sedang dikerjakan, dan total pendapatan dari layanan. Di bagian bawah terdapat tabel "Pesanan Terbaru" yang menampilkan informasi pelanggan, jenis perangkat, uraian masalah, alamat layanan, dan estimasi harga untuk memudahkan admin memantau pemesanan terkini. Halaman ini dapat dilihat pada Gambar \ref{fig:dashboard-admin}.
+
+% LETAKKAN GAMBAR DASHBOARD ADMIN DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/overview.png}
+    \caption{Tampilan Halaman Dashboard Admin}
+    \label{fig:dashboard-admin}
+\end{figure}
+
+    \item Halaman Kelola Pesanan Admin
+    
+    Halaman kelola pesanan adalah fitur utama yang digunakan admin untuk mengelola dan memantau seluruh aktivitas pemesanan layanan dalam sistem. Halaman ini dilengkapi dengan \textit{search bar} untuk mencari pesanan berdasarkan nama pelanggan, email, atau jenis perangkat, serta fitur \textit{filter} berdasarkan status pesanan, merek perangkat, dan tanggal pemesanan yang dapat direset dengan tombol "Reset Filter". Informasi ditampilkan dalam bentuk tabel komprehensif dengan kolom pelanggan (nama, email, nomor telepon, dan \textit{link} lokasi \textit{Google Maps}), perangkat yang diservis, uraian masalah dalam bentuk \textit{badge}, status pemesanan dengan indikator warna, estimasi harga, serta kolom aksi berupa \textit{dropdown} untuk mengubah status pesanan dan tombol "Lihat Detail" untuk melihat informasi lengkap. Halaman ini memudahkan admin dalam melakukan verifikasi, memperbarui status pemesanan secara \textit{real-time}, dan mengelola operasional layanan dengan efisien. Halaman ini dapat dilihat pada Gambar \ref{fig:kelola-pesanan-admin}.
+
+% LETAKKAN GAMBAR KELOLA PESANAN ADMIN DI SINI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{assets/images/bab4/kelola-pesanan-admin.png}
+    \caption{Tampilan Halaman Kelola Pesanan Admin}
+    \label{fig:kelola-pesanan-admin}
 \end{figure}
 
 % LETAKKAN SCREENSHOT-SCREENSHOT TAMPILAN APLIKASI LAINNYA DI SINI
 % Sertakan screenshot untuk:
-% 8. Dashboard Admin
 % 9. Halaman Master Data (Admin)
-% 10. Halaman Kelola Pesanan (Admin)
 % 11. Tampilan PWA Install Prompt
 % 12. Tampilan Mobile Responsive
 \end{enumerate}

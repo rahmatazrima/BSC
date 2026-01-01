@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         name: user.name
       },
       jwtSecret,
-      { expiresIn: '7d' } // Token berlaku 7 hari
+      { expiresIn: '3h' } // Token berlaku 3 jam
     );
 
     // Set HTTP-only cookie
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: isProduction && isHTTPS, // Only secure if production AND using HTTPS
       sameSite: isProduction ? 'lax' : 'strict', // 'lax' lebih compatible untuk production
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 3 * 60 * 60, // 3 hours
       path: '/'
     });
 
