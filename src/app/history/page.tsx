@@ -413,8 +413,8 @@ export default function HistoryPage() {
 
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/20 bg-gray-900/95 p-8 backdrop-blur-md">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl border border-white/20 bg-gray-900/95 backdrop-blur-md">
+            <div className="flex-shrink-0 p-8 pb-4 flex items-center justify-between border-b border-white/10">
               <h3 className="text-xl font-bold text-white">Detail Pesanan</h3>
               <button
                 onClick={() => setSelectedOrder(null)}
@@ -424,7 +424,7 @@ export default function HistoryPage() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto px-8 py-4 space-y-4 scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-gray-800">
               <div>
                 <span className="text-gray-400">ID Pesanan:</span>
                 <span className="ml-2 font-mono text-blue-400">
@@ -571,12 +571,14 @@ export default function HistoryPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mt-6 w-full rounded-xl bg-blue-600 py-3 text-white transition-colors hover:bg-blue-700"
-            >
-              Tutup
-            </button>
+            <div className="flex-shrink-0 p-8 pt-4 border-t border-white/10">
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="w-full rounded-xl bg-blue-600 py-3 text-white transition-colors hover:bg-blue-700"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

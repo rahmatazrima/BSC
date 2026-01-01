@@ -10,7 +10,11 @@ interface UserData {
   role: string;
 }
 
-export default function AdminHeader() {
+interface AdminHeaderProps {
+  onMobileMenuToggle?: () => void;
+}
+
+export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps = {}) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -93,10 +97,24 @@ export default function AdminHeader() {
   return (
     <header className="sticky top-0 z-30 bg-black/40 backdrop-blur-md border-b border-white/10">
       <div className="flex items-center justify-between px-6 py-4">
-        {/* Page Title - akan diisi oleh parent */}
-        <div className="flex-1">
-          <h2 className="text-xl font-bold text-white">{pageInfo.title}</h2>
-          <p className="text-sm text-gray-400">{pageInfo.subtitle}</p>
+        {/* Mobile Menu Button & Page Title */}
+        <div className="flex items-center gap-3 flex-1">
+          {/* Mobile Menu Button */}
+          {onMobileMenuToggle && (
+            <button
+              onClick={onMobileMenuToggle}
+              className="lg:hidden p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+          <div>
+            <h2 className="text-base lg:text-xl font-bold text-white">{pageInfo.title}</h2>
+            <p className="text-xs lg:text-sm text-gray-400">{pageInfo.subtitle}</p>
+          </div>
         </div>
 
         {/* User Menu */}

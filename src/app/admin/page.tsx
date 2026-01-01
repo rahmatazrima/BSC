@@ -94,6 +94,9 @@ function AdminDashboardContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
+  
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Fetch brands on mount
   useEffect(() => {
@@ -347,12 +350,17 @@ function AdminDashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex">
       {/* Sidebar */}
-      <AdminSidebar selectedTab={selectedTab} onTabChange={handleTabChange} />
+      <AdminSidebar 
+        selectedTab={selectedTab} 
+        onTabChange={handleTabChange}
+        isMobileOpen={isMobileMenuOpen}
+        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <AdminHeader />
+        <AdminHeader onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
         {/* Content Area */}
         <main className="flex-1 p-6 overflow-y-auto">

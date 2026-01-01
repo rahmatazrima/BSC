@@ -24,6 +24,8 @@ interface SidebarItem {
 interface AdminSidebarProps {
   selectedTab?: string;
   onTabChange?: (tab: string) => void;
+  isMobileOpen?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -33,8 +35,19 @@ const sidebarItems: SidebarItem[] = [
   { id: 'analytics', label: 'Analitik', icon: <ChartPieIcon />, href: '/admin?tab=analytics' },
 ];
 
-export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarProps) {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+export default function AdminSidebar({ selectedTab, onTabChange, isMobileOpen: externalMobileOpen, onMobileMenuToggle }: AdminSidebarProps) {
+  const [internalMobileOpen, setInternalMobileOpen] = useState(false);
+  const isMobileOpen = externalMobileOpen !== undefined ? externalMobileOpen : internalMobileOpen;
+  
+  // Helper function untuk close mobile menu
+  const closeMobileMenu = () => {
+    if (onMobileMenuToggle) {
+      onMobileMenuToggle();
+    } else {
+      setInternalMobileOpen(false);
+    }
+  };
+  
   const pathname = usePathname();
   const router = useRouter();
 
@@ -58,20 +71,11 @@ export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarP
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all"
-        aria-label="Toggle menu"
-      >
-        <Bars3Icon className="w-6 h-6" />
-      </button>
-
       {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={closeMobileMenu}
         />
       )}
 
@@ -120,7 +124,7 @@ export default function AdminSidebar({ selectedTab, onTabChange }: AdminSidebarP
                     if (onTabChange) {
                       onTabChange(item.id);
                     }
-                    setIsMobileOpen(false);
+                    closeMobileMenu();
                   }}
                   className={`
                     w-full flex items-center space-x-3 px-4 py-3 rounded-lg
