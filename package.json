@@ -12,7 +12,7 @@
     "start": "next start",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "prisma generate && tsx prisma/seeds/index.ts",
+    "db:seed": "prisma generate && tsx prisma/seeds/index.ts && tsx prisma/seeds/master-setup.ts",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
     "db:studio": "prisma studio"
   },
