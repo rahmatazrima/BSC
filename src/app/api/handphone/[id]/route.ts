@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
 
+const SERVICE_FEE = 38000; // Biaya jasa service
+
 // GET - Mengambil handphone berdasarkan ID
 export async function GET(
   request: NextRequest,
@@ -117,7 +119,7 @@ export async function GET(
     
     // Calculate total revenue: sum all harga from pergantianBarang in all kendalaHandphone
     // Then multiply by completed services count (assuming each completed service uses one set of parts)
-    const totalRevenue = handphone.kendalaHandphone.length > 0
+    const sparepartRevenue = handphone.kendalaHandphone.length > 0
       ? handphone.kendalaHandphone.reduce((total, kendala) => {
           const kendalaRevenue = kendala.pergantianBarang.length > 0
             ? kendala.pergantianBarang.reduce((kendalaTotal, barang) => {
@@ -127,6 +129,9 @@ export async function GET(
           return total + kendalaRevenue;
         }, 0) * completedServicesCount
       : 0;
+    
+    // Total revenue = sparepart revenue + (SERVICE_FEE * completed services count)
+    const totalRevenue = sparepartRevenue + (SERVICE_FEE * completedServicesCount);
 
     const serviceStats = {
       totalServices: handphone.services.length,

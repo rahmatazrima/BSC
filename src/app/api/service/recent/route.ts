@@ -115,7 +115,8 @@ export async function GET(request: NextRequest) {
             ) ?? 0;
             return total + kendalaPrice;
           }, 0);
-          return sum + serviceTotal;
+          // Tambahkan biaya jasa service untuk setiap pesanan yang selesai
+          return sum + serviceTotal + SERVICE_FEE;
         }, 0),
     };
 

@@ -52,7 +52,7 @@ export function createStatusNotificationTemplate({
   scheduledTime,
   problems,
   totalPrice,
-  serviceFee = 50000,
+  serviceFee = 38000,
 }: {
   userName: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
@@ -186,7 +186,7 @@ export function createStatusNotificationTemplate({
 
                   ${status === 'IN_PROGRESS' ? `
                   <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
-                    <p style="margin: 0; color: #1e40af; font-size: 14px; font-weight: 600;">⏳ Estimasi waktu pengerjaan: 1-3 hari kerja</p>
+                    <p style="margin: 0; color: #1e40af; font-size: 14px; font-weight: 600;">⏳ Sedang dalam proses pengerjaan</p>
                     <p style="margin: 8px 0 0; color: #1e3a8a; font-size: 14px;">Kami akan menginformasikan Anda segera setelah pengerjaan selesai.</p>
                   </div>
                   ` : ''}

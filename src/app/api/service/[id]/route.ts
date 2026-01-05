@@ -447,15 +447,19 @@ export async function PUT(
             }
           },
           handphone: {
-            include: {
-              kendalaHandphone: {
-                include: {
-                  pergantianBarang: true
-                }
-              }
+            select: {
+              id: true,
+              brand: true,
+              tipe: true
             }
           },
-          waktu: true
+          waktu: true,
+          // Include kendalaHandphone yang dipilih customer untuk service ini
+          kendalaHandphone: {
+            include: {
+              pergantianBarang: true
+            }
+          }
         }
       });
 
@@ -488,10 +492,12 @@ export async function PUT(
     // Kirim email notifikasi jika sendNotification = true dan status berubah
     if (sendNotification && statusService && statusService !== existingService.statusService) {
       try {
-        // Ambil data lengkap untuk email
-        const selectedKendala = updatedService.handphone?.kendalaHandphone || [];
+        // Ambil data kendala yang dipilih customer untuk service ini (bukan semua kendala dari handphone)
+        const selectedKendala = updatedService.kendalaHandphone || [];
         const problems = selectedKendala.map((k: any) => k.topikMasalah);
-        const totalPrice = selectedKendala.reduce((total: number, kendala: any) => {
+        
+        // Hitung total harga sparepart dari kendala yang dipilih customer
+        const sparepartPrice = selectedKendala.reduce((total: number, kendala: any) => {
           const kendalaPrice = kendala.pergantianBarang?.reduce(
             (sum: number, item: any) => sum + item.harga,
             0
@@ -521,7 +527,7 @@ export async function PUT(
           scheduledDate,
           scheduledTime,
           problems: problems.length > 0 ? problems : undefined,
-          totalPrice: totalPrice > 0 ? totalPrice : undefined,
+          totalPrice: sparepartPrice > 0 ? sparepartPrice : undefined,
         });
 
         await sendEmail({

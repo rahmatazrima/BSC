@@ -810,17 +810,6 @@ function WaktuForm({ formData, setFormData }: any) {
           />
         </div>
       </div>
-      <div>
-        <label className="flex items-center space-x-3">
-          <input
-            type="checkbox"
-            checked={formData.isAvailable !== undefined ? formData.isAvailable : true}
-            onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
-            className="w-5 h-5 rounded"
-          />
-          <span className="text-white">Tersedia untuk booking</span>
-        </label>
-      </div>
     </>
   );
 }
@@ -1303,14 +1292,13 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
 
       {/* Desktop: Table Layout */}
       <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-white/20">
-              <th className="px-6 py-4 text-left text-white font-semibold">Nama Shift</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Jam Mulai</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Jam Selesai</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Status</th>
-              <th className="px-6 py-4 text-left text-white font-semibold">Aksi</th>
+              <th className="px-6 py-4 text-left text-white font-semibold w-1/3">Nama Shift</th>
+              <th className="px-6 py-4 text-left text-white font-semibold w-1/6">Jam Mulai</th>
+              <th className="px-6 py-4 text-left text-white font-semibold w-1/6">Jam Selesai</th>
+              <th className="px-6 py-4 text-left text-white font-semibold w-1/3">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -1319,15 +1307,6 @@ function WaktuTable({ data, onEdit, onDelete }: any) {
                 <td className="px-6 py-4 text-white font-semibold">{item.namaShift}</td>
                 <td className="px-6 py-4 text-blue-400">{item.jamMulai}</td>
                 <td className="px-6 py-4 text-blue-400">{item.jamSelesai}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                    item.isAvailable 
-                      ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                      : 'bg-red-500/20 text-red-400 border-red-500/30'
-                  }`}>
-                    {item.isAvailable ? 'Tersedia' : 'Tidak Tersedia'}
-                  </span>
-                </td>
                 <td className="px-6 py-4">
                   <div className="flex space-x-2">
                     <button

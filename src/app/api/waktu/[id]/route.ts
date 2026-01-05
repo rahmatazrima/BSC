@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
 
+const SERVICE_FEE = 38000; // Biaya jasa service
+
 // GET - Mengambil waktu berdasarkan ID
 export async function GET(
   request: NextRequest,
@@ -123,7 +125,8 @@ export async function GET(
           const firstKendala = service.handphone.kendalaHandphone?.[0];
           const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
           const price = firstPergantianBarang?.harga || 0;
-          return total + price;
+          // Tambahkan biaya jasa service untuk setiap pesanan yang selesai
+          return total + price + SERVICE_FEE;
         }, 0),
       averageServiceValue: 0
     };
