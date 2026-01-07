@@ -4,82 +4,25 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, type TRegisterRequest } from "./data/type";
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
-    confirmPassword: "",
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = "Nama harus diisi";
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = "Nama minimal 3 karakter";
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      newErrors.email = "Email harus diisi";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Format email tidak valid";
-    }
-
-    // Phone validation
-    const sanitizedPhone = formData.phoneNumber.replace(/\D/g, "");
-    const phoneRegex = /^[0-9]{10,15}$/;
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Nomor telepon harus diisi";
-    } else if (!phoneRegex.test(sanitizedPhone)) {
-      newErrors.phoneNumber = "Nomor telepon harus 10-15 digit";
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Kata sandi harus diisi";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Kata sandi minimal 6 karakter";
-    }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Konfirmasi kata sandi Anda";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Kata sandi tidak cocok";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-    setError("");
-  };
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TRegisterRequest>({
+    resolver: zodResolver(registerSchema),
+    // PENTING: mode 'onChange' membuat validasi berjalan setiap kali user mengetik
+    mode: "onChange",
+  });
+  const onSubmit = async (data: TRegisterRequest) => {
     setLoading(true);
     setError("");
 
@@ -91,10 +34,10 @@ export default function RegisterForm() {
         },
         credentials: "include",
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phoneNumber: formData.phoneNumber.replace(/\D/g, ""),
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phoneNumber: data.phoneNumber,
         }),
       });
 
@@ -134,7 +77,7 @@ export default function RegisterForm() {
       setError("Kesalahan jaringan. Silakan coba lagi.");
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex w-full flex-col items-center justify-center px-6">
@@ -195,7 +138,7 @@ export default function RegisterForm() {
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl pointer-events-none"></div>
           {/* Register Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             {/* Full Name */}
             <div className="flex flex-col gap-2">
               <label
@@ -207,9 +150,7 @@ export default function RegisterForm() {
               <input
                 id="name"
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
+                {...register("name")}
                 placeholder="Masukkan nama lengkap Anda"
                 disabled={loading}
                 className={`rounded-lg border ${
@@ -217,7 +158,7 @@ export default function RegisterForm() {
                 } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.name && (
-                <p className="text-xs text-red-400">{errors.name}</p>
+                <p className="text-xs text-red-400">{errors.name.message}</p>
               )}
             </div>
 
@@ -232,9 +173,7 @@ export default function RegisterForm() {
               <input
                 id="email"
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
+                {...register("email")}
                 placeholder="example@email.com"
                 disabled={loading}
                 className={`rounded-lg border ${
@@ -242,7 +181,7 @@ export default function RegisterForm() {
                 } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.email && (
-                <p className="text-xs text-red-400">{errors.email}</p>
+                <p className="text-xs text-red-400">{errors.email.message}</p>
               )}
             </div>
 
@@ -257,9 +196,7 @@ export default function RegisterForm() {
               <input
                 id="phoneNumber"
                 type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
+                {...register("phoneNumber")}
                 placeholder="081234567890"
                 disabled={loading}
                 className={`rounded-lg border ${
@@ -267,7 +204,7 @@ export default function RegisterForm() {
                 } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.phoneNumber && (
-                <p className="text-xs text-red-400">{errors.phoneNumber}</p>
+                <p className="text-xs text-red-400">{errors.phoneNumber.message}</p>
               )}
               <p className="text-xs text-gray-500">
                 10-15 digit, hanya angka
@@ -285,9 +222,7 @@ export default function RegisterForm() {
               <input
                 id="password"
                 type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
+                {...register("password")}
                 placeholder="••••••••"
                 disabled={loading}
                 className={`rounded-lg border ${
@@ -295,7 +230,7 @@ export default function RegisterForm() {
                 } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.password && (
-                <p className="text-xs text-red-400">{errors.password}</p>
+                <p className="text-xs text-red-400">{errors.password.message}</p>
               )}
               <p className="text-xs text-gray-500">Minimal 6 karakter</p>
             </div>
@@ -311,9 +246,7 @@ export default function RegisterForm() {
               <input
                 id="confirmPassword"
                 type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
+                {...register("confirmPassword")}
                 placeholder="••••••••"
                 disabled={loading}
                 className={`rounded-lg border ${
@@ -323,7 +256,7 @@ export default function RegisterForm() {
                 } bg-white/5 px-4 py-3 text-white placeholder-gray-400 backdrop-blur-xl transition-colors focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50`}
               />
               {errors.confirmPassword && (
-                <p className="text-xs text-red-400">{errors.confirmPassword}</p>
+                <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>
               )}
             </div>
 
