@@ -117,17 +117,20 @@ export async function GET(
       totalServices: waktu.services.length,
       pendingServices: waktu.services.filter(s => s.statusService === 'PENDING').length,
       inProgressServices: waktu.services.filter(s => s.statusService === 'IN_PROGRESS').length,
+      menungguPembayaranServices: waktu.services.filter(s => s.statusService === 'MENUNGGU_PEMBAYARAN').length,
       completedServices: waktu.services.filter(s => s.statusService === 'COMPLETED').length,
       cancelledServices: waktu.services.filter(s => s.statusService === 'CANCELLED').length,
-      totalRevenue: waktu.services
-        .filter(s => s.statusService === 'COMPLETED')
-        .reduce((total, service) => {
-          const firstKendala = service.handphone.kendalaHandphone?.[0];
-          const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
-          const price = firstPergantianBarang?.harga || 0;
-          // Tambahkan biaya jasa service untuk setiap pesanan yang selesai
-          return total + price + SERVICE_FEE;
-        }, 0),
+      totalRevenue: waktu.services.length > 0
+        ? waktu.services
+          .filter(s => s.statusService === 'COMPLETED')
+          .reduce((total, service) => {
+            const firstKendala = service.handphone.kendalaHandphone?.[0];
+            const firstPergantianBarang = firstKendala?.pergantianBarang?.[0];
+            const price = firstPergantianBarang?.harga || 0;
+            // Tambahkan biaya jasa service untuk setiap pesanan yang selesai
+            return total + price + SERVICE_FEE;
+          }, 0)
+        : 0,
       averageServiceValue: 0
     };
 
@@ -140,6 +143,7 @@ export async function GET(
     const servicesByStatus = {
       pending: waktu.services.filter(s => s.statusService === 'PENDING'),
       inProgress: waktu.services.filter(s => s.statusService === 'IN_PROGRESS'),
+      menungguPembayaran: waktu.services.filter(s => s.statusService === 'MENUNGGU_PEMBAYARAN'),
       completed: waktu.services.filter(s => s.statusService === 'COMPLETED'),
       cancelled: waktu.services.filter(s => s.statusService === 'CANCELLED')
     };

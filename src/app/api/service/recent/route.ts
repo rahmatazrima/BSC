@@ -103,6 +103,7 @@ export async function GET(request: NextRequest) {
       total: allServices.length,
       pending: allServices.filter((s) => s.statusService === "PENDING").length,
       inProgress: allServices.filter((s) => s.statusService === "IN_PROGRESS").length,
+      menungguPembayaran: allServices.filter((s) => s.statusService === "MENUNGGU_PEMBAYARAN").length,
       completed: allServices.filter((s) => s.statusService === "COMPLETED").length,
       cancelled: allServices.filter((s) => s.statusService === "CANCELLED").length,
       totalRevenue: allServices

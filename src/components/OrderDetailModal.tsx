@@ -15,7 +15,7 @@ interface KendalaHandphone {
 
 interface ServiceDetail {
   id: string;
-  statusService: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  statusService: 'PENDING' | 'IN_PROGRESS' | 'MENUNGGU_PEMBAYARAN' | 'COMPLETED' | 'CANCELLED';
   tempat: string;
   alamat: string | null;
   googleMapsLink: string | null;
@@ -164,6 +164,7 @@ export default function OrderDetailModal({
     switch (status) {
       case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'IN_PROGRESS': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'MENUNGGU_PEMBAYARAN': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
       case 'COMPLETED': return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'CANCELLED': return 'bg-red-500/20 text-red-400 border-red-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
@@ -174,6 +175,7 @@ export default function OrderDetailModal({
     switch (status) {
       case 'PENDING': return 'Menunggu';
       case 'IN_PROGRESS': return 'Sedang Dikerjakan';
+      case 'MENUNGGU_PEMBAYARAN': return 'Menunggu Pembayaran';
       case 'COMPLETED': return 'Selesai';
       case 'CANCELLED': return 'Dibatalkan';
       default: return status;
@@ -279,6 +281,7 @@ export default function OrderDetailModal({
                   >
                     <option value="PENDING" className="bg-gray-800">Menunggu</option>
                     <option value="IN_PROGRESS" className="bg-gray-800">Sedang Dikerjakan</option>
+                    <option value="MENUNGGU_PEMBAYARAN" className="bg-gray-800">Menunggu Pembayaran</option>
                     <option value="COMPLETED" className="bg-gray-800">Selesai</option>
                     <option value="CANCELLED" className="bg-gray-800">Dibatalkan</option>
                   </select>

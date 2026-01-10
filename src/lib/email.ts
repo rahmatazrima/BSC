@@ -55,8 +55,8 @@ export function createStatusNotificationTemplate({
   serviceFee = 38000,
 }: {
   userName: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  oldStatus?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'IN_PROGRESS' | 'MENUNGGU_PEMBAYARAN' | 'COMPLETED' | 'CANCELLED';
+  oldStatus?: 'PENDING' | 'IN_PROGRESS' | 'MENUNGGU_PEMBAYARAN' | 'COMPLETED' | 'CANCELLED';
   serviceId: string;
   device: string;
   scheduledDate?: string;
@@ -76,9 +76,14 @@ export function createStatusNotificationTemplate({
       message: 'Pesanan service Anda sedang dalam proses pengerjaan. Tim teknisi kami sedang menangani perangkat Anda dengan sebaik-baiknya.',
       color: '#3b82f6'
     },
+    'MENUNGGU_PEMBAYARAN': {
+      title: 'Handphone Anda Sudah Selesai - Menunggu Pembayaran',
+      message: 'Selamat! Handphone Anda telah selesai dikerjakan dan sudah siap diambil. Silakan lakukan pembayaran untuk mengambil perangkat Anda.',
+      color: '#f59e0b'
+    },
     'COMPLETED': {
-      title: 'Pesanan Anda Telah Selesai',
-      message: 'Selamat! Pesanan service Anda telah selesai dikerjakan. Perangkat Anda siap untuk diambil.',
+      title: 'Pembayaran Diterima - Terima Kasih',
+      message: 'Pembayaran Anda telah diterima. Terima kasih telah menggunakan layanan kami. Handphone Anda sudah siap diambil.',
       color: '#10b981'
     },
     'CANCELLED': {
@@ -92,6 +97,7 @@ export function createStatusNotificationTemplate({
   const statusText = {
     'PENDING': 'Menunggu',
     'IN_PROGRESS': 'Sedang Dikerjakan',
+    'MENUNGGU_PEMBAYARAN': 'Menunggu Pembayaran',
     'COMPLETED': 'Selesai',
     'CANCELLED': 'Dibatalkan'
   }[status];
@@ -168,7 +174,7 @@ export function createStatusNotificationTemplate({
                         </td>
                       </tr>
                       ` : ''}
-                      ${status === 'COMPLETED' && totalPrice !== undefined ? `
+                      ${(status === 'MENUNGGU_PEMBAYARAN' || status === 'COMPLETED') && totalPrice !== undefined ? `
                       <tr>
                         <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Total Biaya:</td>
                         <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">Rp ${totalCost.toLocaleString('id-ID')}</td>
@@ -177,10 +183,17 @@ export function createStatusNotificationTemplate({
                     </table>
                   </div>
 
+                  ${status === 'MENUNGGU_PEMBAYARAN' ? `
+                  <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 600;">💳 Handphone Sudah Selesai - Menunggu Pembayaran</p>
+                    <p style="margin: 8px 0 0; color: #b45309; font-size: 14px;">Handphone Anda sudah selesai dikerjakan dan siap diambil. Silakan lakukan pembayaran untuk mengambil perangkat Anda.</p>
+                  </div>
+                  ` : ''}
+
                   ${status === 'COMPLETED' ? `
                   <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
-                    <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 600;">📦 Perangkat Anda siap diambil!</p>
-                    <p style="margin: 8px 0 0; color: #047857; font-size: 14px;">Silakan datang ke workshop kami untuk mengambil perangkat Anda.</p>
+                    <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 600;">✅ Pembayaran Diterima!</p>
+                    <p style="margin: 8px 0 0; color: #047857; font-size: 14px;">Terima kasih atas pembayaran Anda. Handphone Anda sudah siap diambil.</p>
                   </div>
                   ` : ''}
 

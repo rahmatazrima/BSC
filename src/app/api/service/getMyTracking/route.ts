@@ -91,9 +91,11 @@ export async function GET(request: NextRequest) {
           id: 1,
           title: "Belum dikerjakan",
           description: "Pesanan Anda sedang dalam antrian",
+          // Completed jika sudah melewati tahap PENDING (bukan sedang di PENDING)
           completed:
-            service.statusService !== "PENDING" &&
-            service.statusService !== "CANCELLED",
+            service.statusService === "IN_PROGRESS" ||
+            service.statusService === "MENUNGGU_PEMBAYARAN" ||
+            service.statusService === "COMPLETED",
           timestamp: service.createdAt.toISOString(),
         },
         {
@@ -101,17 +103,32 @@ export async function GET(request: NextRequest) {
           title: "Sedang dikerjakan",
           description:
             "Teknisi sedang mengerjakan perbaikan perangkat Anda atau sedang dijadwalkan",
-          // Completed jika status IN_PROGRESS atau COMPLETED (sudah melewati tahap ini)
+          // Completed jika sudah melewati tahap IN_PROGRESS (bukan sedang di IN_PROGRESS)
           completed: 
-            service.statusService === "IN_PROGRESS" || 
+            service.statusService === "MENUNGGU_PEMBAYARAN" ||
             service.statusService === "COMPLETED",
           timestamp:
-            service.statusService === "IN_PROGRESS" || service.statusService === "COMPLETED"
+            service.statusService === "IN_PROGRESS" || 
+            service.statusService === "MENUNGGU_PEMBAYARAN" ||
+            service.statusService === "COMPLETED"
               ? service.updatedAt.toISOString()
               : undefined,
         },
         {
           id: 3,
+          title: "Menunggu Pembayaran",
+          description:
+            "Perbaikan sudah selesai, perangkat Anda siap diambil setelah pembayaran",
+          // Completed jika sudah melewati tahap MENUNGGU_PEMBAYARAN (bukan sedang di MENUNGGU_PEMBAYARAN)
+          completed: service.statusService === "COMPLETED",
+          timestamp:
+            service.statusService === "MENUNGGU_PEMBAYARAN" || 
+            service.statusService === "COMPLETED"
+              ? service.updatedAt.toISOString()
+              : undefined,
+        },
+        {
+          id: 4,
           title:
             service.statusService === "CANCELLED"
               ? "Pesanan dibatalkan"
@@ -119,10 +136,13 @@ export async function GET(request: NextRequest) {
           description:
             service.statusService === "CANCELLED"
               ? "Pesanan dibatalkan, silakan hubungi admin untuk informasi lebih lanjut"
-              : "Perbaikan selesai dan perangkat siap digunakan",
-          completed: service.statusService === "COMPLETED",
+              : "Pembayaran diterima dan perangkat siap diambil",
+          // Step terakhir completed jika status COMPLETED atau CANCELLED
+          completed: 
+            service.statusService === "COMPLETED" || 
+            service.statusService === "CANCELLED",
           timestamp:
-            service.statusService === "COMPLETED"
+            service.statusService === "COMPLETED" || service.statusService === "CANCELLED"
               ? service.updatedAt.toISOString()
               : undefined,
         },

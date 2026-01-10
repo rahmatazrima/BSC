@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { DevicePhoneMobileIcon, WrenchScrewdriverIcon } from "@/components/icons";
 
-type StatusService = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+type StatusService = "PENDING" | "IN_PROGRESS" | "MENUNGGU_PEMBAYARAN" | "COMPLETED" | "CANCELLED";
 
 interface TrackingStep {
   id: number;
@@ -54,6 +54,11 @@ const statusBadge = (status: StatusService) => {
       return {
         className: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
         label: "Sedang dalam perbaikan",
+      };
+    case "MENUNGGU_PEMBAYARAN":
+      return {
+        className: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
+        label: "Menunggu Pembayaran",
       };
     case "COMPLETED":
       return {

@@ -137,6 +137,7 @@ export async function GET(
       totalServices: handphone.services.length,
       pendingServices: handphone.services.filter(s => s.statusService === 'PENDING').length,
       inProgressServices: handphone.services.filter(s => s.statusService === 'IN_PROGRESS').length,
+      menungguPembayaranServices: handphone.services.filter(s => s.statusService === 'MENUNGGU_PEMBAYARAN').length,
       completedServices: completedServicesCount,
       cancelledServices: handphone.services.filter(s => s.statusService === 'CANCELLED').length,
       totalRevenue: totalRevenue

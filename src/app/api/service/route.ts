@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     
     // Validasi status jika ada
     if (status) {
-      const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+      const validStatuses = ['PENDING', 'IN_PROGRESS', 'MENUNGGU_PEMBAYARAN', 'COMPLETED', 'CANCELLED'];
       if (validStatuses.includes(status.toUpperCase())) {
         where.statusService = status.toUpperCase();
       }

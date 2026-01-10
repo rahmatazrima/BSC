@@ -300,7 +300,7 @@ export async function PUT(
     }
 
     // Validasi status service
-    const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'IN_PROGRESS', 'MENUNGGU_PEMBAYARAN', 'COMPLETED', 'CANCELLED'];
     if (statusService && !validStatuses.includes(statusService)) {
       return NextResponse.json(
         {
@@ -521,7 +521,7 @@ export async function PUT(
         const emailHtml = createStatusNotificationTemplate({
           userName: updatedService.user.name,
           status: statusService,
-          oldStatus: existingService.statusService,
+          oldStatus: existingService.statusService as 'PENDING' | 'IN_PROGRESS' | 'MENUNGGU_PEMBAYARAN' | 'COMPLETED' | 'CANCELLED' | undefined,
           serviceId: updatedService.id,
           device: `${updatedService.handphone?.brand || ''} ${updatedService.handphone?.tipe || ''}`.trim(),
           scheduledDate,

@@ -75,6 +75,7 @@ model Waktu {
 enum StatusService {
   PENDING
   IN_PROGRESS
+  MENUNGGU_PEMBAYARAN
   COMPLETED
   CANCELLED
 }

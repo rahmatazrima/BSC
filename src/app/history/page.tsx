@@ -5,7 +5,7 @@ import NavbarCustomer from "@/components/NavbarCustomer";
 import Link from "next/link";
 import { DevicePhoneMobileIcon } from "@/components/icons";
 
-type StatusService = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+type StatusService = "PENDING" | "IN_PROGRESS" | "MENUNGGU_PEMBAYARAN" | "COMPLETED" | "CANCELLED";
 
 interface HistoryOrder {
   serviceId: string;
@@ -42,6 +42,7 @@ const STATUS_FILTERS = [
   { value: "all", label: "Semua" },
   { value: "pending", label: "Menunggu" },
   { value: "in_progress", label: "Sedang Dikerjakan" },
+  { value: "menunggu_pembayaran", label: "Menunggu Pembayaran" },
   { value: "completed", label: "Selesai" },
   { value: "cancelled", label: "Dibatalkan" },
 ] as const;
@@ -135,6 +136,8 @@ export default function HistoryPage() {
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
       case "in_progress":
         return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "menunggu_pembayaran":
+        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
       case "completed":
         return "bg-green-500/20 text-green-400 border-green-500/30";
       case "cancelled":
@@ -151,6 +154,8 @@ export default function HistoryPage() {
         return "Menunggu";
       case "in_progress":
         return "Sedang dalam perbaikan";
+      case "menunggu_pembayaran":
+        return "Menunggu Pembayaran";
       case "completed":
         return "Selesai";
       case "cancelled":
