@@ -452,6 +452,9 @@ export async function POST(request: NextRequest) {
       });
 
       return service;
+    }, {
+      maxWait: 10000, // Maximum time to wait to start transaction (10s)
+      timeout: 15000, // Maximum time transaction can run (15s)
     });
 
     return NextResponse.json(
@@ -711,6 +714,9 @@ export async function PUT(request: NextRequest) {
       }
 
       return service;
+    }, {
+      maxWait: 10000, // Maximum time to wait to start transaction (10s)
+      timeout: 15000, // Maximum time transaction can run (15s)
     });
 
     return NextResponse.json({
@@ -811,6 +817,9 @@ export async function DELETE(request: NextRequest) {
         where: { id: existingService.waktuId },
         data: { isAvailable: true }
       });
+    }, {
+      maxWait: 10000,
+      timeout: 15000,
     });
 
     return NextResponse.json({

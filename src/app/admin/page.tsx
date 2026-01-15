@@ -60,6 +60,37 @@ interface ServiceStats {
   }>;
 }
 
+interface MonthlyRevenue {
+  month: number;
+  year: number;
+  monthName: string;
+  totalRevenue: number;
+  totalOrders: number;
+  revenueFromParts: number;
+  revenueFromService: number;
+  averageOrderValue: number;
+  percentageOfTotal: number;
+}
+
+interface MonthlyRevenueData {
+  year: number;
+  monthlyRevenue: MonthlyRevenue[];
+  summary: {
+    yearTotal: number;
+    yearTotalOrders: number;
+    totalPartsRevenue: number;
+    totalServiceRevenue: number;
+    bestMonth: {
+      month: string;
+      revenue: number;
+      orders: number;
+    };
+    averageMonthlyRevenue: number;
+    averageOrderValue: number;
+    monthsWithRevenue: number;
+  };
+}
+
 function AdminDashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -98,10 +129,24 @@ function AdminDashboardContent() {
   
   // Mobile menu state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Monthly revenue states
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState<MonthlyRevenueData | null>(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [revenueLoading, setRevenueLoading] = useState(false);
+  const currentYear = new Date().getFullYear();
+  const [availableYears, setAvailableYears] = useState<number[]>([
+    currentYear, 
+    currentYear - 1, 
+    currentYear - 2, 
+    currentYear - 3, 
+    currentYear - 4
+  ]);
 
   // Fetch brands on mount
   useEffect(() => {
     fetchBrands();
+    fetchAvailableYears();
   }, []);
 
   // Sync selectedTab with URL
@@ -124,6 +169,14 @@ function AdminDashboardContent() {
     fetchRecentServices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  // Fetch monthly revenue when year changes or when in overview tab
+  useEffect(() => {
+    if (selectedTab === 'overview') {
+      fetchMonthlyRevenue();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab, selectedYear]);
 
   // Fetch services when filters change (only in orders tab)
   useEffect(() => {
@@ -150,6 +203,76 @@ function AdminDashboardContent() {
       console.error("Error fetching brands:", err);
     }
   };
+  
+  const fetchAvailableYears = async () => {
+    try {
+      const response = await fetch("/api/service/getAllServices", {
+        credentials: "include",
+      });
+      const json = await response.json();
+      
+      if (json.status && json.content && json.content.length > 0) {
+        // Extract unique years from tanggalPesan
+        const years = json.content
+          .map((service: any) => {
+            const date = new Date(service.tanggalPesan);
+            const year = date.getFullYear();
+            return year;
+          })
+          .filter((year: number) => !isNaN(year) && year > 2000 && year < 2100); // Filter invalid years
+        
+        if (years.length === 0) {
+          // Jika tidak ada tahun valid, gunakan fallback
+          const currentYear = new Date().getFullYear();
+          setAvailableYears([currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4]);
+          return;
+        }
+        
+        const uniqueYears = Array.from(new Set(years)).sort((a: any, b: any) => (b as number) - (a as number));
+        
+        // Ensure current year is included
+        const currentYear = new Date().getFullYear();
+        if (!uniqueYears.includes(currentYear)) {
+          uniqueYears.push(currentYear);
+          uniqueYears.sort((a: any, b: any) => (b as number) - (a as number));
+        }
+        
+        setAvailableYears(uniqueYears as number[]);
+      } else {
+        // Jika tidak ada data, gunakan fallback
+        const currentYear = new Date().getFullYear();
+        setAvailableYears([currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4]);
+      }
+    } catch (err) {
+      console.error("Error fetching available years:", err);
+      // Fallback to current year and previous 4 years
+      const currentYear = new Date().getFullYear();
+      setAvailableYears([currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4]);
+    }
+  };
+  
+  const fetchMonthlyRevenue = async () => {
+    try {
+      setRevenueLoading(true);
+      const response = await fetch(`/api/revenue/monthly?year=${selectedYear}`, {
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        console.error("Monthly revenue error:", errorData);
+        throw new Error(errorData.message || "Failed to fetch monthly revenue");
+      }
+      
+      const data = await response.json();
+      setMonthlyRevenueData(data);
+    } catch (err) {
+      console.error("Error fetching monthly revenue:", err);
+      setMonthlyRevenueData(null);
+    } finally {
+      setRevenueLoading(false);
+    }
+  };
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status'], notify: boolean = true) => {
     try {
@@ -173,6 +296,7 @@ function AdminDashboardContent() {
 
       // Refresh data dengan filter yang sama
       await fetchServices();
+      await fetchAvailableYears(); // Refresh available years
     } catch (err: unknown) {
       console.error("Update status error:", err);
       alert(
@@ -196,6 +320,7 @@ function AdminDashboardContent() {
   const handleModalStatusUpdate = () => {
     // Refresh orders list when status is updated in modal
     fetchServices();
+    fetchAvailableYears(); // Refresh available years
   };
 
   const fetchRecentServices = async () => {
@@ -243,6 +368,7 @@ function AdminDashboardContent() {
         const statusMap: Record<string, string> = {
           'pending': 'PENDING',
           'in-progress': 'IN_PROGRESS',
+          'menunggu-pembayaran': 'MENUNGGU_PEMBAYARAN',
           'completed': 'COMPLETED',
           'cancelled': 'CANCELLED',
         };
@@ -496,6 +622,134 @@ function AdminDashboardContent() {
                       </tbody>
                     </table>
                   </div>
+                )}
+              </div>
+              
+              {/* Monthly Revenue Report */}
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Rekap Pendapatan per Bulan</h3>
+                      <p className="text-sm text-gray-400 mt-1">Analisis detail pendapatan dan performa bulanan</p>
+                    </div>
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(Number(e.target.value))}
+                      className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    >
+                      {availableYears.length > 0 ? (
+                        availableYears.map((year) => (
+                          <option key={year} value={year} className="bg-gray-800">
+                            {year}
+                          </option>
+                        ))
+                      ) : (
+                        Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                          <option key={year} value={year} className="bg-gray-800">
+                            {year}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+                {revenueLoading ? (
+                  <div className="p-8 text-center text-gray-400">Memuat data...</div>
+                ) : !monthlyRevenueData ? (
+                  <div className="p-8 text-center text-red-400">Gagal memuat data pendapatan</div>
+                ) : (
+                  <>
+                    {/* Summary Statistics Cards */}
+                    <div className="p-6 border-b border-white/20 bg-gradient-to-r">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <p className="text-xs text-gray-400 mb-1">Total Pendapatan {monthlyRevenueData.year}</p>
+                          <p className="text-2xl font-bold text-green-400">
+                            Rp {monthlyRevenueData.summary.yearTotal.toLocaleString('id-ID')}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {monthlyRevenueData.summary.yearTotalOrders} pesanan selesai
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <p className="text-xs text-gray-400 mb-1">Pendapatan dari Pergantian Barang</p>
+                          <p className="text-2xl font-bold text-cyan-400">
+                            Rp {monthlyRevenueData.summary.totalPartsRevenue.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <p className="text-xs text-gray-400 mb-1">Pendapatan dari Biaya Jasa</p>
+                          <p className="text-2xl font-bold text-orange-400">
+                            Rp {monthlyRevenueData.summary.totalServiceRevenue.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-white/20 bg-white/5">
+                            <th className="px-6 py-4 text-left text-white font-semibold">Bulan</th>
+                            <th className="px-6 py-4 text-center text-white font-semibold">Pesanan</th>
+                            <th className="px-6 py-4 text-right text-white font-semibold">Pergantian Barang</th>
+                            <th className="px-6 py-4 text-right text-white font-semibold">Biaya Jasa</th>
+                            <th className="px-6 py-4 text-right text-white font-semibold">Total Pendapatan</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthlyRevenueData.monthlyRevenue.map((item) => (
+                            <tr 
+                              key={item.month} 
+                              className="border-b border-white/10 hover:bg-white/5 transition-colors"
+                            >
+                              <td className="px-6 py-4">
+                                <span className="font-medium text-gray-300">
+                                  {item.monthName}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm font-medium">
+                                  {item.totalOrders}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right text-cyan-400 font-medium">
+                                Rp {item.revenueFromParts.toLocaleString('id-ID')}
+                              </td>
+                              <td className="px-6 py-4 text-right text-orange-400 font-medium">
+                                Rp {item.revenueFromService.toLocaleString('id-ID')}
+                              </td>
+                              <td className="px-6 py-4 text-right text-green-400 font-semibold">
+                                Rp {item.totalRevenue.toLocaleString('id-ID')}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t-2 border-white/30 bg-gradient-to-r from-green-900/30 to-emerald-900/30">
+                            <td className="px-6 py-4 text-white font-bold">Total {monthlyRevenueData.year}</td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-block px-3 py-1 bg-blue-500/30 text-blue-200 rounded-full text-sm font-bold">
+                                {monthlyRevenueData.summary.yearTotalOrders}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right text-cyan-300 font-bold">
+                              Rp {monthlyRevenueData.summary.totalPartsRevenue.toLocaleString('id-ID')}
+                            </td>
+                            <td className="px-6 py-4 text-right text-orange-300 font-bold">
+                              Rp {monthlyRevenueData.summary.totalServiceRevenue.toLocaleString('id-ID')}
+                            </td>
+                            <td className="px-6 py-4 text-right text-green-300 font-bold text-lg">
+                              Rp {monthlyRevenueData.summary.yearTotal.toLocaleString('id-ID')}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

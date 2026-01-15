@@ -487,6 +487,9 @@ export async function PUT(
       }
 
       return service;
+    }, {
+      maxWait: 10000, // Maximum time to wait to start transaction (10s)
+      timeout: 15000, // Maximum time transaction can run (15s)
     });
 
     // Kirim email notifikasi jika sendNotification = true dan status berubah
@@ -667,6 +670,9 @@ export async function DELETE(
         where: { id: existingService.waktuId },
         data: { isAvailable: true }
       });
+    }, {
+      maxWait: 10000,
+      timeout: 15000,
     });
 
     return NextResponse.json({
