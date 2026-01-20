@@ -535,7 +535,7 @@ export async function PUT(
 
         await sendEmail({
           to: updatedService.user.email,
-          subject: `Update Status Pesanan - ${statusService === 'PENDING' ? 'Menunggu' : statusService === 'IN_PROGRESS' ? 'Sedang Dikerjakan' : statusService === 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}`,
+          subject: `Update Status Pesanan - ${statusService === 'PENDING' ? 'Menunggu' : statusService === 'IN_PROGRESS' ? 'Sedang Dikerjakan' : statusService === 'MENUNGGU_PEMBAYARAN' ? 'Menunggu Pembayaran' : statusService === 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}`,
           html: emailHtml,
         });
       } catch (emailError) {
